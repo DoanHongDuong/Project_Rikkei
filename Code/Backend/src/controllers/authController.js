@@ -72,4 +72,11 @@ const register = async (req, res) => {
     }
 };
 
-module.exports = { login, register };
+const logout = async (req, res) => {
+    try {
+        return res.status(200).json({ message: 'Đăng xuất hệ thống thành công!' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Lỗi hệ thống khi đăng xuất' });
+    }
+};
+module.exports = { login, register, logout };
