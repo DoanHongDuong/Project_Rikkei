@@ -2,16 +2,17 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { connectDB } = require('./config/database');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
-// Middlewares cơ bản
 app.use(cors());
 app.use(express.json()); 
 
 connectDB();
 
 // API chạy thử nghiệm (Test Route)
+app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
     res.json({ message: "Welcome to TMS Project Backend Server!" });
 });

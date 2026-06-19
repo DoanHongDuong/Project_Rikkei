@@ -1,0 +1,22 @@
+### BƯỚC A: CHẠY CÁI NÀY TRƯỚC ĐỂ TẠO TÀI KHOẢN CHUẨN
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+    "full_name": "Nguyen Van Thử Nghiệm",
+    "email": "test@gmail.com",
+    "password": "123",
+    "role": "ADMIN",
+    "department_id": 1
+}
+
+###
+
+### BƯỚC B: CHẠY CÁI NÀY ĐỂ ĐĂNG NHẬP BẰNG TÀI KHOẢN VỪA TẠO
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com",
+    "password": "123"
+}
