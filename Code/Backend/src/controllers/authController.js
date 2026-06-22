@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const transporter = require("../config/mail");
 
 const login = async (req, res) => {
   try {
@@ -79,4 +80,82 @@ const logout = async (req, res) => {
         return res.status(500).json({ message: 'Lỗi hệ thống khi đăng xuất' });
     }
 };
-module.exports = { login, register, logout };
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email là bắt buộc." });
+
+    const user = await User.findOne({ where: { email } });
+
+    // Always return success to avoid revealing whether email exists
+    if (!user) {
+      return res.status(200).json({ message: "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu." });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, type: "reset" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/reset?token=${token}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "[HTQLCV] Đặt lại mật khẩu",
+      html: `<p>Xin chào ${user.full_name || ""},</p>
+             <p>Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấn vào liên kết bên dưới để đặt lại mật khẩu. Liên kết có hiệu lực trong 1 giờ.</p>
+             <p><a href="${resetUrl}">Đặt lại mật khẩu</a></p>
+             <p>Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({ message: "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu." });
+  } catch (error) {
+    console.error("forgotPassword error:", error);
+    return res.status(500).json({ message: "Không thể gửi email đặt lại mật khẩu." });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const token = req.params.token;
+    const { password } = req.body;
+    if (!token) return res.status(400).json({ message: "Token là bắt buộc." });
+    if (!password) return res.status(400).json({ message: "Mật khẩu mới là bắt buộc." });
+
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
+    }
+
+    if (payload.type !== "reset") return res.status(400).json({ message: "Token không hợp lệ." });
+
+    const user = await User.findByPk(payload.id);
+    if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
+
+    // If user's password was changed after token issuance, reject
+    if (user.password_changed_at) {
+      const changedAtSeconds = Math.floor(new Date(user.password_changed_at).getTime() / 1000);
+      if (payload.iat && changedAtSeconds > payload.iat) {
+        return res.status(400).json({ message: "Token đã bị hủy bỏ do thay đổi mật khẩu gần đây." });
+      }
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    await user.update({ password_hash, password_changed_at: new Date() });
+
+    return res.status(200).json({ message: "Đặt lại mật khẩu thành công." });
+  } catch (error) {
+    console.error("resetPassword error:", error);
+    return res.status(500).json({ message: "Lỗi khi đặt lại mật khẩu." });
+  }
+};
+module.exports = { login, register, logout, forgotPassword, resetPassword };

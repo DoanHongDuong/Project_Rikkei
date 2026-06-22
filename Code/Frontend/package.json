@@ -11,8 +11,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "antd": "^6.4.4",
+    "axios": "^1.18.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
