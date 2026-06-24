@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthService from '../../services/authService';
 import './AuthPages.css';
+import ForgotPassword from './ForgotPassword';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -37,6 +38,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="auth-form">
           {error && <div className="auth-error">{error}</div>}
 
+          {/* Nhóm Email */}
           <div className="form-group">
             <label htmlFor="email" className="form-label">
               Email hoặc ID
@@ -49,9 +51,11 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading} // Khóa input khi đang gửi dữ liệu đăng nhập
             />
           </div>
 
+          {/* Nhóm Mật khẩu */}
           <div className="form-group">
             <label htmlFor="password" className="form-label">
               Mật khẩu
@@ -65,29 +69,37 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading} // Khóa input khi đang gửi dữ liệu đăng nhập
               />
               <button
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
               >
                 {showPassword ? '👁️' : '👁️‍🗨️'}
               </button>
             </div>
-            <a href="/forgot-password" className="forgot-password-link">
-              Quên mật khẩu?
-            </a>
           </div>
 
+          <div style={{ textAlign: 'right', marginBottom: '20px', marginTop: '-4px' }}>
+            <Link to="/auth/forgot" className="forgot-password-link" style={{ color: '#2563eb', fontSize: '14px' }}>
+              Quên mật khẩu?
+            </Link>
+          </div>
+
+          {/* Nút bấm Đăng nhập */}
           <button
             type="submit"
             className="auth-button"
             disabled={loading}
+            style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
           </button>
         </form>
 
+        {/* Thông tin liên hệ */}
         <div className="contact-info">
           <p className="contact-header">Có vấn đề? Liên hệ với chúng tôi:</p>
           <div className="contact-items">

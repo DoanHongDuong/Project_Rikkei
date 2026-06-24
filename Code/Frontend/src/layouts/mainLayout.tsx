@@ -1,11 +1,19 @@
 import type { ReactNode } from 'react';
 import './mainLayout.css';
+import { useNavigate } from 'react-router-dom';
+import AuthService from '../services/authService';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const navigate = useNavigate();
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    AuthService.logout(); 
+    navigate('/login', { replace: true }); 
+  };
   return (
     <div className="main-layout">
       <header className="main-header">
@@ -14,7 +22,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <nav className="main-nav">
             <a href="/dashboard">Dashboard</a>
             <a href="/profile">Hồ sơ</a>
-            <a href="/logout">Đăng xuất</a>
+            <a href="#logout" onClick={handleLogout}>Đăng xuất</a>  
           </nav>
         </div>
       </header>

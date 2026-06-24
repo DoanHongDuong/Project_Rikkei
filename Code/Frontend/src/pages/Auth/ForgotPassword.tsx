@@ -1,76 +1,79 @@
-import { useState } from 'react'
-import axios from 'axios'
+import { useState } from 'react';
+import axios from 'axios';
+import { Form, Input, Button, Card, Alert } from 'antd'; 
+import { Link } from 'react-router-dom'; 
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('')
-  const [message, setMessage] = useState<string | null>(null)
-  const [isError, setIsError] = useState(false)
+  const [message, setMessage] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false); 
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+  // Lấy API URL từ cấu hình môi trường của bạn
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setMessage(null)
-    setIsError(false)
+  // Hàm xử lý Form của Antd (values sẽ tự động gom { email: '...' })
+  const onFinish = async (values: { email: string }) => {
+    setMessage(null);
+    setIsError(false);
+    setLoading(true);
 
     try {
-      const response = await axios.post(`${apiBase}/api/auth/forgot-password`, { email })
-      setMessage(response.data?.message)
-      setIsError(false)
+      const response = await axios.post(`${apiBase}/api/auth/forgot-password`, { 
+        email: values.email 
+      });
+      setMessage(response.data?.message || 'Yêu cầu thành công! Vui lòng kiểm tra email.');
+      setIsError(false);
     } catch (error: any) {
-      setMessage(error?.response?.data?.message || 'Gửi liên kết đặt lại mật khẩu thất bại.')
-      setIsError(true)
+      setMessage(error?.response?.data?.message || 'Gửi liên kết đặt lại mật khẩu thất bại.');
+      setIsError(true);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div style={{ maxWidth: 440, margin: '3rem auto', padding: '1.5rem'}}>
-      <h2 style={{ marginBottom: '1rem' }}>Quên mật khẩu</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-            style={{padding: '0.75rem', border: '1px solid #ccc', borderRadius: 4 }}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      {/* Bọc Form vào cấu trúc Card của Ant Design cho đẹp mắt */}
+      <Card title="Quên mật khẩu" style={{ width: 440, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+        
+        {/* Khối hiển thị thông báo thành công / thất bại tự động bằng Alert */}
+        {message && (
+          <Alert
+            message={message}
+            type={isError ? 'error' : 'success'}
+            showIcon
+            style={{ marginBottom: '1.5rem' }}
           />
-        </div>
+        )}
 
-        <button
-          type="submit"
-          style={{
-            width: '100%',
-            padding: '0.85rem',
-            backgroundColor: '#2563eb',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer'
-          }}
-        >
-          Gửi liên kết đặt lại
-        </button>
-      </form>
+        <Form layout="vertical" onFinish={onFinish}>
+          <Form.Item
+            label="Email tài khoản"
+            name="email"
+            rules={[
+              { required: true, message: 'Vui lòng nhập email!' },
+              { type: 'email', message: 'Định dạng email không hợp lệ!' }
+            ]}
+          >
+            {/* Input của Antd tự động có hiệu ứng border xanh khi hover rất đẹp */}
+            <Input placeholder="Nhập email của bạn" size="large" />
+          </Form.Item>
 
-      {message && (
-        <div
-          style={{
-            marginTop: '1rem',
-            padding: '0.9rem',
-            borderRadius: 4,
-            backgroundColor: isError ? '#fee2e2' : '#ecfdf5',
-            color: isError ? '#b91c1c' : '#164e63',
-            border: isError ? '1px solid #fca5a5' : '1px solid #a7f3d0'
-          }}
-        >
-          {message}
+          <Form.Item>
+            {/* Button tự động chuyển sang trạng thái Loading xoay tròn nếu đang đợi API */}
+            <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+              Gửi liên kết đặt lại
+            </Button>
+          </Form.Item>
+        </Form>
+
+        {/* Thêm link quay lại trang Login để cứu người dùng bấm nhầm */}
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <Link to="/login" style={{ color: '#2563eb' }}>
+            ← Quay lại trang Đăng nhập
+          </Link>
         </div>
-      )}
+      </Card>
     </div>
-  )
+  );
 }

@@ -1,13 +1,9 @@
-import type { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 
-interface AuthLayoutProps {
-  children: ReactNode;
-}
-
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default function AuthLayout() {
   return (
     <div className="auth-layout">
-      {children}
+      <Outlet />
     </div>
   );
 }

@@ -21,3 +21,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server đang chạy mượt mà tại cổng: http://localhost:${PORT}`);
 });
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
