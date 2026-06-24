@@ -37,6 +37,15 @@ const User = sequelize.define('User', {
             key: 'id'
         }
     }
+    ,
+    password_changed_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    last_login_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    }
 }, {
     tableName: "users",
     timestamps: true,
