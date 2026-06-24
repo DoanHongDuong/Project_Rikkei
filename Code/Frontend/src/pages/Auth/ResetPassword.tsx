@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate để điều hướng
+import { Form, Input, Button, Card, Alert, message } from 'antd'; // Đồng bộ Ant Design
 
 export default function ResetPassword() {
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // 2. Khai báo hook điều hướng
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -15,36 +18,93 @@ export default function ResetPassword() {
 
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Hàm xử lý khi submit Form của Antd
+  const onFinish = async (values: any) => {
     setStatus(null);
-    if (!token) return setStatus('Token không tồn tại.');
-    if (password.length < 6) return setStatus('Mật khẩu phải có ít nhất 6 ký tự.');
-    if (password !== confirm) return setStatus('Mật khẩu xác nhận không khớp.');
+    setIsError(false);
+
+    if (!token) {
+      setIsError(true);
+      return setStatus('Token không tồn tại hoặc đã hết hạn.');
+    }
+
+    setLoading(true);
 
     try {
-      const resp = await axios.post(`${apiBase}/api/auth/reset-password/${encodeURIComponent(token)}`, { password });
+      const resp = await axios.post(`${apiBase}/api/auth/reset-password/${encodeURIComponent(token)}`, { 
+        password: values.password 
+      });
+      
+      setIsError(false);
       setStatus(resp.data?.message || 'Đặt lại mật khẩu thành công.');
+      
+      // 3. HIỆN THÔNG BÁO POPUP VÀ TỰ ĐỘNG CHUYỂN TRANG SAU 2.5 GIÂY
+      message.success('Đặt lại mật khẩu thành công! Đang chuyển hướng về trang đăng nhập...');
+      setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 2500);
+
     } catch (err: any) {
+      setIsError(true);
       setStatus(err?.response?.data?.message || 'Lỗi khi đặt lại mật khẩu.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: '2rem auto'}}>
-      <h2>Đặt lại mật khẩu</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Mật khẩu mới</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: 8, marginTop: 6 }} />
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <label>Xác nhận mật khẩu</label>
-          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required style={{ width: '100%', padding: 8, marginTop: 6 }} />
-        </div>
-        <button type="submit" style={{ marginTop: 12 }}>Đặt lại mật khẩu</button>
-      </form>
-      {status && <p style={{ marginTop: 12 }}>{status}</p>}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      <Card title="Đặt lại mật khẩu mới" style={{ width: 420, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+        
+        {status && (
+          <Alert
+            message={status}
+            type={isError ? 'error' : 'success'}
+            showIcon
+            style={{ marginBottom: '1.5rem' }}
+          />
+        )}
+
+        <Form layout="vertical" onFinish={onFinish}>
+          {/* Trường Mật khẩu mới */}
+          <Form.Item
+            label="Mật khẩu mới"
+            name="password"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
+              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
+            ]}
+          >
+            <Input.Password placeholder="Nhập mật khẩu mới" size="large" />
+          </Form.Item>
+
+          {/* Trường Xác nhận mật khẩu */}
+          <Form.Item
+            label="Xác nhận mật khẩu"
+            name="confirm"
+            dependencies={['password']} // Lắng nghe thay đổi của ô password ở trên
+            rules={[
+              { required: true, message: 'Vui lòng xác nhận lại mật khẩu!' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Nhập lại mật khẩu mới" size="large" />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+              Đặt lại mật khẩu
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
     </div>
   );
 }
