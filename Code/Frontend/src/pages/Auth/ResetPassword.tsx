@@ -1,52 +1,54 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate để điều hướng
-import { Form, Input, Button, Card, Alert, message } from 'antd'; // Đồng bộ Ant Design
+import { useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Card, Alert, message } from 'antd';
+// Import hằng số để thay thế magic string
+import { AUTH_MESSAGES, API_ROUTES, APP_ROUTES } from '../../constants/authMessages';
 
 export default function ResetPassword() {
   const [status, setStatus] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // 2. Khai báo hook điều hướng
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const t = params.get('token');
+    console.log("👉 Token nhặt được từ URL Email là:", t);
     setToken(t);
   }, []);
 
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  // Hàm xử lý khi submit Form của Antd
   const onFinish = async (values: any) => {
     setStatus(null);
     setIsError(false);
 
     if (!token) {
       setIsError(true);
-      return setStatus('Token không tồn tại hoặc đã hết hạn.');
+      return setStatus(AUTH_MESSAGES.TOKEN_MISSING); 
     }
 
     setLoading(true);
 
     try {
-      const resp = await axios.post(`${apiBase}/api/auth/reset-password/${encodeURIComponent(token)}`, { 
+        const resp = await axios.post(`${apiBase}${API_ROUTES.RESET_PASSWORD}/${encodeURIComponent(token)}`, { 
         password: values.password 
       });
       
       setIsError(false);
-      setStatus(resp.data?.message || 'Đặt lại mật khẩu thành công.');
+      const successMsg = resp.data?.message || AUTH_MESSAGES.RESET_SUCCESS;
+      setStatus(successMsg);
       
-      // 3. HIỆN THÔNG BÁO POPUP VÀ TỰ ĐỘNG CHUYỂN TRANG SAU 2.5 GIÂY
-      message.success('Đặt lại mật khẩu thành công! Đang chuyển hướng về trang đăng nhập...');
+      message.success(AUTH_MESSAGES.RESET_SUCCESS); 
       setTimeout(() => {
-        navigate('/login', { replace: true });
+        navigate(APP_ROUTES.LOGIN, { replace: true }); 
       }, 2500);
 
     } catch (err: any) {
       setIsError(true);
-      setStatus(err?.response?.data?.message || 'Lỗi khi đặt lại mật khẩu.');
+      setStatus(err?.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT); 
     } finally {
       setLoading(false);
     }
@@ -71,8 +73,8 @@ export default function ResetPassword() {
             label="Mật khẩu mới"
             name="password"
             rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
-              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
+              { required: true, message: AUTH_MESSAGES.PASSWORD_REQUIRED }, // Thay thế Magic String
+              { min: 6, message: AUTH_MESSAGES.PASSWORD_MIN_LENGTH } // Thay thế Magic String
             ]}
           >
             <Input.Password placeholder="Nhập mật khẩu mới" size="large" />
@@ -82,15 +84,15 @@ export default function ResetPassword() {
           <Form.Item
             label="Xác nhận mật khẩu"
             name="confirm"
-            dependencies={['password']} // Lắng nghe thay đổi của ô password ở trên
+            dependencies={['password']}
             rules={[
-              { required: true, message: 'Vui lòng xác nhận lại mật khẩu!' },
+              { required: true, message: AUTH_MESSAGES.CONFIRM_REQUIRED }, // Thay thế Magic String
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('password') === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                  return Promise.reject(new Error(AUTH_MESSAGES.PASSWORD_MISMATCH)); // Thay thế Magic String
                 },
               }),
             ]}
