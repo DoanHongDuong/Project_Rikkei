@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthService from '../../services/authService';
-import './AuthPages.css';
-import ForgotPassword from './ForgotPassword';
+import './AuthDes.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,8 +11,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
 
@@ -21,55 +20,48 @@ export default function LoginPage() {
       await AuthService.login({ email, password });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Đăng nhập thất bại');
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1 className="auth-title">Đăng Nhập</h1>
-          <p className="auth-subtitle">Chào mừng bạn quay lại</p>
-        </div>
+    <div className="auth-des-page">
+      <div className="index-1">
+        <form onSubmit={handleLogin} className="login-form-14">
+          <img src="/images/logo.png" className="logo" alt="Logo" />
 
-        <form onSubmit={handleLogin} className="auth-form">
-          {error && <div className="auth-error">{error}</div>}
-
-          {/* Nhóm Email */}
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email hoặc ID
-            </label>
+          <div className="email-16">
+            <p className="text-17">
+              <span className="text-black">Email/ID</span>
+            </p>
             <input
               id="email"
               type="email"
-              className="form-input"
-              placeholder="Nhập email của bạn"
+              className="emailbox-18"
+              placeholder="Enter email or ID"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading} // Khóa input khi đang gửi dữ liệu đăng nhập
+              disabled={loading}
             />
           </div>
 
-          {/* Nhóm Mật khẩu */}
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
-              Mật khẩu
-            </label>
-            <div className="password-wrapper">
+          <div className="password-19">
+            <p className="text-20">
+              <span className="text-black">Password</span>
+            </p>
+            <div className="passwordbox-21">
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                className="form-input password-input"
-                placeholder="Nhập mật khẩu của bạn"
+                className="password-input"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading} // Khóa input khi đang gửi dữ liệu đăng nhập
+                disabled={loading}
               />
               <button
                 type="button"
@@ -77,40 +69,50 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={loading}
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
+                <img
+                  src={showPassword ? '/images/eyebrow.png' : '/images/eye-open.svg'}
+                  alt={showPassword ? 'Hide password' : 'Show password'}
+                />
               </button>
             </div>
+            <p className="text-23">
+              <Link to="/auth/forgot" className="forgot-link">
+                Forgot password?
+              </Link>
+            </p>
           </div>
 
-          <div style={{ textAlign: 'right', marginBottom: '20px', marginTop: '-4px' }}>
-            <Link to="/auth/forgot" className="forgot-password-link" style={{ color: '#2563eb', fontSize: '14px' }}>
-              Quên mật khẩu?
-            </Link>
-          </div>
+          {error && <div className="status-message status-error">{error}</div>}
 
-          {/* Nút bấm Đăng nhập */}
-          <button
-            type="submit"
-            className="auth-button"
-            disabled={loading}
-            style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
-          >
-            {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+          <button type="submit" className="loginbtn-24" disabled={loading}>
+            <span className="text-25 text-black">{loading ? 'Processing...' : 'Login'}</span>
           </button>
         </form>
 
-        {/* Thông tin liên hệ */}
-        <div className="contact-info">
-          <p className="contact-header">Có vấn đề? Liên hệ với chúng tôi:</p>
-          <div className="contact-items">
-            <div className="contact-item">
-              <span>📞</span>
-              <span>0967676767</span>
+        <div className="contact-3">
+          <div className="ctinfo-4">
+            <p className="text-5">
+              <span className="text-black">Have an issue? Better call us:</span>
+            </p>
+            <div className="phonenemail-6">
+              <div className="phone-7">
+                <img src="/images/vector-8.svg" className="vector-8" alt="Phone" />
+                <p className="text-9">
+                  <span className="text-black">0967676767</span>
+                </p>
+              </div>
+              <div className="email-10">
+                <img src="/images/vector-11.svg" className="vector-11" alt="Email" />
+                <p className="text-12">
+                  <span className="text-black">sadfghjk@asd.com</span>
+                </p>
+              </div>
             </div>
-            <div className="contact-item">
-              <span>📧</span>
-              <span>sadfghjk@asd.com</span>
-            </div>
+          </div>
+          <div className="text-13">
+            <Link to="/login" className="text-black">
+              Manual
+            </Link>
           </div>
         </div>
       </div>

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Card, Alert, message } from 'antd';
-// Import hằng số để thay thế magic string
+import { Link, useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES, API_ROUTES, APP_ROUTES } from '../../constants/authMessages';
+import './AuthDes.css';
 
 export default function ResetPassword() {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -14,99 +17,155 @@ export default function ResetPassword() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const t = params.get('token');
-    console.log("👉 Token nhặt được từ URL Email là:", t);
-    setToken(t);
+    setToken(params.get('token'));
   }, []);
 
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  const onFinish = async (values: any) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setStatus(null);
     setIsError(false);
 
     if (!token) {
       setIsError(true);
-      return setStatus(AUTH_MESSAGES.TOKEN_MISSING); 
+      setStatus(AUTH_MESSAGES.TOKEN_MISSING);
+      return;
+    }
+
+    if (!password || !confirmPassword) {
+      setIsError(true);
+      setStatus(AUTH_MESSAGES.PASSWORD_REQUIRED);
+      return;
+    }
+
+    if (password.length < 6) {
+      setIsError(true);
+      setStatus(AUTH_MESSAGES.PASSWORD_MIN_LENGTH);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setIsError(true);
+      setStatus(AUTH_MESSAGES.PASSWORD_MISMATCH);
+      return;
     }
 
     setLoading(true);
 
     try {
-        const resp = await axios.post(`${apiBase}${API_ROUTES.RESET_PASSWORD}/${encodeURIComponent(token)}`, { 
-        password: values.password 
-      });
-      
-      setIsError(false);
-      const successMsg = resp.data?.message || AUTH_MESSAGES.RESET_SUCCESS;
-      setStatus(successMsg);
-      
-      message.success(AUTH_MESSAGES.RESET_SUCCESS); 
-      setTimeout(() => {
-        navigate(APP_ROUTES.LOGIN, { replace: true }); 
-      }, 2500);
+      const response = await axios.post(
+        `${apiBase}${API_ROUTES.RESET_PASSWORD}/${encodeURIComponent(token)}`,
+        { password }
+      );
 
-    } catch (err: any) {
+      setStatus(response.data?.message || AUTH_MESSAGES.RESET_SUCCESS);
+      setIsError(false);
+      setTimeout(() => {
+        navigate(APP_ROUTES.LOGIN, { replace: true });
+      }, 2200);
+    } catch (error: any) {
       setIsError(true);
-      setStatus(err?.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT); 
+      setStatus(error?.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      <Card title="Đặt lại mật khẩu mới" style={{ width: 420, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        
-        {status && (
-          <Alert
-            message={status}
-            type={isError ? 'error' : 'success'}
-            showIcon
-            style={{ marginBottom: '1.5rem' }}
-          />
-        )}
+    <div className="auth-des-page">
+      <div className="index-1 reset-page">
+        <form className="reset-wrap" onSubmit={handleSubmit}>
+          <h1 className="reset-title text-black">Reset your password</h1>
 
-        <Form layout="vertical" onFinish={onFinish}>
-          {/* Trường Mật khẩu mới */}
-          <Form.Item
-            label="Mật khẩu mới"
-            name="password"
-            rules={[
-              { required: true, message: AUTH_MESSAGES.PASSWORD_REQUIRED }, // Thay thế Magic String
-              { min: 6, message: AUTH_MESSAGES.PASSWORD_MIN_LENGTH } // Thay thế Magic String
-            ]}
-          >
-            <Input.Password placeholder="Nhập mật khẩu mới" size="large" />
-          </Form.Item>
+          {status && (
+            <div className={`status-message ${isError ? 'status-error' : 'status-success'}`}>
+              {status}
+            </div>
+          )}
 
-          {/* Trường Xác nhận mật khẩu */}
-          <Form.Item
-            label="Xác nhận mật khẩu"
-            name="confirm"
-            dependencies={['password']}
-            rules={[
-              { required: true, message: AUTH_MESSAGES.CONFIRM_REQUIRED }, // Thay thế Magic String
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error(AUTH_MESSAGES.PASSWORD_MISMATCH)); // Thay thế Magic String
-                },
-              }),
-            ]}
-          >
-            <Input.Password placeholder="Nhập lại mật khẩu mới" size="large" />
-          </Form.Item>
+          <div className="reset-field">
+            <p className="reset-label text-black">New password</p>
+            <div className="passwordbox-21">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="password-input"
+                placeholder="Enter new password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                <img
+                  src={showPassword ? '/images/eyebrow.png' : '/images/eye-open.svg'}
+                  alt={showPassword ? 'Hide password' : 'Show password'}
+                />
+              </button>
+            </div>
+          </div>
 
-          <Form.Item style={{ marginBottom: 0 }}>
-            <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-              Đặt lại mật khẩu
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+          <div className="reset-field">
+            <p className="reset-label text-black">Confirm password</p>
+            <div className="passwordbox-21">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                className="password-input"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={loading}
+              >
+                <img
+                  src={showConfirmPassword ? '/images/eyebrow.png' : '/images/eye-open.svg'}
+                  alt={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                />
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="loginbtn-24 reset-confirm-btn" disabled={loading}>
+            <span className="text-25 text-black">{loading ? 'Processing...' : 'Confirm'}</span>
+          </button>
+        </form>
+
+        <div className="contact-3">
+          <div className="ctinfo-4">
+            <p className="text-5">
+              <span className="text-black">Have an issue? Better call us:</span>
+            </p>
+            <div className="phonenemail-6">
+              <div className="phone-7">
+                <img src="/images/vector-8.svg" className="vector-8" alt="Phone" />
+                <p className="text-9">
+                  <span className="text-black">0967676767</span>
+                </p>
+              </div>
+              <div className="email-10">
+                <img src="/images/vector-11.svg" className="vector-11" alt="Email" />
+                <p className="text-12">
+                  <span className="text-black">sadfghjk@asd.com</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="text-13">
+            <Link className="text-black" to="/login">
+              Manual
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

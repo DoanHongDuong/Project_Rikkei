@@ -1,25 +1,25 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import axios from 'axios';
-import { Form, Input, Button, Card, Alert } from 'antd'; 
-import { Link } from 'react-router-dom'; 
+import { Link } from 'react-router-dom';
+import './AuthDes.css';
 
 export default function ForgotPassword() {
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
-  // Lấy API URL từ cấu hình môi trường của bạn
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  // Hàm xử lý Form của Antd (values sẽ tự động gom { email: '...' })
-  const onFinish = async (values: { email: string }) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setMessage(null);
     setIsError(false);
     setLoading(true);
 
     try {
-      const response = await axios.post(`${apiBase}/api/auth/forgot-password`, { 
-        email: values.email 
+      const response = await axios.post(`${apiBase}/api/auth/forgot-password`, {
+        email,
       });
       setMessage(response.data?.message || 'Yêu cầu thành công! Vui lòng kiểm tra email.');
       setIsError(false);
@@ -32,48 +32,71 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      {/* Bọc Form vào cấu trúc Card của Ant Design cho đẹp mắt */}
-      <Card title="Quên mật khẩu" style={{ width: 440, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-        
-        {/* Khối hiển thị thông báo thành công / thất bại tự động bằng Alert */}
-        {message && (
-          <Alert
-            message={message}
-            type={isError ? 'error' : 'success'}
-            showIcon
-            style={{ marginBottom: '1.5rem' }}
-          />
-        )}
+    <div className="auth-des-page">
+      <div className="index-1">
+        <form onSubmit={handleSubmit} className="login-form-14">
+          <img src="/images/logo.png" className="logo" alt="Logo" />
 
-        <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item
-            label="Email tài khoản"
-            name="email"
-            rules={[
-              { required: true, message: 'Vui lòng nhập email!' },
-              { type: 'email', message: 'Định dạng email không hợp lệ!' }
-            ]}
-          >
-            {/* Input của Antd tự động có hiệu ứng border xanh khi hover rất đẹp */}
-            <Input placeholder="Nhập email của bạn" size="large" />
-          </Form.Item>
+          <div className="email-16">
+            <p className="text-17">
+              <span className="text-black">Email tài khoản</span>
+            </p>
+            <input
+              id="email"
+              type="email"
+              className="emailbox-18"
+              placeholder="Nhập email của bạn"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
 
-          <Form.Item>
-            {/* Button tự động chuyển sang trạng thái Loading xoay tròn nếu đang đợi API */}
-            <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-              Gửi liên kết đặt lại
-            </Button>
-          </Form.Item>
-        </Form>
+          {message && (
+            <div className={`status-message ${isError ? 'status-error' : 'status-success'}`}>
+              {message}
+            </div>
+          )}
 
-        {/* Thêm link quay lại trang Login để cứu người dùng bấm nhầm */}
-        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-          <Link to="/login" style={{ color: '#2563eb' }}>
-            ← Quay lại trang Đăng nhập
-          </Link>
+          <button type="submit" className="loginbtn-24" disabled={loading}>
+            <span className="text-25 text-black">{loading ? 'Đang gửi...' : 'Gửi liên kết đặt lại'}</span>
+          </button>
+
+          <p className="text-23">
+            <Link to="/login" className="forgot-link">
+              ← Quay lại trang Đăng nhập
+            </Link>
+          </p>
+        </form>
+
+        <div className="contact-3">
+          <div className="ctinfo-4">
+            <p className="text-5">
+              <span className="text-black">Have an issue? Better call us:</span>
+            </p>
+            <div className="phonenemail-6">
+              <div className="phone-7">
+                <img src="/images/vector-8.svg" className="vector-8" alt="Phone" />
+                <p className="text-9">
+                  <span className="text-black">0967676767</span>
+                </p>
+              </div>
+              <div className="email-10">
+                <img src="/images/vector-11.svg" className="vector-11" alt="Email" />
+                <p className="text-12">
+                  <span className="text-black">sadfghjk@asd.com</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="text-13">
+            <Link to="/login" className="text-black">
+              Manual
+            </Link>
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
