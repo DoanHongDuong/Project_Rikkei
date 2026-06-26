@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import AuthService from '../../services/authService';
+import type { AuthUser } from '../../types/auth';
 import './Dashboard.css';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     const userData = AuthService.getUser();

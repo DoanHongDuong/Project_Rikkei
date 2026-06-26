@@ -5,24 +5,30 @@ const { Op } = require('sequelize');
 class UserService {
     // 1. Logic: Thêm tài khoản nhân viên mới (Dành cho Admin)
     async createUser(userData) {
+        const { full_name, email, password, role, department_id } = userData;
+
+        if (!full_name || !email || !password) {
+            throw new Error('full_name, email và password là bắt buộc khi tạo tài khoản.');
+        }
+
         // Kiểm tra xem email đã tồn tại trong DB chưa
-        const existingUser = await User.findOne({ where: { email: userData.email } });
+        const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             throw new Error('Email này đã tồn tại trên hệ thống!');
         }
 
-        // Tự động băm (hash) mật khẩu mặc định trước khi lưu vào DB
+        // Admin phải cung cấp password khởi tạo; backend hash trước khi lưu DB.
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(userData.password || '123456', salt); // Mặc định là 123456 nếu không nhập
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         // Chèn bản ghi mới vào MySQL
         return await User.create({
-            full_name: userData.full_name,
-            email: userData.email,
+            full_name,
+            email,
             password_hash: hashedPassword,
-            role: userData.role || 'MEMBER',
+            role: role || 'MEMBER',
             status: 'ACTIVE', // Mặc định tài khoản mới tạo sẽ hoạt động luôn
-            department_id: userData.department_id || null
+            department_id: department_id || null
         });
     }
 
@@ -50,9 +56,20 @@ class UserService {
     if (!user) {
         throw new Error('Không tìm thấy người dùng này trên hệ thống!');
     }
-    
-    // Tiến hành cập nhật dữ liệu mới (status: "INACTIVE") vào MySQL
-    return await user.update(updateData);
+
+    // Chỉ whitelist các field được phép cập nhật qua Admin API.
+    // Tuyệt đối không truyền thẳng req.body để tránh ghi đè password_hash,
+    // created_at, last_login_at hoặc các field nhạy cảm khác.
+    const allowedFields = ['full_name', 'role', 'status', 'department_id'];
+    const safeUpdateData = {};
+
+    allowedFields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(updateData, field)) {
+            safeUpdateData[field] = updateData[field];
+        }
+    });
+
+    return await user.update(safeUpdateData);
 }
 }
 

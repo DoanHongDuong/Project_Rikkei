@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import type { AxiosError } from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES, API_ROUTES, APP_ROUTES } from '../../constants/authMessages';
 import './AuthDes.css';
+
+interface ApiErrorResponse {
+  message?: string;
+}
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -64,9 +69,10 @@ export default function ResetPassword() {
       setTimeout(() => {
         navigate(APP_ROUTES.LOGIN, { replace: true });
       }, 2200);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<ApiErrorResponse>;
       setIsError(true);
-      setStatus(error?.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT);
+      setStatus(axiosError.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT);
     } finally {
       setLoading(false);
     }

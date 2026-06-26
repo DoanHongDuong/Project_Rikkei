@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const transporter = require("../config/mail");
 
+const ACCESS_TOKEN_EXPIRES_IN = "1h";
+const RESET_PASSWORD_TOKEN_EXPIRES_IN = "15m";
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -26,7 +29,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
     );
 
     return res.status(200).json({
@@ -43,34 +46,6 @@ const login = async (req, res) => {
     console.error("Lỗi đăng nhập:", error);
     return res.status(500).json({ message: "Đã xảy ra lỗi trong quá trình đăng nhập." });
   }
-};
-// Thêm hàm register này vào file authController.js của bạn
-const register = async (req, res) => {
-    try {
-        const { full_name, email, password, role, department_id } = req.body;
-
-        // Mã hóa mật khẩu bằng bcryptjs
-        const salt = await bcrypt.genSalt(10);
-        const password_hash = await bcrypt.hash(password, salt);
-
-        // Tạo user mới trong Database
-        const newUser = await User.create({
-            full_name,
-            email,
-            password_hash,
-            role: role || 'MEMBER',
-            status: 'ACTIVE',
-            department_id: department_id || 1
-        });
-
-        return res.status(201).json({
-            message: 'Đăng ký tài khoản thành công!',
-            user: { id: newUser.id, email: newUser.email }
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Lỗi đăng ký: ' + error.message });
-    }
 };
 
 const logout = async (req, res) => {
@@ -96,7 +71,7 @@ const forgotPassword = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, type: "reset" },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: RESET_PASSWORD_TOKEN_EXPIRES_IN }
     );
 
     const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/reset?token=${token}`;
@@ -106,7 +81,7 @@ const forgotPassword = async (req, res) => {
       to: user.email,
       subject: "[HTQLCV] Đặt lại mật khẩu",
       html: `<p>Xin chào ${user.full_name || ""},</p>
-             <p>Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấn vào liên kết bên dưới để đặt lại mật khẩu. Liên kết có hiệu lực trong 1 giờ.</p>
+             <p>Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấn vào liên kết bên dưới để đặt lại mật khẩu. Liên kết có hiệu lực trong 15 phút.</p>
              <p><a href="${resetUrl}">Đặt lại mật khẩu</a></p>
              <p>Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>`
     };
@@ -158,4 +133,4 @@ const resetPassword = async (req, res) => {
     return res.status(500).json({ message: "Lỗi khi đặt lại mật khẩu." });
   }
 };
-module.exports = { login, register, logout, forgotPassword, resetPassword };
+module.exports = { login, logout, forgotPassword, resetPassword };
