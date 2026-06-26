@@ -1,47 +1,369 @@
-.dashboard-container {
-  padding: 20px;
-}
-
-.dashboard-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 30px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
-.dashboard-header h2 {
-  margin: 0 0 10px 0;
-  font-size: 28px;
-}
-
-.dashboard-header p {
-  margin: 5px 0;
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.dashboard-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.card h3 {
-  margin: 0 0 10px 0;
-  color: #333;
-  font-size: 18px;
-}
-
-.card p {
+/* RESET TRÀN VIỀN TOÀN HỆ THỐNG */
+html, body, #root {
   margin: 0;
-  color: #999;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #121214;
+}
+
+/* Giao diện tổng thể Dark Mode - Ép rộng 100% không giới hạn */
+.admin-dashboard-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #121214;
+  color: #E1E1E6;
+  padding: 24px;
+  font-family: sans-serif;
+  box-sizing: border-box; /* Đảm bảo padding không làm tràn thanh cuộn ngang */
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #29292E; /* Sửa lỗi border-b sai thuộc tính chuẩn */
+  padding-bottom: 16px;
+  width: 100%;
+}
+
+.header-title h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.header-title p {
   font-size: 14px;
+  color: #A8A8B3;
+  margin-top: 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-crud {
+  background-color: #04D361;
+  color: #121214;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.btn-crud:hover {
+  background-color: #00B34D;
+}
+
+/* 4 Khối thống kê số liệu trên cùng */
+.stats-grid {
+  display: flex;         
+  flex-direction: row;   
+  gap: 16px;             
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    overflow-x: auto;    
+    padding-bottom: 8px;
+  }
+  .stats-card {
+    flex-shrink: 0;      
+    width: 250px;
+  }
+}
+
+.stats-card {
+  flex: 1;               
+  min-width: 200px;      
+  background-color: #202024;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #29292E;
+  box-sizing: border-box; 
+}
+
+.stats-card .card-label {
+  font-size: 12px;
+  color: #A8A8B3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.stats-card .card-value {
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.text-green { color: #04D361; }
+.text-orange { color: #FF9900; }
+.text-white { color: #FFFFFF; }
+
+.stats-card .card-subtext {
+  font-size: 12px;
+  color: #A8A8B3;
+}
+
+.text-danger { color: #FF4646; }
+
+/* Bố cục chính 2 Cột dọc lớn - Sửa chính tả thành width */
+.main-content-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%; /* Sửa lỗi chính tả từ 'with' sang 'width' */
+  box-sizing: border-box;
+}
+
+/* Khối bên trái: Bảng Giám sát nhân viên */
+.monitor-card {
+  background-color: #202024;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #29292E;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.monitor-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.monitor-header h3 span {
+  font-size: 14px;
+  font-weight: 400;
+  color: #A8A8B3;
+}
+
+.filter-tags {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.tag {
+  background-color: #29292E;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #A8A8B3;
+}
+
+.tag.active {
+  border: 1px solid #04D361;
+  color: #E1E1E6;
+}
+
+/* Bảng dữ liệu CSS */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.monitor-table th {
+  padding: 12px 8px;
+  color: #A8A8B3;
+  font-size: 12px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #29292E;
+}
+
+.monitor-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #29292E;
+  vertical-align: middle;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #323238;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #04D361;
+}
+
+.dept-badge {
+  background-color: #29292E;
+  color: #A8A8B3;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #323238;
+}
+
+.status-dot {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.status-overload { background-color: rgba(255, 70, 70, 0.2); color: #FF4646; }
+.status-working { background-color: rgba(255, 153, 0, 0.2); color: #FF9900; }
+.status-leave { background-color: #323238; color: #A8A8B3; }
+
+.view-more-link {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #04D361;
+  background: none;
+  border: none;
+  border-top: 1px solid #29292E;
+  padding-top: 12px;
+  margin-top: 16px;
+  cursor: pointer;
+  display: block;
+}
+
+.view-more-link:hover {
+  text-decoration: underline;
+}
+
+/* Khối cột bên phải: Cảnh báo & Hiệu suất - Ép căng 100% chiều rộng */
+.column-right {
+  display: flex;
+  flex-direction: column;   
+  gap: 24px;                
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alert-card, 
+.performance-card {
+  background-color: #202024;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #29292E;
+  box-sizing: border-box;
+}
+
+.alert-title-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.alert-title-box h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.alert-count {
+  background-color: #FF4646;
+  color: #121214;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.alert-item {
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.alert-item.danger { background-color: rgba(255, 70, 70, 0.1); border-color: rgba(255, 70, 70, 0.3); color: #FF4646; }
+.alert-item.warning { background-color: rgba(255, 153, 0, 0.1); border-color: rgba(255, 153, 0, 0.3); color: #FF9900; }
+.alert-item.info { background-color: rgba(0, 179, 77, 0.1); border-color: rgba(0, 179, 77, 0.3); color: #04D361; }
+
+.performance-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.performance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.performance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #29292E;
+}
+
+.performance-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.performance-row span:first-child {
+  color: #A8A8B3;
+}
+
+.performance-row span:last-child {
+  font-weight: 700;
+}
+
+/* ĐOẠN MEDIA HOÀN THIỆN: BẺ SONG SONG 2 BẢNG DƯỚI CÙNG TRÀN LỀ */
+@media (min-width: 768px) {
+  .column-right {
+    flex-direction: row;    
+    align-items: stretch;   
+    justify-content: space-between; 
+  }
+
+  .alert-card, 
+  .performance-card {
+    flex: 1;                
+    max-width: calc(50% - 12px); 
+    width: 100%;            
+  }
 }
