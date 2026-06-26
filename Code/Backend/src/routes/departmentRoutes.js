@@ -12,6 +12,9 @@ router.use(verifyToken);
 // Route lấy danh sách (Cả PM, Admin, Member đều cần xem để gán phòng ban)
 router.get("/", departmentController.getAllDepartments);
 
+// Route xem thành viên thuộc phòng ban (Ai đã đăng nhập đều xem được)
+router.get("/:id/members", departmentController.getMembersByDepartment);
+
 // Các route thay đổi cấu trúc công ty chỉ dành riêng cho ADMIN
 router.post("/", roleMiddleware("ADMIN"), departmentController.createDepartment);
 router.put("/:id", roleMiddleware("ADMIN"), departmentController.updateDepartment);

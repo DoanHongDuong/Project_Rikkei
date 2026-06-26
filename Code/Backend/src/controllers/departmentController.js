@@ -1,4 +1,5 @@
-const Department = require("../models/Department"); // Điều chỉnh đường dẫn nếu cần
+const Department = require("../models/Department");
+const User = require("../models/User");
 
 // 1. Lấy danh sách toàn bộ phòng ban
 exports.getAllDepartments = async (req, res, next) => {
@@ -98,6 +99,33 @@ exports.deleteDepartment = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "Xóa phòng ban thành công!",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// 5. Lấy danh sách thành viên thuộc phòng ban
+exports.getMembersByDepartment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const department = await Department.findByPk(id);
+        if (!department) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy phòng ban!" });
+        }
+
+        const members = await User.findAll({
+            where: { department_id: id },
+            attributes: { exclude: ['password_hash'] },
+            order: [['full_name', 'ASC']]
+        });
+
+        return res.status(200).json({
+            success: true,
+            department: department.name,
+            count: members.length,
+            data: members,
         });
     } catch (error) {
         next(error);
