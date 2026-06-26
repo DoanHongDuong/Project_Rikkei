@@ -18,7 +18,7 @@ export default function LoginPage() {
 
     try {
       await AuthService.login({ email, password });
-      navigate('/dashboard');
+      navigate('/');
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {

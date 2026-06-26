@@ -1,0 +1,279 @@
+/* ==========================================================================
+   CSS TRANG QUẢN LÝ NHÂN SỰ - TỐI ƯU TRÀN MÀN HÌNH & FORM ĐẦY ĐỦ
+   ========================================================================== */
+
+/* Ép toàn bộ cấu trúc cha vỡ khung max-width của layout tổng để tràn 100% */
+.um-root {
+  display: flex !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  min-height: 100vh;
+  background-color: #121214;
+  color: #E1E1E6;
+  font-family: sans-serif;
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+/* Thanh điều hướng bên trái */
+.um-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background-color: #202024;
+  padding: 32px 24px;
+  border-right: 1px solid #29292E;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.um-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.um-sidebar__nav-item {
+  background: none;
+  border: none;
+  color: #A8A8B3;
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.um-sidebar__nav-item:hover {
+  background-color: #29292E;
+  color: #E1E1E6;
+}
+
+.um-sidebar__nav-item--active {
+  color: #04D361 !important;
+  background-color: rgba(4, 211, 97, 0.05);
+  font-weight: bold;
+}
+
+/* Không gian nội dung chính bên phải bên phải rộng tối đa */
+.um-main {
+  flex: 1;
+  width: 100%;
+  padding: 40px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background-color: #121214;
+}
+
+.um-content {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Topbar tiêu đề */
+.um-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.um-back-btn {
+  background: none;
+  border: none;
+  color: #A8A8B3;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.um-back-btn:hover {
+  color: #04D361;
+  text-decoration: underline;
+}
+
+.um-page-title {
+  font-size: 28px;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Thống kê thẻ số liệu */
+.um-stats-strip {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.um-stat {
+  flex: 1;
+  background-color: #202024;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #29292E;
+  box-sizing: border-box;
+}
+
+.um-stat__val {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.um-stat__lbl {
+  color: #A8A8B3;
+  font-size: 12px;
+  margin: 6px 0 0 0;
+}
+
+/* Thanh tìm kiếm và bộ lọc trạng thái */
+.um-filters {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  width: 100%;
+}
+
+.um-search-container {
+  position: relative;
+  width: 350px;
+}
+
+.um-search-input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  background-color: #202024;
+  border: 1px solid #29292E;
+  color: #FFFFFF;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.um-search-input:focus {
+  border-color: #04D361;
+  background-color: #121214;
+}
+
+.um-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7c7c8a;
+  font-size: 14px;
+}
+
+.um-filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Thực thể thành viên & Avatar */
+.um-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.um-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.um-status--active { background-color: rgba(4, 211, 97, 0.15); color: #04D361; }
+.um-status--inactive { background-color: rgba(255, 70, 70, 0.15); color: #FF4646; }
+
+/* ==========================================================================
+   POPUP MODAL & FORM FIELD
+   ========================================================================== */
+.um-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.um-modal {
+  background-color: #202024;
+  border-radius: 8px;
+  border: 1px solid #29292E;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.um-modal--sm { max-width: 420px; }
+
+.um-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #29292E;
+}
+
+.um-modal__header h2 { font-size: 18px; margin: 0; color: #FFFFFF; }
+.um-modal__close { background: none; border: none; color: #A8A8B3; font-size: 18px; cursor: pointer; }
+.um-modal__close:hover { color: #FF4646; }
+
+.um-modal__grid { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.um-field { display: flex; flex-direction: column; gap: 6px; }
+.um-field label { color: #A8A8B3; font-size: 13px; }
+
+.um-field input, .um-field select {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: #121214;
+  border: 1px solid #29292E;
+  color: #FFFFFF;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+.um-field input:focus, .um-field select:focus { border-color: #04D361; }
+.um-field input:disabled { background-color: #1a1a1e; color: #666; cursor: not-allowed; }
+
+.um-modal__actions { padding: 16px 24px 24px 24px; display: flex; justify-content: flex-end; gap: 12px; }
+
+.um-btn { padding: 10px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; border: none; }
+.um-btn--primary { background-color: #04D361; color: #121214; }
+.um-btn--ghost { background-color: transparent; border: 1px solid #29292E; color: #A8A8B3; }
+.um-btn--danger { background-color: #FF4646; color: #FFFFFF; }
+.um-btn:disabled { opacity: 0.4; cursor: not-allowed; }
