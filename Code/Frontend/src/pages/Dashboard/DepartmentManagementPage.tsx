@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./DepartmentManagementPage.css";
+import { useDebounce } from "../../hooks/useDebounce";
 
-const getAuthHeaders = () => {
-    return { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } };
+const getAuthHeaders = (params: any = {}) => {
+    return { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }, params };
 };
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Department {
@@ -139,7 +140,9 @@ const ConfirmDeleteDialog: React.FC<{ name: string; onConfirm: () => void; onCan
 const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const [departments, setDepartments] = useState<Department[]>([]);
     const [loading, setLoading] = useState(true);
+    
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 500);
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [editDept, setEditDept] = useState<Department | null>(null);
@@ -147,10 +150,10 @@ const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
     const [viewMembersDept, setViewMembersDept] = useState<Department | null>(null);
     const [errorMsg, setErrorMsg] = useState("");
 
-    const fetchDepartments = async () => {
+    const fetchDepartments = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await axios.get("http://localhost:5000/api/departments", getAuthHeaders());
+            const res = await axios.get("http://localhost:5000/api/departments", getAuthHeaders({ search: debouncedSearch }));
             const data = res.data.data || res.data;
             setDepartments(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -158,9 +161,9 @@ const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         } finally {
             setLoading(false);
         }
-    };
+    }, [debouncedSearch]);
 
-    useEffect(() => { fetchDepartments(); }, []);
+    useEffect(() => { fetchDepartments(); }, [fetchDepartments]);
 
     const handleAdd = async (data: { name: string; description: string }) => {
         setErrorMsg("");
@@ -198,7 +201,7 @@ const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         }
     };
 
-    const filtered = departments.filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
+    const filtered = departments;
 
     return (
         <div className="dm-root">
