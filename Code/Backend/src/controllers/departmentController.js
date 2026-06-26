@@ -1,10 +1,22 @@
 const Department = require("../models/Department");
 const User = require("../models/User");
 
+const { Op } = require("sequelize");
+
 // 1. Lấy danh sách toàn bộ phòng ban
 exports.getAllDepartments = async (req, res, next) => {
     try {
+        const search = req.query.search || '';
+        let whereCondition = {};
+        
+        if (search) {
+            whereCondition = {
+                name: { [Op.like]: `%${search}%` }
+            };
+        }
+
         const departments = await Department.findAll({
+            where: whereCondition,
             order: [["created_at", "DESC"]], // Phòng mới tạo xếp lên đầu
         });
 

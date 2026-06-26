@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./UserManagementPage.css";
+import { useDebounce } from "../../hooks/useDebounce";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type Role = "ADMIN" | "PM" | "MEMBER";
@@ -174,24 +175,29 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
+  
   const [search, setSearch] = useState("");
+  // Kích hoạt Debounce cho thanh tìm kiếm (chờ 500ms)
+  const debouncedSearch = useDebounce(search, 500);
+
   const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
 
   // Hàm cấu hình headers chứa token và kiểm tra phân quyền
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (params: any = {}) => {
     const token = localStorage.getItem("authToken");
-    return { headers: { Authorization: `Bearer ${token}` } };
+    return { headers: { Authorization: `Bearer ${token}` }, params };
   };
 
   // --- LẤY DANH SÁCH USER VÀ PHÒNG BAN TỪ BE ---
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [usersRes, deptsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/admin/users", getAuthHeaders()),
+        // Gửi keyword tìm kiếm (đã debounce) lên BE
+        axios.get("http://localhost:5000/api/admin/users", getAuthHeaders({ search: debouncedSearch })),
         axios.get("http://localhost:5000/api/departments", getAuthHeaders())
       ]);
       
@@ -213,11 +219,12 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch]);
 
+  // Mỗi khi debouncedSearch thay đổi, fetchData sẽ chạy lại (Server-side search)
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   // --- HÀM TẠO MỚI TÀI KHOẢN ---
   const handleAdd = async (data: { full_name: string; email: string; role: Role; password?: string; department_id?: number | null }) => {
@@ -259,12 +266,8 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
-  const filtered = users.filter((u) => {
-    const matchSearch = u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-                        u.email?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || u.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  // Bỏ lọc theo tên vì BE đã làm (Server-side search), chỉ còn lọc theo trạng thái ở Frontend
+  const filtered = users.filter((u) => statusFilter === "all" || u.status === statusFilter);
 
   const activeCount = users.filter((u) => u.status === "ACTIVE").length;
 
