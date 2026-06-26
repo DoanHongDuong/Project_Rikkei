@@ -9,7 +9,7 @@ export default function ForgotPassword() {
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const apiBase = 'http://localhost:5000';
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
