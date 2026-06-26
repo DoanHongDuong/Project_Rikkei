@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./UserManagementPage.css";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -16,26 +18,31 @@ interface User {
   createdAt?: string;
 }
 
+interface Department {
+  id: number;
+  name: string;
+}
+
 const ROLES: { value: Role; label: string }[] = [
   { value: "MEMBER", label: "MEMBER (Nhân viên)" },
   { value: "PM", label: "PM (Quản lý dự án)" },
   { value: "ADMIN", label: "ADMIN (Quản trị viên)" }
 ];
 
-// ── Add / Edit User Modal Component (Đã thêm trường Password) ──────────────
+// ── Add / Edit User Modal Component ──────────────────────────────────────────
 interface UserModalProps {
   user?: User;
+  departments: Department[];
   onClose: () => void;
-  onSave: (u: { full_name: string; email: string; role: Role; password?: string }) => Promise<boolean>;
-  errorMsg: string;
-  setErrorMsg: (msg: string) => void;
+  onSave: (u: { full_name: string; email: string; role: Role; password?: string; department_id?: number | null }) => Promise<boolean>;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave, errorMsg, setErrorMsg }) => {
+const UserModal: React.FC<UserModalProps> = ({ user, departments, onClose, onSave }) => {
   const [fullName, setFullName] = useState(user?.full_name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [role, setRole] = useState<Role>(user?.role ?? "MEMBER");
-  const [password, setPassword] = useState(""); // State mật khẩu mới
+  const [password, setPassword] = useState("");
+  const [departmentId, setDepartmentId] = useState<number | null>(user?.department_id ?? null);
 
   // Điều kiện validate đầu vào
   const isFormValid = user 
@@ -46,8 +53,8 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave, errorMsg, 
     if (!isFormValid) return;
     
     const payload = user 
-      ? { full_name: fullName, email, role }
-      : { full_name: fullName, email, role, password };
+      ? { full_name: fullName, email, role, department_id: departmentId }
+      : { full_name: fullName, email, role, password, department_id: departmentId };
 
     const success = await onSave(payload);
     if (success) onClose();
@@ -61,13 +68,7 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave, errorMsg, 
           <button className="um-modal__close" onClick={onClose}>✕</button>
         </div>
 
-        {errorMsg && (
-          <div style={{ margin: "16px 24px 0 24px", color: "#FF4646", fontWeight: "bold", fontSize: "14px" }}>
-            ⚠️ {errorMsg}
-          </div>
-        )}
-
-        <div className="um-modal__grid">
+        <div className="um-modal__grid" style={{ marginTop: "16px" }}>
           <div className="um-field">
             <label>Họ và tên *</label>
             <input 
@@ -104,6 +105,20 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onSave, errorMsg, 
             <label>Vai trò hệ thống (Role) *</label>
             <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
               {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
+          </div>
+
+          {/* DROPDOWN CHỌN PHÒNG BAN */}
+          <div className="um-field">
+            <label>Phòng ban</label>
+            <select 
+              value={departmentId ?? ""} 
+              onChange={(e) => setDepartmentId(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">-- Chưa phân bổ phòng ban --</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -157,13 +172,13 @@ const InitialsAvatar: React.FC<{ initials: string; index: number }> = ({ initial
 // ── Main Component ─────────────────────────────────────────────────────────
 const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
-  const [errorMsg, setErrorMsg] = useState("");
 
   // Hàm cấu hình headers chứa token và kiểm tra phân quyền
   const getAuthHeaders = () => {
@@ -171,49 +186,62 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return { headers: { Authorization: `Bearer ${token}` } };
   };
 
-  // --- LẤY DANH SÁCH USER TỪ BE ---
-  const fetchUsers = async () => {
+  // --- LẤY DANH SÁCH USER VÀ PHÒNG BAN TỪ BE ---
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/admin/users", getAuthHeaders());
-      if (res.data && Array.isArray(res.data.data)) {
-        setUsers(res.data.data);
-      } else if (Array.isArray(res.data)) {
-        setUsers(res.data);
+      const [usersRes, deptsRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/admin/users", getAuthHeaders()),
+        axios.get("http://localhost:5000/api/departments", getAuthHeaders())
+      ]);
+      
+      if (usersRes.data && Array.isArray(usersRes.data.data)) {
+        setUsers(usersRes.data.data);
+      } else if (Array.isArray(usersRes.data)) {
+        setUsers(usersRes.data);
       }
+
+      if (deptsRes.data && Array.isArray(deptsRes.data.data)) {
+        setDepartments(deptsRes.data.data);
+      } else if (Array.isArray(deptsRes.data)) {
+        setDepartments(deptsRes.data);
+      }
+
     } catch (error: any) {
       console.error("Lỗi kết nối BE:", error);
+      toast.error("Không thể tải danh sách từ server!");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
 
-  // --- HÀM TẠO MỚI TÀI KHOẢN (ĐÃ GỬI KÈM PASSWORD) ---
-  const handleAdd = async (data: { full_name: string; email: string; role: Role; password?: string }) => {
-    setErrorMsg("");
+  // --- HÀM TẠO MỚI TÀI KHOẢN ---
+  const handleAdd = async (data: { full_name: string; email: string; role: Role; password?: string; department_id?: number | null }) => {
     try {
       await axios.post("http://localhost:5000/api/admin/users", data, getAuthHeaders());
-      fetchUsers(); 
+      toast.success("Tạo tài khoản nhân sự mới thành công!");
+      fetchData(); 
       return true;
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.message || "Có lỗi xảy ra hoặc bạn không có quyền Admin!");
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra hoặc bạn không có quyền Admin!");
       return false;
     }
   };
 
   // --- HÀM CẬP NHẬT THÔNG TIN ---
-  const handleEdit = async (data: { full_name: string; role: Role }) => {
+  const handleEdit = async (data: { full_name: string; role: Role; department_id?: number | null }) => {
     if (!editUser) return false;
     try {
       await axios.put(`http://localhost:5000/api/admin/users/${editUser.id}`, data, getAuthHeaders());
-      fetchUsers();
+      toast.success("Cập nhật thông tin thành công!");
+      fetchData();
       return true;
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.message || "Không thể cập nhật thông tin.");
+      toast.error(error.response?.data?.message || "Không thể cập nhật thông tin.");
       return false;
     }
   };
@@ -223,10 +251,11 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (!deleteUser) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/users/${deleteUser.id}`, getAuthHeaders());
-      fetchUsers();
+      toast.success(`Đã xóa mềm tài khoản: ${deleteUser.full_name}`);
+      fetchData();
       setDeleteUser(null);
-    } catch (error) {
-      alert("Hệ thống từ chối lệnh xóa tài khoản này.");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Hệ thống từ chối lệnh xóa tài khoản này.");
     }
   };
 
@@ -241,6 +270,7 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   return (
     <div className="um-root">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       {/* ── Sidebar Trái (Đã xóa chữ ALL PERFECT) ── */}
       <aside className="um-sidebar">
         <nav className="um-sidebar__nav">
@@ -260,7 +290,7 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <button className="um-back-btn" onClick={onBack}>← Quay lại Dashboard</button>
             <h1 className="um-page-title">Quản Lý Nhân Sự (CRUD)</h1>
           </div>
-          <button className="um-btn um-btn--primary" onClick={() => { setErrorMsg(""); setShowAddModal(true); }}>
+          <button className="um-btn um-btn--primary" onClick={() => setShowAddModal(true)}>
             + Thêm tài khoản mới
           </button>
         </header>
@@ -313,6 +343,7 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     <tr>
                       <th>Thành viên</th>
                       <th>Email hệ thống</th>
+                      <th>Phòng ban</th>
                       <th>Cấp bậc (Role)</th>
                       <th>Trạng thái</th>
                       <th style={{ textAlign: "right", paddingRight: "16px" }}>Hành động</th>
@@ -321,13 +352,14 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   <tbody>
                     {filtered.length === 0 ? (
                       <tr>
-                        <td colSpan={5} style={{ textAlign: "center", color: "#A8A8B3", padding: "32px" }}>
+                        <td colSpan={6} style={{ textAlign: "center", color: "#A8A8B3", padding: "32px" }}>
                           Không tìm thấy dữ liệu nhân sự phù hợp từ database.
                         </td>
                       </tr>
                     ) : (
                       filtered.map((u, i) => {
                         const initials = u.full_name ? u.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() : "US";
+                        const deptName = departments.find(d => d.id === u.department_id)?.name || "Chưa phân bổ";
                         return (
                           <tr key={u.id}>
                             <td>
@@ -337,6 +369,7 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                               </div>
                             </td>
                             <td style={{ color: "#A8A8B3" }}>{u.email}</td>
+                            <td style={{ color: "#A8A8B3" }}>{deptName}</td>
                             <td>
                               <span className="dept-badge" style={{ borderColor: u.role === "ADMIN" ? "#04D361" : u.role === "PM" ? "#FF9900" : "#29292E", color: u.role === "ADMIN" ? "#04D361" : u.role === "PM" ? "#FF9900" : "#A8A8B3" }}>
                                 {u.role}
@@ -345,7 +378,7 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                             <td><UMStatusBadge status={u.status} /></td>
                             <td>
                               <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", paddingRight: "8px" }}>
-                                <button className="tag" onClick={() => { setErrorMsg(""); setEditUser(u); }}>✏️ Sửa</button>
+                                <button className="tag" onClick={() => setEditUser(u)}>✏️ Sửa</button>
                                 <button className="tag" style={{ color: "#FF4646" }} onClick={() => setDeleteUser(u)}>🗑️ Xóa</button>
                               </div>
                             </td>
@@ -363,10 +396,10 @@ const UserManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
       {/* Modals điều khiển */}
       {showAddModal && (
-        <UserModal onClose={() => setShowAddModal(false)} onSave={handleAdd} errorMsg={errorMsg} setErrorMsg={setErrorMsg} />
+        <UserModal departments={departments} onClose={() => setShowAddModal(false)} onSave={handleAdd} />
       )}
       {editUser && (
-        <UserModal user={editUser} onClose={() => setEditUser(null)} onSave={handleEdit} errorMsg={errorMsg} setErrorMsg={setErrorMsg} />
+        <UserModal user={editUser} departments={departments} onClose={() => setEditUser(null)} onSave={handleEdit} />
       )}
       {deleteUser && (
         <ConfirmDialog

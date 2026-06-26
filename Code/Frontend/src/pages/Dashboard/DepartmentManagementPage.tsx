@@ -14,6 +14,63 @@ interface Department {
 }
 
 // ── Modals ─────────────────────────────────────────────────────────────────
+const ViewMembersModal: React.FC<{ department: Department; onClose: () => void }> = ({ department, onClose }) => {
+    const [members, setMembers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchMembers = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get(`http://localhost:5000/api/departments/${department.id}/members`, getAuthHeaders());
+                setMembers(res.data.data || []);
+            } catch (error) {
+                console.error("Lỗi lấy danh sách thành viên:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMembers();
+    }, [department.id]);
+
+    return (
+        <div className="dm-modal-overlay" onClick={onClose}>
+            <div className="dm-modal" onClick={(e) => e.stopPropagation()} style={{ width: "600px", maxWidth: "90vw", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+                <div className="dm-modal__header">
+                    <h2>Thành viên phòng: {department.name}</h2>
+                    <button className="dm-modal__close" onClick={onClose}>✕</button>
+                </div>
+                <div className="dm-modal__grid" style={{ overflowY: "auto", flex: 1 }}>
+                    {loading ? (
+                        <p style={{ textAlign: "center", color: "#A8A8B3" }}>Đang tải...</p>
+                    ) : members.length === 0 ? (
+                        <p style={{ textAlign: "center", color: "#A8A8B3" }}>Phòng ban này chưa có thành viên nào.</p>
+                    ) : (
+                        <table className="dm-table">
+                            <thead>
+                                <tr>
+                                    <th>Họ và tên</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {members.map(m => (
+                                    <tr key={m.id}>
+                                        <td style={{ color: "#E1E1E6" }}>{m.full_name}</td>
+                                        <td style={{ color: "#A8A8B3" }}>{m.email}</td>
+                                        <td style={{ color: "#A8A8B3" }}>{m.role}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const DepartmentModal: React.FC<{
     department?: Department;
     onClose: () => void;
@@ -87,6 +144,7 @@ const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
     const [showAddModal, setShowAddModal] = useState(false);
     const [editDept, setEditDept] = useState<Department | null>(null);
     const [deleteDept, setDeleteDept] = useState<Department | null>(null);
+    const [viewMembersDept, setViewMembersDept] = useState<Department | null>(null);
     const [errorMsg, setErrorMsg] = useState("");
 
     const fetchDepartments = async () => {
@@ -199,8 +257,9 @@ const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                                                 <td style={{ color: "#A8A8B3" }}>{d.description || "Không có mô tả"}</td>
                                                 <td>
                                                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                                                        <button className="dm-action-btn" onClick={() => setEditDept(d)}>✏️</button>
-                                                        <button className="dm-action-btn" onClick={() => setDeleteDept(d)}>🗑️</button>
+                                                        <button className="dm-action-btn" onClick={() => setViewMembersDept(d)} title="Xem thành viên">👁️</button>
+                                                        <button className="dm-action-btn" onClick={() => setEditDept(d)} title="Chỉnh sửa">✏️</button>
+                                                        <button className="dm-action-btn" onClick={() => setDeleteDept(d)} title="Xóa">🗑️</button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -216,6 +275,7 @@ const DepartmentManagementPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             {showAddModal && <DepartmentModal onClose={() => setShowAddModal(false)} onSave={handleAdd} errorMsg={errorMsg} />}
             {editDept && <DepartmentModal department={editDept} onClose={() => setEditDept(null)} onSave={handleEdit} errorMsg={errorMsg} />}
             {deleteDept && <ConfirmDeleteDialog name={deleteDept.name} onConfirm={handleDelete} onCancel={() => setDeleteDept(null)} />}
+            {viewMembersDept && <ViewMembersModal department={viewMembersDept} onClose={() => setViewMembersDept(null)} />}
         </div>
     );
 };
