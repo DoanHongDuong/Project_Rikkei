@@ -18,12 +18,12 @@ const Department = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true
     }
-}, {
-    tableName: "departments",
-    timestamps: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at"
-}   
+  }, {
+  tableName: "departments",
+  timestamps: true,
+  createdAt: "created_at",
+  updatedAt: "updated_at"
+}
 );
 
 module.exports = Department;

@@ -35,22 +35,33 @@ class AdminController {
         }
     }
     async updateUserStatus(req, res) {
-    try {
-        const { id } = req.params; // Lấy số 7 từ URL xuống
-        const updatedUser = await userService.updateUser(id, req.body);
-        
-        return res.status(200).json({
-            message: 'Cập nhật trạng thái người dùng thành công!',
-            user: {
-                id: updatedUser.id,
-                full_name: updatedUser.full_name,
-                status: updatedUser.status
-            }
-        });
-    } catch (error) {
-        return res.status(400).json({ message: error.message });
+        try {
+            const { id } = req.params; // Lấy số 7 từ URL xuống
+            const updatedUser = await userService.updateUser(id, req.body);
+
+            return res.status(200).json({
+                message: 'Cập nhật trạng thái người dùng thành công!',
+                user: {
+                    id: updatedUser.id,
+                    full_name: updatedUser.full_name,
+                    status: updatedUser.status
+                }
+            });
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
+        }
     }
-}
+    async deleteUser(req, res) {
+        try {
+            const { id } = req.params; // Lấy số 7 từ URL xuống
+            await userService.deleteSoftUser(id);
+            return res.status(200).json({
+                message: 'Người dùng đã bị vô hiệu hóa và xóa mềm thành công!'
+            });
+        } catch (error) {
+            return res.status(400).json({ sucess: false, message: error.message });
+        }
+    }
 }
 
 module.exports = new AdminController();
