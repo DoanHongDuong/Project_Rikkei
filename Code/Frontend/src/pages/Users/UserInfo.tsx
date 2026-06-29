@@ -40,7 +40,7 @@ export default function UserInfo() {
 
   const handleToggleStatus = async () => {
     if (!userData) return;
-    const newStatus = userData.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const newStatus = userData.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE';
     try {
       await UserService.updateUserStatus(userData.id, newStatus);
       message.success(`Đã đổi trạng thái thành ${newStatus}`);
@@ -159,7 +159,7 @@ export default function UserInfo() {
           }}
           onClick={handleToggleStatus}
         >
-          {userData.status === 'ACTIVE' ? 'Vô hiệu hóa (Disable)' : 'Kích hoạt (Enable)'}
+          {userData.status === 'ACTIVE' ? 'Vô hiệu hóa (Disable)' : 'Kích hoạt (ACTIVE)'}
         </Button>
       </div>
     </div>

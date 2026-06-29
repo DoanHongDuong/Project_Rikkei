@@ -190,7 +190,7 @@ export default function UserManagement() {
       <Spin spinning={loading}>
         <Table
           columns={columns}
-          dataSource={users.filter(u => u.status !== 'DISABLED')} // Ẩn user bị xóa mềm
+          dataSource={users}
           rowKey="id"
           pagination={{ pageSize: 10 }}
           bordered={false}
