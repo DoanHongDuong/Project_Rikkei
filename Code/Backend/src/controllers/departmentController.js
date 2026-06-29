@@ -20,9 +20,18 @@ exports.getAllDepartments = async (req, res, next) => {
             order: [["created_at", "DESC"]], // Phòng mới tạo xếp lên đầu
         });
 
+        // Đếm số lượng user cho từng phòng ban
+        const data = await Promise.all(departments.map(async (dept) => {
+            const usersCount = await User.count({ where: { department_id: dept.id } });
+            return {
+                ...dept.toJSON(),
+                users: usersCount
+            };
+        }));
+
         return res.status(200).json({
             success: true,
-            data: departments,
+            data: data,
         });
     } catch (error) {
         next(error); // Chuyển cho errorHandler.js xử lý

@@ -34,6 +34,19 @@ class AdminController {
             return res.status(500).json({ message: 'Lỗi server khi lấy danh sách user.' });
         }
     }
+
+    async getUserById(req, res) {
+        try {
+            const { id } = req.params;
+            const user = await userService.getUserById(id);
+            return res.status(200).json({
+                message: 'Lấy thông tin người dùng thành công!',
+                data: user
+            });
+        } catch (error) {
+            return res.status(404).json({ message: error.message });
+        }
+    }
     async updateUserStatus(req, res) {
         try {
             const { id } = req.params; // Lấy số 7 từ URL xuống

@@ -25,6 +25,9 @@ router.post(
     (req, res) => adminController.createNewUser(req, res)
 );
 
+// 2.5 Lấy thông tin chi tiết một người dùng
+router.get('/users/:id', verifyToken, isAdmin, (req, res) => adminController.getUserById(req, res));
+
 // 3. Cập nhật trạng thái người dùng
 router.put('/users/:id', verifyToken, isAdmin, (req, res) => adminController.updateUserStatus(req, res));
 

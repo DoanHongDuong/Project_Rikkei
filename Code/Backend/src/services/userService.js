@@ -45,6 +45,16 @@ class UserService {
             order: [['id', 'DESC']] // Sắp xếp theo ID cho an toàn tuyệt đối
         });
     }
+
+    async getUserById(id) {
+        const user = await User.findByPk(id, {
+            attributes: { exclude: ['password_hash'] }
+        });
+        if (!user) {
+            throw new Error('Không tìm thấy người dùng này trên hệ thống!');
+        }
+        return user;
+    }
     async updateUser(id, updateData) {
         const user = await User.findByPk(id);
         if (!user) {
