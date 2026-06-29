@@ -1,9 +1,13 @@
-import { Typography, Input, Row, Col, Card, Space, Tag } from 'antd';
+import { Typography, Input, Row, Col, Card, Space, Tag, Button, Tooltip } from 'antd';
 import { 
   SearchOutlined, 
   TeamOutlined, 
   CheckSquareOutlined, 
-  ContainerOutlined 
+  ContainerOutlined,
+  PlusOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -20,15 +24,20 @@ export default function DepartmentsPage() {
 
   return (
     <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px', borderRadius: 8 }}>
-      <Title level={2} style={{ marginTop: 0, marginBottom: 16, fontWeight: 700 }}>
-        Danh sách phòng ban
-      </Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={2} style={{ margin: 0, fontWeight: 700 }}>
+          Danh sách phòng ban
+        </Title>
+        <Button type="primary" icon={<PlusOutlined />} size="large" style={{ backgroundColor: '#c41d7f' }}>
+          Tạo phòng ban
+        </Button>
+      </div>
       
       <div style={{ marginBottom: 32 }}>
         <Input 
           placeholder="Tìm kiếm phòng ban..." 
           size="large"
-          style={{ width: '100%', borderRadius: 4 }}
+          style={{ width: '100%', maxWidth: 600, borderRadius: 4 }}
           suffix={<SearchOutlined style={{ color: '#8c8c8c', fontSize: 18, cursor: 'pointer' }} />}
         />
       </div>
@@ -45,6 +54,11 @@ export default function DepartmentsPage() {
                 backgroundColor: '#fafafa'
               }}
               bodyStyle={{ padding: '16px 24px' }}
+              actions={[
+                <Tooltip title="Xem"><Button type="text" icon={<EyeOutlined />} style={{ color: '#1677ff' }}>Xem</Button></Tooltip>,
+                <Tooltip title="Sửa"><Button type="text" icon={<EditOutlined />} style={{ color: '#faad14' }}>Sửa</Button></Tooltip>,
+                <Tooltip title="Xóa"><Button type="text" icon={<DeleteOutlined />} danger>Xóa</Button></Tooltip>,
+              ]}
             >
               <Title level={4} style={{ color: dept.color, marginTop: 0, marginBottom: 16 }}>
                 {dept.name}

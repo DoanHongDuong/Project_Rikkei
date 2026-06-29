@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import AuthService from '../services/authService';
 import MainLayout from '../layouts/mainLayout'; 
+import PMLayout from '../layouts/PMLayout';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -20,6 +21,14 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     if (!userRole || !allowedRoles.includes(userRole)) {
       return <Navigate to="/403" replace />;
     }
+  }
+
+  if (userRole === 'PM') {
+    return (
+      <PMLayout>
+        {children}
+      </PMLayout>
+    );
   }
 
   return (
