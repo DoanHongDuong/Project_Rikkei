@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { BellFilled } from '@ant-design/icons';
 import { Dropdown, Space, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -12,9 +12,7 @@ interface PMLayoutProps {
 
 export default function PMLayout({ children }: PMLayoutProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const user = AuthService.getUser();
-  const userRole = user?.role || 'PM';
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();

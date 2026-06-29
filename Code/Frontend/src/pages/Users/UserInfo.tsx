@@ -1,4 +1,5 @@
-import { Typography, Avatar, Button, Space, Row, Col, Tag } from 'antd';
+import { useState, useEffect } from 'react';
+import { Typography, Avatar, Button, Space, Row, Col, Tag, message, Spin } from 'antd';
 import {
   LeftOutlined,
   MailOutlined,
@@ -8,24 +9,61 @@ import {
   ClockCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import UserService from '../../services/userService';
 
 const { Title, Text } = Typography;
 
 export default function UserInfo() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data based on schema.sql
-  const userData = {
-    id: id || '1',
-    full_name: 'Nguyen Van A',
-    email: 'nguyenvana@example.com',
-    role: 'MEMBER',
-    status: 'ACTIVE',
-    department_id: 2, // Mock department
-    created_at: '2023-01-15T08:30:00Z',
-    last_login_at: '2023-06-25T14:45:00Z',
+  const fetchUserInfo = async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const response = await UserService.getUserById(id);
+      if (response.data) {
+        setUserData(response.data);
+      }
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi tải thông tin người dùng');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [id]);
+
+  const handleToggleStatus = async () => {
+    if (!userData) return;
+    const newStatus = userData.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    try {
+      await UserService.updateUserStatus(userData.id, newStatus);
+      message.success(`Đã đổi trạng thái thành ${newStatus}`);
+      fetchUserInfo(); // Tải lại thông tin mới nhất
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi cập nhật trạng thái');
+    }
+  };
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
+  }
+
+  if (!userData) {
+    return (
+      <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px' }}>
+        <Space align="center" style={{ marginBottom: 32 }}>
+          <Button type="text" icon={<LeftOutlined />} onClick={() => navigate('/users')} style={{ fontWeight: 600 }}>Back</Button>
+        </Space>
+        <div style={{ textAlign: 'center', color: '#888' }}>Không tìm thấy thông tin người dùng.</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px', borderRadius: 8 }}>
@@ -39,7 +77,7 @@ export default function UserInfo() {
           Back
         </Button>
         <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
-          User info
+          Thông tin chi tiết
         </Title>
       </Space>
 
@@ -58,7 +96,7 @@ export default function UserInfo() {
           <Space direction="vertical" size="middle">
             <Space>
               <BankOutlined style={{ fontSize: 18 }} />
-              <Text>Department: {userData.department_id || 'N/A'}</Text>
+              <Text>Phòng ban: ID {userData.department_id || 'Chưa phân bổ'}</Text>
             </Space>
             <Space>
               <MailOutlined style={{ fontSize: 18 }} />
@@ -66,14 +104,14 @@ export default function UserInfo() {
             </Space>
             <Space>
               <CalendarOutlined style={{ fontSize: 18 }} />
-              <Text>Joined: {new Date(userData.created_at).toLocaleDateString()}</Text>
+              <Text>Tham gia: {new Date(userData.created_at).toLocaleDateString('vi-VN')}</Text>
             </Space>
           </Space>
         </Col>
       </Row>
 
       <div style={{ marginTop: 32 }}>
-        <Title level={5} style={{ fontWeight: 700, marginBottom: 8 }}>Account Status</Title>
+        <Title level={5} style={{ fontWeight: 700, marginBottom: 8 }}>Trạng thái tài khoản</Title>
         <Text>
           <Tag color={userData.status === 'ACTIVE' ? 'green' : 'red'}>
             {userData.status}
@@ -82,15 +120,15 @@ export default function UserInfo() {
       </div>
 
       <div style={{ marginTop: 24 }}>
-        <Title level={5} style={{ fontWeight: 700, marginBottom: 8 }}>Role</Title>
+        <Title level={5} style={{ fontWeight: 700, marginBottom: 8 }}>Vai trò</Title>
         <Text>{userData.role}</Text>
       </div>
 
       <div style={{ marginTop: 24 }}>
-        <Title level={5} style={{ fontWeight: 700, marginBottom: 8 }}>Last active</Title>
+        <Title level={5} style={{ fontWeight: 700, marginBottom: 8 }}>Đăng nhập gần nhất</Title>
         <Space>
           <ClockCircleOutlined />
-          <Text>{userData.last_login_at ? new Date(userData.last_login_at).toLocaleString() : 'Never'}</Text>
+          <Text>{userData.last_login_at ? new Date(userData.last_login_at).toLocaleString('vi-VN') : 'Chưa từng đăng nhập'}</Text>
         </Space>
       </div>
 
@@ -107,7 +145,7 @@ export default function UserInfo() {
           }}
           onClick={() => navigate(`/users/${userData.id}/edit`)}
         >
-          Edit info
+          Sửa thông tin
         </Button>
         <Button
           style={{
@@ -119,8 +157,9 @@ export default function UserInfo() {
             height: 40,
             borderRadius: 6
           }}
+          onClick={handleToggleStatus}
         >
-          {userData.status === 'ACTIVE' ? 'Disable user' : 'Enable user'}
+          {userData.status === 'ACTIVE' ? 'Vô hiệu hóa (Disable)' : 'Kích hoạt (Enable)'}
         </Button>
       </div>
     </div>
