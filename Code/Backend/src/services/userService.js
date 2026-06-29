@@ -28,32 +28,41 @@ class UserService {
 
     // 2. Logic: Lấy danh sách toàn bộ User kèm tính năng Tìm Kiếm (Dành cho Admin)
     async getAllUsers(searchKeyword) {
-    let whereCondition = {};
+        let whereCondition = {};
 
-    if (searchKeyword) {
-        whereCondition = {
-            [Op.or]: [
-                { full_name: { [Op.like]: `%${searchKeyword}%` } },
-                { email: { [Op.like]: `%${searchKeyword}%` } }
-            ]
-        };
-    }
+        if (searchKeyword) {
+            whereCondition = {
+                [Op.or]: [
+                    { full_name: { [Op.like]: `%${searchKeyword}%` } },
+                    { email: { [Op.like]: `%${searchKeyword}%` } }
+                ]
+            };
+        }
 
-    return await User.findAll({
-        where: whereCondition,
-        attributes: { exclude: ['password_hash'] },
-        order: [['id', 'DESC']] // Sắp xếp theo ID cho an toàn tuyệt đối
-    });
+        return await User.findAll({
+            where: whereCondition,
+            attributes: { exclude: ['password_hash'] },
+            order: [['id', 'DESC']] // Sắp xếp theo ID cho an toàn tuyệt đối
+        });
     }
     async updateUser(id, updateData) {
-    const user = await User.findByPk(id);
-    if (!user) {
-        throw new Error('Không tìm thấy người dùng này trên hệ thống!');
+        const user = await User.findByPk(id);
+        if (!user) {
+            throw new Error('Không tìm thấy người dùng này trên hệ thống!');
+        }
+
+        // Tiến hành cập nhật dữ liệu mới (status: "INACTIVE") vào MySQL
+        return await user.update(updateData);
     }
-    
-    // Tiến hành cập nhật dữ liệu mới (status: "INACTIVE") vào MySQL
-    return await user.update(updateData);
-}
+    async deleteSoftUser(id) {
+        const user = await User.findByPk(id);
+        if (!user) {
+            throw new Error('Không tìm thấy người dùng này trên hệ thống!');
+        }
+        user.status = 'DISABLED'; // Cập nhật trạng thái thành "DISABLED"
+        await user.save(); // Lưu thay đổi vào cơ sở dữ liệu
+        return await user.destroy(); // Thực hiện soft delete (xóa mềm) bản ghi
+    }
 }
 
 module.exports = new UserService();

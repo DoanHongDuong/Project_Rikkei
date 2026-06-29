@@ -1,7 +1,10 @@
-import { Typography, Input, Select, Button, Form, Row, Col, Space, Avatar } from 'antd';
+import { useState, useEffect } from 'react';
+import { Typography, Input, Select, Button, Form, Row, Col, Space, Avatar, message, Spin } from 'antd';
 import { LeftOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import AuthService from '../../services/authService';
+import UserService from '../../services/userService';
+import DepartmentService from '../../services/departmentService';
 
 const { Title, Text } = Typography;
 
@@ -9,23 +12,57 @@ export default function EditUser() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();
+  
+  const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
 
   const currentUser = AuthService.getUser();
   const isAdmin = currentUser?.role === 'ADMIN';
 
-  // Mock initial values
-  const initialValues = {
-    name: 'George Floyd',
-    email: 'gfloydicantbrt@aaa.com',
-    role: 'MEMBER',
-    status: 'ACTIVE',
-    department_id: 2,
-    id: id || 'M067'
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const [userRes, deptRes] = await Promise.all([
+          UserService.getUserById(id),
+          DepartmentService.getAll()
+        ]);
+        
+        if (deptRes && deptRes.success) {
+          setDepartments(deptRes.data);
+        }
+        
+        if (userRes && userRes.data) {
+          const user = userRes.data;
+          form.setFieldsValue({
+            name: user.full_name,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            department_id: user.department_id,
+            id: user.id
+          });
+        }
+      } catch (error: any) {
+        message.error(error.message || 'Lỗi khi tải thông tin');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [id, form]);
+
+  const onFinish = async (_values: any) => {
+    // Hiện tại Backend chỉ có API updateUserStatus
+    // Nếu có API cập nhật toàn bộ thông tin (updateUser), ta sẽ gọi ở đây
+    message.info('Chức năng cập nhật toàn bộ thông tin đang được hoàn thiện.');
   };
 
-  const onFinish = (values: any) => {
-    console.log('Success:', values);
-  };
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
+  }
 
   return (
     <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px', borderRadius: 8 }}>
@@ -36,10 +73,10 @@ export default function EditUser() {
           onClick={() => navigate(-1)}
           style={{ fontWeight: 600, paddingLeft: 0 }}
         >
-          Back
+          Trở lại
         </Button>
         <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
-          Edit user info
+          Sửa thông tin nhân sự
         </Title>
       </Space>
 
@@ -56,14 +93,13 @@ export default function EditUser() {
         layout="vertical"
         onFinish={onFinish}
         requiredMark={false}
-        initialValues={initialValues}
       >
         <Form.Item
-          label={<Text strong>Name</Text>}
+          label={<Text strong>Họ và tên</Text>}
           name="name"
           style={{ marginBottom: 16 }}
         >
-          <Input placeholder="Enter name" size="large" />
+          <Input placeholder="Nhập tên" size="large" />
         </Form.Item>
 
         <Form.Item
@@ -71,13 +107,13 @@ export default function EditUser() {
           name="email"
           style={{ marginBottom: 16 }}
         >
-          <Input placeholder="Enter email" size="large" />
+          <Input placeholder="Nhập email" size="large" />
         </Form.Item>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
-              label={<Text strong>Role</Text>}
+              label={<Text strong>Vai trò</Text>}
               name="role"
               style={{ marginBottom: 16 }}
             >
@@ -86,7 +122,7 @@ export default function EditUser() {
                 disabled={!isAdmin}
                 options={[
                   { value: 'MEMBER', label: 'Member' },
-                  { value: 'PM', label: 'Project manager' },
+                  { value: 'PM', label: 'Project Manager' },
                   { value: 'ADMIN', label: 'Admin' },
                 ]}
               />
@@ -106,16 +142,24 @@ export default function EditUser() {
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
-              label={<Text strong>Department ID</Text>}
+              label={<Text strong>Phòng ban</Text>}
               name="department_id"
               style={{ marginBottom: 16 }}
             >
-              <Input size="large" type="number" disabled={!isAdmin} />
+              <Select 
+                size="large"
+                disabled={!isAdmin}
+                allowClear
+                options={departments.map(d => ({
+                  value: d.id,
+                  label: d.name
+                }))}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
             <Form.Item
-              label={<Text strong>Status</Text>}
+              label={<Text strong>Trạng thái</Text>}
               name="status"
               style={{ marginBottom: 16 }}
             >
@@ -123,8 +167,8 @@ export default function EditUser() {
                 size="large"
                 disabled={!isAdmin}
                 options={[
-                  { value: 'ACTIVE', label: 'Active' },
-                  { value: 'DISABLED', label: 'Disabled' },
+                  { value: 'ACTIVE', label: 'Hoạt động' },
+                  { value: 'DISABLED', label: 'Đã khóa' },
                 ]}
               />
             </Form.Item>
@@ -136,16 +180,13 @@ export default function EditUser() {
             type="primary" 
             htmlType="submit"
             style={{ 
-              backgroundColor: '#d1d5db', 
-              color: '#374151',
               fontWeight: 600,
-              border: 'none',
               padding: '0 32px',
               height: 40,
               borderRadius: 6
             }}
           >
-            Change
+            Lưu thay đổi
           </Button>
         </div>
       </Form>
