@@ -12,7 +12,7 @@ export default function EditUser() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();
-  
+
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<any[]>([]);
 
@@ -28,11 +28,11 @@ export default function EditUser() {
           UserService.getUserById(id),
           DepartmentService.getAll()
         ]);
-        
+
         if (deptRes && deptRes.success) {
           setDepartments(deptRes.data);
         }
-        
+
         if (userRes && userRes.data) {
           const user = userRes.data;
           form.setFieldsValue({
@@ -50,14 +50,29 @@ export default function EditUser() {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [id, form]);
 
-  const onFinish = async (_values: any) => {
-    // Hiện tại Backend chỉ có API updateUserStatus
-    // Nếu có API cập nhật toàn bộ thông tin (updateUser), ta sẽ gọi ở đây
-    message.info('Chức năng cập nhật toàn bộ thông tin đang được hoàn thiện.');
+  const onFinish = async (values: any) => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      // Map 'name' back to 'full_name' for backend
+      const updateData = {
+        full_name: values.name,
+        email: values.email,
+        role: values.role,
+        department_id: values.department_id
+      };
+      await UserService.updateUser(id, updateData);
+      message.success('Cập nhật thông tin nhân sự thành công');
+      navigate('/users');
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi cập nhật thông tin');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -67,9 +82,9 @@ export default function EditUser() {
   return (
     <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px', borderRadius: 8 }}>
       <Space align="center" style={{ marginBottom: 32 }}>
-        <Button 
-          type="text" 
-          icon={<LeftOutlined />} 
+        <Button
+          type="text"
+          icon={<LeftOutlined />}
           onClick={() => navigate(-1)}
           style={{ fontWeight: 600, paddingLeft: 0 }}
         >
@@ -81,10 +96,10 @@ export default function EditUser() {
       </Space>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-        <Avatar 
-          size={120} 
-          icon={<UserOutlined />} 
-          style={{ backgroundColor: '#f0f0f0', color: '#8c8c8c' }} 
+        <Avatar
+          size={120}
+          icon={<UserOutlined />}
+          style={{ backgroundColor: '#f0f0f0', color: '#8c8c8c' }}
         />
       </div>
 
@@ -117,7 +132,7 @@ export default function EditUser() {
               name="role"
               style={{ marginBottom: 16 }}
             >
-              <Select 
+              <Select
                 size="large"
                 disabled={!isAdmin}
                 options={[
@@ -146,7 +161,7 @@ export default function EditUser() {
               name="department_id"
               style={{ marginBottom: 16 }}
             >
-              <Select 
+              <Select
                 size="large"
                 disabled={!isAdmin}
                 allowClear
@@ -158,28 +173,15 @@ export default function EditUser() {
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
-            <Form.Item
-              label={<Text strong>Trạng thái</Text>}
-              name="status"
-              style={{ marginBottom: 16 }}
-            >
-              <Select 
-                size="large"
-                disabled={!isAdmin}
-                options={[
-                  { value: 'ACTIVE', label: 'Hoạt động' },
-                  { value: 'DISABLED', label: 'Đã khóa' },
-                ]}
-              />
-            </Form.Item>
+            {/* Đã gỡ bỏ phần Trạng thái theo yêu cầu */}
           </Col>
         </Row>
 
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             htmlType="submit"
-            style={{ 
+            style={{
               fontWeight: 600,
               padding: '0 32px',
               height: 40,

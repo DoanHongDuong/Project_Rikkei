@@ -20,10 +20,10 @@ class UserService {
 
   static async getAllUsers(search: string = '') {
     try {
-      const url = search 
-        ? `${API_BASE_URL}/api/admin/users?search=${encodeURIComponent(search)}` 
+      const url = search
+        ? `${API_BASE_URL}/api/admin/users?search=${encodeURIComponent(search)}`
         : `${API_BASE_URL}/api/admin/users`;
-        
+
       const response = await fetch(url, {
         method: 'GET',
         headers: this.getHeaders(),
@@ -88,6 +88,25 @@ class UserService {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Lỗi khi cập nhật trạng thái');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateUser(id: string | number, data: any) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Lỗi khi cập nhật thông tin');
       }
 
       return await response.json();

@@ -23,6 +23,9 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Email hoặc mật khẩu không đúng." });
     }
 
+    // Cập nhật thời gian đăng nhập gần nhất
+    await user.update({ last_login_at: new Date() });
+
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
