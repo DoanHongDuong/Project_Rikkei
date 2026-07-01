@@ -22,3 +22,205 @@ Authorization: Bearer <ADMIN_JWT_TOKEN>
     "role": "MEMBER",
     "department_id": 1
 }
+
+###
+
+### BƯỚC C: ADMIN XEM DANH SÁCH USER - PAGINATION / SEARCH / FILTER
+GET http://localhost:5000/api/admin/users?page=1&limit=10&search=member&role=MEMBER&status=ACTIVE
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+
+###
+
+### BƯỚC D: ADMIN XEM CHI TIẾT USER
+GET http://localhost:5000/api/admin/users/1
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+
+###
+
+### BƯỚC E: ADMIN CẬP NHẬT THÔNG TIN USER
+PUT http://localhost:5000/api/admin/users/1
+Content-Type: application/json
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+
+{
+    "full_name": "Nguyen Van Thu Nghiem Updated",
+    "email": "member.updated@gmail.com",
+    "role": "PM",
+    "department_id": 1
+}
+
+###
+
+### BƯỚC F: ADMIN KHÓA / MỞ TÀI KHOẢN USER
+PATCH http://localhost:5000/api/admin/users/1/status
+Content-Type: application/json
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+
+{
+    "status": "DISABLED"
+}
+
+###
+
+### PROJECT A: TẠO PROJECT
+POST http://localhost:5000/api/projects
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_PM_JWT_TOKEN>
+
+{
+    "name": "Internal Task Management",
+    "description": "Project test module quản lý dự án",
+    "status": "ACTIVE",
+    "start_date": "2026-07-01",
+    "end_date": "2026-08-31",
+    "manager_id": 1
+}
+
+###
+
+### PROJECT B: DANH SÁCH PROJECT - PAGINATION / SEARCH / FILTER
+GET http://localhost:5000/api/projects?page=1&limit=10&search=Task&status=ACTIVE
+Authorization: Bearer <ADMIN_OR_PM_OR_MEMBER_JWT_TOKEN>
+
+###
+
+### PROJECT C: CHI TIẾT PROJECT
+GET http://localhost:5000/api/projects/1
+Authorization: Bearer <ADMIN_OR_PM_OR_MEMBER_JWT_TOKEN>
+
+###
+
+### PROJECT D: CẬP NHẬT PROJECT
+PUT http://localhost:5000/api/projects/1
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+{
+    "name": "Internal Task Management Updated",
+    "description": "Đã cập nhật mô tả project",
+    "start_date": "2026-07-01",
+    "end_date": "2026-09-15"
+}
+
+###
+
+### PROJECT E: ĐỔI TRẠNG THÁI PROJECT
+PATCH http://localhost:5000/api/projects/1/status
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+{
+    "status": "ON_HOLD"
+}
+
+###
+
+### PROJECT F: ARCHIVE PROJECT - KHÔNG XÓA CỨNG
+DELETE http://localhost:5000/api/projects/1
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+###
+
+### PROJECT G: XEM THÀNH VIÊN PROJECT
+GET http://localhost:5000/api/projects/1/members
+Authorization: Bearer <ADMIN_OR_PM_OR_MEMBER_JWT_TOKEN>
+
+###
+
+### PROJECT H: THÊM THÀNH VIÊN PROJECT
+POST http://localhost:5000/api/projects/1/members
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+{
+    "user_id": 2,
+    "role": "MEMBER"
+}
+
+###
+
+### PROJECT I: XÓA MỀM THÀNH VIÊN PROJECT
+DELETE http://localhost:5000/api/projects/1/members/2
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+###
+
+### TASK A: TẠO TASK
+POST http://localhost:5000/api/tasks
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+{
+    "project_id": 1,
+    "title": "Thiết kế API Task Management",
+    "description": "CRUD task, status flow, assign member",
+    "priority": "HIGH",
+    "start_date": "2026-07-01",
+    "due_date": "2026-07-10",
+    "assignee_id": 2
+}
+
+###
+
+### TASK B: DANH SÁCH TASK - PAGINATION / SEARCH / FILTER
+GET http://localhost:5000/api/tasks?page=1&limit=10&project_id=1&status=TODO&priority=HIGH
+Authorization: Bearer <ADMIN_OR_PM_OR_ASSIGNEE_JWT_TOKEN>
+
+###
+
+### TASK C: CHI TIẾT TASK
+GET http://localhost:5000/api/tasks/1
+Authorization: Bearer <ADMIN_OR_PM_OR_ASSIGNEE_JWT_TOKEN>
+
+###
+
+### TASK D: CẬP NHẬT TASK
+PUT http://localhost:5000/api/tasks/1
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+{
+    "title": "Thiết kế API Task Management Updated",
+    "description": "Cập nhật mô tả task",
+    "priority": "URGENT",
+    "due_date": "2026-07-15"
+}
+
+###
+
+### TASK E: ĐỔI STATUS TODO -> IN_PROGRESS
+PATCH http://localhost:5000/api/tasks/1/status
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_PM_OR_ASSIGNEE_JWT_TOKEN>
+
+{
+    "status": "IN_PROGRESS"
+}
+
+###
+
+### TASK F: ĐỔI STATUS IN_PROGRESS -> DONE
+PATCH http://localhost:5000/api/tasks/1/status
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_PM_OR_ASSIGNEE_JWT_TOKEN>
+
+{
+    "status": "DONE"
+}
+
+###
+
+### TASK G: ASSIGN TASK
+PATCH http://localhost:5000/api/tasks/1/assign
+Content-Type: application/json
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+{
+    "assignee_id": 2
+}
+
+###
+
+### TASK H: XÓA MỀM TASK
+DELETE http://localhost:5000/api/tasks/1
+Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>

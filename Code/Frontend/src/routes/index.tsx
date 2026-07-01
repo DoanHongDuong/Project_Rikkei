@@ -4,6 +4,7 @@ import LoginPage from '../pages/Auth/LoginPage';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
+import AdminUsersPage from '../pages/AdminUsers/AdminUsersPage';
 import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRoutes() {
@@ -29,6 +30,15 @@ export default function AppRoutes() {
               <DashboardPage />
             </ProtectedRoute>
           } 
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <AdminUsersPage />
+            </ProtectedRoute>
+          }
         />
 
         {/* Sau này nếu đồng đội thêm trang nội bộ mới (ví dụ /projects), bạn cứ bọc tương tự: */}

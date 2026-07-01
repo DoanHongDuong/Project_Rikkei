@@ -5,6 +5,7 @@ const transporter = require("../config/mail");
 
 const ACCESS_TOKEN_EXPIRES_IN = "1h";
 const RESET_PASSWORD_TOKEN_EXPIRES_IN = "15m";
+const MIN_PASSWORD_LENGTH = 6;
 
 const login = async (req, res) => {
   try {
@@ -13,7 +14,9 @@ const login = async (req, res) => {
     if (!email || !password) {
         return res.status(400).json({ message: "Email và mật khẩu là bắt buộc." });
         }
-    const user = await User.findOne({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ where: { email: normalizedEmail } });
     if (!user) {
       return res.status(401).json({ message: "Email hoặc mật khẩu không đúng." });
     }
@@ -31,6 +34,8 @@ const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
     );
+
+    await user.update({ last_login_at: new Date() });
 
     return res.status(200).json({
         message: "Đăng nhập thành công.",
@@ -61,10 +66,11 @@ const forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email là bắt buộc." });
 
-    const user = await User.findOne({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ where: { email: normalizedEmail } });
 
     // Always return success to avoid revealing whether email exists
-    if (!user) {
+    if (!user || user.status === "DISABLED") { // bị khóa thì ko cấp đc nữa
       return res.status(200).json({ message: "Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu." });
     }
 
@@ -101,6 +107,9 @@ const resetPassword = async (req, res) => {
     const { password } = req.body;
     if (!token) return res.status(400).json({ message: "Token là bắt buộc." });
     if (!password) return res.status(400).json({ message: "Mật khẩu mới là bắt buộc." });
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ message: `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LENGTH} ký tự.` });
+    }
 
     let payload;
     try {
@@ -113,6 +122,9 @@ const resetPassword = async (req, res) => {
 
     const user = await User.findByPk(payload.id);
     if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
+    if (user.status === "DISABLED") {
+      return res.status(403).json({ message: "Tài khoản đã bị vô hiệu hóa. Không thể đặt lại mật khẩu." });
+    }
 
     // If user's password was changed after token issuance, reject
     if (user.password_changed_at) {

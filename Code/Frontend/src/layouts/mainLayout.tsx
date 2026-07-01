@@ -21,6 +21,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <h1>TMS - Task Management System</h1>
           <nav className="main-nav">
             <a href="/dashboard">Dashboard</a>
+            <a href="/admin/users">User Management</a>
             <a href="/profile">Hồ sơ</a>
             <a href="#logout" onClick={handleLogout}>Đăng xuất</a>  
           </nav>

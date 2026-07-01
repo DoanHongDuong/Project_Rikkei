@@ -10,6 +10,12 @@
  */
 const authorizeRoles = (...roles) => {
     return (req, res, next) => {
+        if (!roles.length) {
+            return res.status(500).json({
+                message: 'Lỗi cấu hình phân quyền: chưa khai báo role hợp lệ.'
+            });
+        }
+
         const userRole = req.user && req.user.role;
 
         if (!userRole || !roles.includes(userRole)) {
