@@ -3,7 +3,6 @@ import { Row, Col, Card, Statistic, Typography } from 'antd';
 import { ProjectOutlined, CheckCircleOutlined, WarningOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import AuthService from '../../services/authService';
 import type { AuthUser } from '../../types/auth'; // Đã đưa lên đầu file
-import './Dashboard.css'; // Đã đưa lên đầu file
 
 const { Title, Text } = Typography;
 
@@ -31,39 +30,39 @@ export default function DashboardPage() {
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
-              title="Total Projects" 
-              value={12} 
-              prefix={<ProjectOutlined style={{ color: '#2563EB' }} />} 
+            <Statistic
+              title="Total Projects"
+              value={12}
+              prefix={<ProjectOutlined style={{ color: '#2563EB' }} />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
-              title="Total Tasks" 
-              value={245} 
-              prefix={<CheckCircleOutlined style={{ color: '#8b5cf6' }} />} 
+            <Statistic
+              title="Total Tasks"
+              value={245}
+              prefix={<CheckCircleOutlined style={{ color: '#8b5cf6' }} />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
-              title="Completed" 
-              value={190} 
+            <Statistic
+              title="Completed"
+              value={190}
               valueStyle={{ color: '#22C55E' }}
-              prefix={<CheckCircleOutlined />} 
+              prefix={<CheckCircleOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
-              title="Late Tasks" 
-              value={12} 
+            <Statistic
+              title="Late Tasks"
+              value={12}
               valueStyle={{ color: '#EF4444' }}
-              prefix={<WarningOutlined />} 
+              prefix={<WarningOutlined />}
             />
           </Card>
         </Col>
@@ -72,9 +71,9 @@ export default function DashboardPage() {
       {/* Hàng hiển thị Biểu đồ và Hoạt động gần đây */}
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={16}>
-          <Card 
-            title="Biểu đồ tiến độ" 
-            bordered={false} 
+          <Card
+            title="Biểu đồ tiến độ"
+            bordered={false}
             style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 300 }}
           >
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200, color: '#9ca3af' }}>
@@ -84,12 +83,12 @@ export default function DashboardPage() {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card 
-            title="Recent Activity" 
-            bordered={false} 
+          <Card
+            title="Recent Activity"
+            bordered={false}
             style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 300 }}
           >
-             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200, color: '#9ca3af' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200, color: '#9ca3af' }}>
               No recent activity
             </div>
           </Card>
