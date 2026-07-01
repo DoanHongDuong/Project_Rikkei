@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Typography } from 'antd';
 import { ProjectOutlined, CheckCircleOutlined, WarningOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import AuthService from '../../services/authService';
+import type { AuthUser } from '../../types/auth'; // Đã đưa lên đầu file
+import './Dashboard.css'; // Đã đưa lên đầu file
 
 const { Title, Text } = Typography;
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     const userData = AuthService.getUser();
@@ -14,16 +16,18 @@ export default function DashboardPage() {
   }, []);
 
   if (!user) {
-    return <div>Đang tải...</div>;
+    return <div style={{ padding: 24, textAlign: 'center' }}>Đang tải...</div>;
   }
 
   return (
     <div>
+      {/* Khối lời chào đầu ngày */}
       <div style={{ marginBottom: 24 }}>
         <Title level={3} style={{ marginTop: 0 }}>Good morning, {user.full_name || 'Long'}!</Title>
         <Text type="secondary">Here is what's happening with your projects today.</Text>
       </div>
 
+      {/* Hàng hiển thị các thẻ Thống kê (Statistics) */}
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
@@ -65,6 +69,7 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
+      {/* Hàng hiển thị Biểu đồ và Hoạt động gần đây */}
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={16}>
           <Card 

@@ -11,6 +11,7 @@ import PMCreateProjectPage from '../pages/Projects/PMCreateProjectPage';
 import ProjectDetail from '../pages/ProjectDetail';
 import ProjectMemberInfo from '../pages/ProjectDetail/ProjectMemberInfo';
 import ForbiddenPage from '../pages/Error/ForbiddenPage';
+import AdminUsersPage from '../pages/AdminUsers/AdminUsersPage';
 import ProtectedRoute from './ProtectedRoute';
 import UserManagement from '../pages/Users/UserManagement';
 import CreateUser from '../pages/Users/CreateUser';
@@ -21,6 +22,7 @@ import DepartmentsPage from '../pages/Departments';
 import PMDepartmentsPage from '../pages/Departments/PMDepartmentsPage';
 import AuthService from '../services/authService';
 
+// --- Hàm bổ trợ kiểm soát luồng giao diện theo Vai trò (Role) ---
 const DashboardRoute = () => {
   const user = AuthService.getUser();
   if (user?.role === 'PM') return <PMDashboardPage />;
@@ -35,7 +37,6 @@ const ProjectsRoute = () => {
 
 const CreateProjectRoute = () => {
   const user = AuthService.getUser();
-  // Only PM has the specific create page for now, if others they can be routed to forbidden or default
   if (user?.role === 'PM') return <PMCreateProjectPage />;
   return <ForbiddenPage />; 
 };
@@ -67,6 +68,8 @@ export default function AppRoutes() {
         <Route path="/403" element={<ForbiddenPage />} />
 
         {/* ================= 2. NHÓM TRANG BẢO MẬT (Yêu cầu đăng nhập) ================= */}
+        
+        {/* Trang Bảng điều khiển */}
         <Route 
           path="/dashboard" 
           element={
@@ -75,6 +78,18 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+
+        {/* Trang Quản trị viên quản lý danh sách user nội bộ */}
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Quản lý dự án */}
         <Route 
           path="/projects" 
           element={
@@ -83,6 +98,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/projects/create" 
           element={
@@ -91,6 +107,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/projects/:id" 
           element={
@@ -99,6 +116,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/projects/:projectId/members/:memberId" 
           element={
@@ -107,6 +125,8 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+
+        {/* Quản lý Phòng ban / Bộ phận */}
         <Route 
           path="/departments" 
           element={
@@ -115,6 +135,8 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+
+        {/* Phân hệ thông tin thành viên tổng quan */}
         <Route 
           path="/users" 
           element={
@@ -123,14 +145,16 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/users/create" 
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM']}>
               <CreateUser />
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/users/:id" 
           element={
@@ -139,14 +163,17 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/users/:id/edit" 
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM']}>
               <EditUser />
             </ProtectedRoute>
           } 
         />
+
+        {/* Bẫy tất cả các URL lạ không tồn tại về trang lỗi 403 */}
         <Route path="*" element={<Navigate to="/403" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,77 +1,191 @@
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
+const User = require('../models/User');
+
+const VALID_ROLES = ['ADMIN', 'PM', 'MEMBER'];
+const VALID_STATUSES = ['ACTIVE', 'DISABLED'];
+const USER_SAFE_ATTRIBUTES = [
+    'id',
+    'full_name',
+    'email',
+    'role',
+    'status',
+    'department_id',
+    'password_changed_at',
+    'last_login_at',
+    'created_at',
+    'updated_at'
+];
 
 class UserService {
-    // 1. Logic: Thêm tài khoản nhân viên mới (Dành cho Admin)
+    // Chuẩn hóa định dạng Email
+    normalizeEmail(email) {
+        return email ? email.trim().toLowerCase() : '';
+    }
+
+    // Xây dựng điều kiện lọc cho Sequelize
+    buildUserWhere({ search, role, status, department_id }) {
+        const where = {};
+
+        if (search) {
+            const keyword = `%${search}%`;
+            where[Op.or] = [
+                { full_name: { [Op.like]: keyword } },
+                { email: { [Op.like]: keyword } }
+            ];
+        }
+
+        if (role) {
+            where.role = role;
+        }
+
+        if (status) {
+            where.status = status;
+        }
+
+        if (department_id) {
+            where.department_id = department_id;
+        }
+
+        return where;
+    }
+
+    // 1. Tạo tài khoản người dùng mới
     async createUser(userData) {
-        // Kiểm tra xem email đã tồn tại trong DB chưa
-        const existingUser = await User.findOne({ where: { email: userData.email } });
+        const { full_name, email, password, role, department_id } = userData;
+        const normalizedEmail = this.normalizeEmail(email);
+        const safeRole = role || 'MEMBER';
+
+        if (!VALID_ROLES.includes(safeRole)) {
+            throw new Error('Role không hợp lệ. Role phải là ADMIN, PM hoặc MEMBER.');
+        }
+
+        const existingUser = await User.findOne({ where: { email: normalizedEmail } });
         if (existingUser) {
             throw new Error('Email này đã tồn tại trên hệ thống!');
         }
 
-        // Tự động băm (hash) mật khẩu mặc định trước khi lưu vào DB
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(userData.password || '123456', salt); // Mặc định là 123456 nếu không nhập
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Chèn bản ghi mới vào MySQL
-        return await User.create({
-            full_name: userData.full_name,
-            email: userData.email,
+        const user = await User.create({
+            full_name,
+            email: normalizedEmail,
             password_hash: hashedPassword,
-            role: userData.role || 'MEMBER',
-            status: 'ACTIVE', // Mặc định tài khoản mới tạo sẽ hoạt động luôn
-            department_id: userData.department_id || null
+            role: safeRole,
+            status: 'ACTIVE',
+            department_id: department_id || null
         });
+
+        return this.getUserById(user.id);
     }
 
-    // 2. Logic: Lấy danh sách toàn bộ User kèm tính năng Tìm Kiếm (Dành cho Admin)
-    async getAllUsers(searchKeyword) {
-        let whereCondition = {};
+    // 2. Lấy danh sách toàn bộ User có phân trang, lọc và tìm kiếm chuyên sâu
+    async getUsers(filters) {
+        const page = Number(filters.page) || 1;
+        const limit = Number(filters.limit) || 10;
+        const offset = (page - 1) * limit;
+        const where = this.buildUserWhere(filters);
 
-        if (searchKeyword) {
-            whereCondition = {
-                [Op.or]: [
-                    { full_name: { [Op.like]: `%${searchKeyword}%` } },
-                    { email: { [Op.like]: `%${searchKeyword}%` } }
-                ]
-            };
-        }
-
-        return await User.findAll({
-            where: whereCondition,
-            attributes: { exclude: ['password_hash'] },
-            order: [['id', 'DESC']] // Sắp xếp theo ID cho an toàn tuyệt đối
+        const { rows, count } = await User.findAndCountAll({
+            where,
+            attributes: USER_SAFE_ATTRIBUTES,
+            order: [['id', 'DESC']],
+            limit,
+            offset
         });
+
+        return {
+            users: rows,
+            pagination: {
+                page,
+                limit,
+                totalItems: count,
+                totalPages: Math.ceil(count / limit)
+            }
+        };
     }
 
+    // 3. Lấy chi tiết thông tin người dùng theo ID (Đã loại bỏ trùng lặp)
     async getUserById(id) {
         const user = await User.findByPk(id, {
-            attributes: { exclude: ['password_hash'] }
+            attributes: USER_SAFE_ATTRIBUTES
         });
+
         if (!user) {
             throw new Error('Không tìm thấy người dùng này trên hệ thống!');
         }
+
         return user;
     }
+
+    // 4. Cập nhật thông tin toàn diện của người dùng (Đã bóc tách dữ liệu an toàn)
     async updateUser(id, updateData) {
         const user = await User.findByPk(id);
         if (!user) {
             throw new Error('Không tìm thấy người dùng này trên hệ thống!');
         }
 
-        // Tiến hành cập nhật dữ liệu mới (status: "INACTIVE") vào MySQL
-        return await user.update(updateData);
+        const safeUpdateData = this.pickSafeUpdateData(updateData);
+
+        if (safeUpdateData.email) {
+            safeUpdateData.email = this.normalizeEmail(safeUpdateData.email);
+
+            // Kiểm tra xem email mới có bị trùng với người khác không
+            const existingUser = await User.findOne({
+                where: {
+                    email: safeUpdateData.email,
+                    id: { [Op.ne]: id }
+                }
+            });
+
+            if (existingUser) {
+                throw new Error('Email này đã tồn tại trên hệ thống!');
+            }
+        }
+
+        if (safeUpdateData.role && !VALID_ROLES.includes(safeUpdateData.role)) {
+            throw new Error('Role không hợp lệ. Role phải là ADMIN, PM hoặc MEMBER.');
+        }
+
+        if (safeUpdateData.status && !VALID_STATUSES.includes(safeUpdateData.status)) {
+            throw new Error('Trạng thái không hợp lệ. Status phải là ACTIVE hoặc DISABLED.');
+        }
+
+        await user.update(safeUpdateData);
+        return this.getUserById(id);
     }
+
+    // 5. Cập nhật riêng trạng thái hoạt động của tài khoản
+    async updateUserStatus(id, status) {
+        return this.updateUser(id, { status });
+    }
+
+    // 6. Xóa mềm tài khoản người dùng (Chuyển trạng thái sang DISABLED trước khi xóa mềm)
     async deleteSoftUser(id) {
         const user = await User.findByPk(id);
         if (!user) {
             throw new Error('Không tìm thấy người dùng này trên hệ thống!');
         }
-        user.status = 'DISABLED'; // Cập nhật trạng thái thành "DISABLED"
-        await user.save(); // Lưu thay đổi vào cơ sở dữ liệu
-        return await user.destroy(); // Thực hiện soft delete (xóa mềm) bản ghi
+        
+        user.status = 'DISABLED'; 
+        await user.save(); 
+        
+        return await user.destroy(); // Thực hiện soft delete qua cấu hình Paranoid của Sequelize
+    }
+
+    // Hàm lọc dữ liệu đầu vào chống chèn trường cấm
+    pickSafeUpdateData(updateData) {
+        const allowedFields = ['full_name', 'email', 'role', 'status', 'department_id'];
+        const safeUpdateData = {};
+
+        allowedFields.forEach((field) => {
+            if (Object.prototype.hasOwnProperty.call(updateData, field)) {
+                safeUpdateData[field] = updateData[field];
+            }
+        });
+
+        return safeUpdateData;
     }
 }
 

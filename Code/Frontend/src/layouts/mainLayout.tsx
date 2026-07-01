@@ -58,7 +58,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     navigate(key);
   };
 
-  // Basic breadcrumb logic based on path
+  // Logic sinh Breadcrumb dựa trên URL hiện tại
   const pathSnippets = location.pathname.split('/').filter(i => i);
   const breadcrumbItems = pathSnippets.map((_, index) => {
     return {
@@ -68,6 +68,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <Layout style={{ minHeight: '100vh' }} hasSider>
+      {/* --- Thanh Sidebar Menu Trái --- */}
       <Sider
         width={240}
         style={{
@@ -80,9 +81,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
           backgroundColor: '#1E3A5F'
         }}
       >
+        {/* Khối bọc Logo hệ thống */}
         <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #162D4A' }}>
           <h2 style={{ margin: 0, color: '#fff', fontWeight: 700 }}>TMS</h2>
         </div>
+
+        {/* Cây Menu Ant Design định tuyến (Đã dọn dẹp phần HTML lỗi đè ở đây) */}
         <Menu
           theme="dark"
           mode="inline"
@@ -92,7 +96,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
           style={{ backgroundColor: '#1E3A5F', borderRight: 0, paddingTop: 16 }}
         />
       </Sider>
+
+      {/* --- Khu vực hiển thị Nội dung Phải --- */}
       <Layout style={{ marginLeft: 240 }}>
+        {/* Header Topbar */}
         <Header
           style={{
             position: 'sticky',
@@ -110,10 +117,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             <Breadcrumb items={breadcrumbItems} style={{ marginRight: 32 }} />
           </div>
+          
           <Space size="large" align="center">
+            {/* Chuông thông báo */}
             <Badge count={5} size="small">
               <BellFilled style={{ fontSize: 24, cursor: 'pointer', color: '#6B7280' }} />
             </Badge>
+
+            {/* Dropdown người dùng (Gốc của câu hỏi đầu tiên bạn hỏi tôi) */}
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
               <Space style={{ cursor: 'pointer' }}>
                 <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />
@@ -122,6 +133,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </Dropdown>
           </Space>
         </Header>
+
+        {/* Vùng Render View Router Con */}
         <Content style={{ margin: '24px 24px', overflow: 'initial' }}>
           {children}
         </Content>
