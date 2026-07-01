@@ -4,6 +4,7 @@ import LoginPage from '../pages/Auth/LoginPage';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
+import MyTasksPage from '../pages/MyTasks';
 import PMDashboardPage from '../pages/Dashboard/PMDashboardPage';
 import ProjectsPage from '../pages/Projects';
 import PMProjectsPage from '../pages/Projects/PMProjectsPage';
@@ -82,7 +83,7 @@ export default function AppRoutes() {
           path="/my-tasks" 
           element={
             <ProtectedRoute allowedRoles={['MEMBER']}>
-              <DashboardPage />
+              <MyTasksPage />
             </ProtectedRoute>
           } 
         />
