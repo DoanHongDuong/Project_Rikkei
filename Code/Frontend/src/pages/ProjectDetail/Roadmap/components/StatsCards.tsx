@@ -4,9 +4,9 @@ import type { Milestone } from '../types/roadmap';
 
 export default function StatsCards({ milestones }: { milestones: Milestone[] }) {
   const total = milestones.length;
-  const completed = milestones.filter(m => m.status === 'Completed').length;
-  const inProgress = milestones.filter(m => m.status === 'In Progress').length;
-  const overdue = milestones.filter(m => m.status === 'Delayed').length;
+  const completed = milestones.filter(m => m.status === 'Completed' || m.status === 'DONE').length;
+  const inProgress = milestones.filter(m => m.status === 'In Progress' || m.status === 'IN_PROGRESS').length;
+  const todo = milestones.filter(m => m.status === 'Delayed' || m.status === 'TODO').length;
 
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -52,13 +52,13 @@ export default function StatsCards({ milestones }: { milestones: Milestone[] }) 
       <Col xs={24} sm={12} lg={6}>
         <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
           <Statistic
-            title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Overdue</span>}
-            value={overdue}
-            prefix={<ClockCircleOutlined style={{ color: '#EF4444' }} />}
+            title={<span style={{ fontWeight: 500, color: '#6B7280' }}>TODO</span>}
+            value={todo}
+            prefix={<ClockCircleOutlined style={{ color: '#F59E0B' }} />}
             valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
           />
-          <div style={{ marginTop: 8, fontSize: '12px', color: '#EF4444' }}>
-            <ArrowDownOutlined /> 2% from last month
+          <div style={{ marginTop: 8, fontSize: '12px', color: '#6B7280' }}>
+            Pending tasks
           </div>
         </Card>
       </Col>

@@ -29,7 +29,7 @@ const verifyToken = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const user = await User.findByPk(decoded.id, {
-            attributes: ['id', 'full_name', 'email', 'role', 'status']
+            attributes: ['id', 'full_name', 'email', 'role', 'status', 'department_id']
         });
 
         if (!user) {
@@ -47,7 +47,8 @@ const verifyToken = async (req, res, next) => {
             full_name: user.full_name,
             email: user.email,
             role: user.role,
-            status: user.status
+            status: user.status,
+            department_id: user.department_id
         };
 
         next();

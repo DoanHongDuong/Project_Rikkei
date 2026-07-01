@@ -1,22 +1,35 @@
-import { Card, Typography, Progress, Badge, Avatar, Space, Collapse, Tooltip } from 'antd';
-import { UserOutlined, ClockCircleOutlined, TeamOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { Card, Typography, Progress, Badge, Avatar, Space, Collapse, Tooltip, Button, Popconfirm } from 'antd';
+import { UserOutlined, ClockCircleOutlined, TeamOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { Milestone } from '../types/roadmap';
 import TaskList from './TaskList';
 
 const { Text, Title, Paragraph } = Typography;
 
-export default function MilestoneCard({ milestone }: { milestone: Milestone }) {
+export default function MilestoneCard({ 
+  milestone,
+  onEdit,
+  onDelete
+}: { 
+  milestone: Milestone;
+  onEdit?: (m: Milestone) => void;
+  onDelete?: (id: number) => void;
+}) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed': return '#10B981'; // Green
-      case 'In Progress': return '#3B82F6'; // Blue
-      case 'Planning': return '#F59E0B'; // Orange
+      case 'DONE': return '#10B981'; // Green
+      case 'Completed': return '#10B981';
+      case 'IN_PROGRESS': return '#3B82F6'; // Blue
+      case 'In Progress': return '#3B82F6';
+      case 'TODO': return '#F59E0B'; // Orange
+      case 'Planning': return '#F59E0B';
       case 'Delayed': return '#EF4444'; // Red
       default: return '#6B7280';
     }
   };
 
   const statusColor = getStatusColor(milestone.status);
+  const tasks = milestone.tasks || [];
+  const progress = milestone.progress || (milestone.status === 'DONE' ? 100 : milestone.status === 'IN_PROGRESS' ? 50 : 0);
 
   return (
     <Card 
@@ -48,54 +61,71 @@ export default function MilestoneCard({ milestone }: { milestone: Milestone }) {
               />
             </div>
             
-            <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 14 }}>
-              {milestone.description}
-            </Paragraph>
+            {milestone.description && (
+              <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 14 }}>
+                {milestone.description}
+              </Paragraph>
+            )}
 
             <Space size="large" style={{ flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4B5563' }}>
                 <ClockCircleOutlined />
-                <Text type="secondary" style={{ fontSize: 13 }}>{milestone.startDate} - {milestone.dueDate}</Text>
+                <Text type="secondary" style={{ fontSize: 13 }}>{milestone.start_date} - {milestone.end_date}</Text>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4B5563' }}>
-                <TeamOutlined />
-                <Text type="secondary" style={{ fontSize: 13 }}>{milestone.owner}</Text>
-              </div>
+              {milestone.owner && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4B5563' }}>
+                  <TeamOutlined />
+                  <Text type="secondary" style={{ fontSize: 13 }}>{milestone.owner}</Text>
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#4B5563' }}>
                 <UnorderedListOutlined />
-                <Text type="secondary" style={{ fontSize: 13 }}>{milestone.tasks.length} tasks</Text>
+                <Text type="secondary" style={{ fontSize: 13 }}>{tasks.length} tasks</Text>
               </div>
             </Space>
           </div>
 
           <div style={{ width: 150, textAlign: 'right' }}>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 12 }}>
+              {onEdit && (
+                <Button size="small" type="text" icon={<EditOutlined />} onClick={() => onEdit(milestone)} />
+              )}
+              {onDelete && (
+                <Popconfirm title="Xóa mốc thời gian này?" onConfirm={() => onDelete(milestone.id)}>
+                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+              )}
+            </div>
+
             <Text style={{ fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Progress</Text>
             <Progress 
-              percent={milestone.progress} 
+              percent={progress} 
               strokeColor={statusColor} 
               trailColor="#F3F4F6"
               strokeWidth={8}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-              <Avatar.Group size="small" maxCount={3} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
-                {milestone.tasks.map(t => t.assignee).filter((v, i, a) => a.indexOf(v) === i).map((assignee, idx) => (
-                  <Tooltip key={idx} title={assignee}>
-                    <Avatar icon={<UserOutlined />} />
-                  </Tooltip>
-                ))}
-              </Avatar.Group>
-            </div>
+            {tasks.length > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                <Avatar.Group size="small" maxCount={3} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
+                  {tasks.map(t => t.assignee).filter((v, i, a) => a.indexOf(v) === i).map((assignee, idx) => (
+                    <Tooltip key={idx} title={assignee}>
+                      <Avatar icon={<UserOutlined />} />
+                    </Tooltip>
+                  ))}
+                </Avatar.Group>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {milestone.tasks.length > 0 && (
+      {tasks.length > 0 && (
         <Collapse ghost style={{ backgroundColor: '#F9FAFB', borderTop: '1px solid #F3F4F6' }}>
           <Collapse.Panel 
-            header={<span style={{ fontWeight: 500, color: '#4B5563' }}>View Tasks ({milestone.tasks.length})</span>} 
+            header={<span style={{ fontWeight: 500, color: '#4B5563' }}>View Tasks ({tasks.length})</span>} 
             key="1"
           >
-            <TaskList tasks={milestone.tasks} />
+            <TaskList tasks={tasks} />
           </Collapse.Panel>
         </Collapse>
       )}

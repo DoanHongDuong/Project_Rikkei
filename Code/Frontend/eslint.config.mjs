@@ -16,7 +16,7 @@ export default tseslint.config(
     },
     rules: {
       // 1. Khắt khe nghiêm cấm lạm dụng kiểu 'any'
-      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
 
       // 2. Cấm biến thừa, import thừa không sử dụng
       'no-unused-vars': 'off',

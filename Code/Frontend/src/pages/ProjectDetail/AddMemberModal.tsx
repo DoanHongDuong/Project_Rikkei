@@ -1,75 +1,109 @@
-import { Modal, Input, Table, Space, Avatar, Button, Typography } from 'antd';
-import { SearchOutlined, PlusOutlined, CheckOutlined, UserOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { Modal, Input, Table, Space, Avatar, Button, Typography, message, Tag } from 'antd';
+import { SearchOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
+import ProjectService from '../../services/projectService';
+import { useParams } from 'react-router-dom';
 
 const { Text } = Typography;
 
 interface AddMemberModalProps {
   open: boolean;
   onCancel: () => void;
-  onAdd: (userId: string) => void;
+  onAdd: () => void;
 }
 
 export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModalProps) {
+  const { id } = useParams();
   const [searchText, setSearchText] = useState('');
-  const [addedMembers, setAddedMembers] = useState<string[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [addingId, setAddingId] = useState<number | null>(null);
 
-  // Mock data cho danh sách user có thể thêm vào
-  const availableUsers = [
-    { id: 'M001', name: 'Nguyễn Văn A', role: 'Developer' },
-    { id: 'M002', name: 'Trần Thị B', role: 'Tester' },
-    { id: 'M003', name: 'Lê Văn C', role: 'Designer' },
-    { id: 'M004', name: 'Phạm Thị D', role: 'Business Analyst' },
-    { id: 'M005', name: 'Hoàng Văn E', role: 'Project Manager' },
-  ];
+  useEffect(() => {
+    if (open) {
+      fetchUsers();
+    }
+  }, [open]);
 
-  const filteredUsers = availableUsers.filter(user =>
-    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.id.toLowerCase().includes(searchText.toLowerCase())
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:5000/api/users?status=ACTIVE&limit=100', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Lỗi khi tải danh sách nhân sự');
+      }
+      const result = await response.json();
+      setUsers(result.data?.users || []);
+    } catch (error: any) {
+      message.error(error.message || 'Không thể tải danh sách nhân sự');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = users.filter(user =>
+    user.full_name?.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleAdd = (id: string) => {
-    setAddedMembers(prev => [...prev, id]);
-    onAdd(id);
+  const handleAdd = async (userId: number) => {
+    if (!id) return;
+    try {
+      setAddingId(userId);
+      await ProjectService.addProjectMember(id, userId, 'MEMBER');
+      message.success('Thêm thành viên thành công!');
+      onAdd();
+      onCancel();
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi thêm thành viên');
+    } finally {
+      setAddingId(null);
+    }
   };
 
   const columns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
+      title: 'Tên',
+      dataIndex: 'full_name',
       key: 'name',
-      render: (text: string) => (
+      render: (text: string, record: any) => (
         <Space>
           <Avatar icon={<UserOutlined />} />
-          <Text>{text}</Text>
+          <Text>{text || record.email}</Text>
         </Space>
       ),
     },
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id: string) => <Text type="secondary">{id}</Text>
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      render: (email: string) => <Text type="secondary">{email}</Text>
     },
     {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
+      render: (role: string) => <Tag>{role}</Tag>
     },
     {
       title: '',
       key: 'action',
       width: 60,
       render: (_: any, record: any) => {
-        const isAdded = addedMembers.includes(record.id);
         return (
           <Button
-            type={isAdded ? 'default' : 'primary'}
+            type="primary"
             shape="circle"
-            icon={isAdded ? <CheckOutlined style={{ color: '#52c41a' }} /> : <PlusOutlined />}
-            onClick={() => !isAdded && handleAdd(record.id)}
-            disabled={isAdded}
-            style={{}}
+            icon={<PlusOutlined />}
+            loading={addingId === record.id}
+            onClick={() => handleAdd(record.id)}
           />
         );
       },
@@ -78,7 +112,7 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
 
   return (
     <Modal
-      title="Add a member"
+      title="Thêm thành viên vào dự án"
       open={open}
       onCancel={onCancel}
       footer={null}
@@ -86,7 +120,7 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
     >
       <div style={{ marginBottom: 16 }}>
         <Input
-          placeholder="Search Users..."
+          placeholder="Tìm kiếm người dùng..."
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
@@ -98,6 +132,7 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
         pagination={{ pageSize: 5 }}
         rowKey="id"
         size="small"
+        loading={loading}
       />
     </Modal>
   );

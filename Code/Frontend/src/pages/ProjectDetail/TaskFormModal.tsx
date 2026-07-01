@@ -1,5 +1,5 @@
 import { Modal, Form, Input, Select, DatePicker, Button, Space, Avatar } from 'antd';
-import { LeftOutlined } from '@ant-design/icons';
+import { LeftOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -9,9 +9,10 @@ interface TaskFormModalProps {
   onCancel: () => void;
   onOk: (values: any) => void;
   initialValues?: any;
+  projectMembers?: any[];
 }
 
-export default function TaskFormModal({ visible, onCancel, onOk, initialValues }: TaskFormModalProps) {
+export default function TaskFormModal({ visible, onCancel, onOk, initialValues, projectMembers = [] }: TaskFormModalProps) {
   const [form] = Form.useForm();
 
   return (
@@ -56,7 +57,7 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues }
         form={form}
         layout="vertical"
         name="task_form"
-        initialValues={initialValues || { status: 'todo' }}
+        initialValues={initialValues || { status: 'TODO' }}
       >
         <Form.Item
           name="title"
@@ -74,19 +75,15 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues }
         </Form.Item>
 
         <Form.Item
-          name="assignee"
+          name="assignee_id"
           label="Người thực hiện"
         >
-          <Select placeholder="Chọn người thực hiện" mode="multiple">
-            <Option value="Khoảng Phát">
-              <Space><Avatar size="small" src="https://i.pravatar.cc/150?img=33" /> Khoảng Phát</Space>
-            </Option>
-            <Option value="Huy">
-              <Space><Avatar size="small" src="https://i.pravatar.cc/150?img=11" /> Huy</Space>
-            </Option>
-            <Option value="Dũng">
-              <Space><Avatar size="small" src="https://i.pravatar.cc/150?img=12" /> Dũng</Space>
-            </Option>
+          <Select placeholder="Chọn người thực hiện" allowClear>
+            {projectMembers.filter(m => m.is_active).map(member => (
+              <Option key={member.user_id} value={member.user_id}>
+                <Space><Avatar size="small" icon={<UserOutlined />} /> {member.user?.full_name || member.user?.email}</Space>
+              </Option>
+            ))}
           </Select>
         </Form.Item>
         
@@ -102,7 +99,7 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues }
           name="deadline"
           label="Hạn chót"
         >
-          <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
         </Form.Item>
       </Form>
     </Modal>

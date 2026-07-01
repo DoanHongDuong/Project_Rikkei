@@ -1,6 +1,8 @@
-import { Modal, Typography, Avatar, Space, Button, Divider, List, Input } from 'antd';
+import { Modal, Typography, Avatar, Space, Button, Divider, List, Input, Skeleton, Tag } from 'antd';
 import { LeftOutlined, UserOutlined, DeleteOutlined, EditOutlined, SendOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import TaskService from '../../services/taskService';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -8,29 +10,45 @@ const { TextArea } = Input;
 interface TaskDetailModalProps {
   open: boolean;
   onCancel: () => void;
-  taskTitle: string;
+  taskId: string | number;
   onEditClick: () => void;
 }
 
-export default function TaskDetailModal({ open, onCancel, taskTitle, onEditClick }: TaskDetailModalProps) {
+export default function TaskDetailModal({ open, onCancel, taskId, onEditClick }: TaskDetailModalProps) {
   const [newComment, setNewComment] = useState('');
+  const [task, setTask] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  const comments = [
-    {
-      id: 1,
-      author: 'P. Diddy',
-      avatar: 'https://i.pravatar.cc/150?img=11',
-      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      datetime: '2 hours ago',
-    },
-    {
-      id: 2,
-      author: 'Charlie Kirk',
-      avatar: 'https://i.pravatar.cc/150?img=12',
-      content: 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.',
-      datetime: '1 hour ago',
-    },
-  ];
+  useEffect(() => {
+    if (open && taskId) {
+      loadTask();
+    }
+  }, [open, taskId]);
+
+  const loadTask = async () => {
+    try {
+      setLoading(true);
+      const data = await TaskService.getTaskDetail(taskId);
+      setTask(data);
+    } catch (error: any) {
+      console.error('Lỗi tải task:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const priorityColor: Record<string, string> = {
+    LOW: 'green',
+    MEDIUM: 'blue',
+    HIGH: 'orange',
+    URGENT: 'red',
+  };
+
+  const statusColor: Record<string, string> = {
+    TODO: 'default',
+    IN_PROGRESS: 'processing',
+    DONE: 'success',
+  };
 
   return (
     <Modal
@@ -38,7 +56,7 @@ export default function TaskDetailModal({ open, onCancel, taskTitle, onEditClick
       onCancel={onCancel}
       footer={null}
       width={700}
-      closeIcon={null} // Hide default close icon
+      closeIcon={null}
       title={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Button 
@@ -57,46 +75,54 @@ export default function TaskDetailModal({ open, onCancel, taskTitle, onEditClick
       }
     >
       <div style={{ marginTop: 24 }}>
-        <Title level={3}>{taskTitle}</Title>
-        
-        <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Mô tả</Title>
-        <Paragraph type="secondary" style={{ fontSize: 14 }}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-        </Paragraph>
-        
-        <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Hạn chót</Title>
-        <Text>9/11/2001</Text>
-        
-        <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Người thực hiện</Title>
-        <Space size="large">
-          <Space>
-            <Avatar src="https://i.pravatar.cc/150?img=11" icon={<UserOutlined />} />
-            <Text>P. Diddy</Text>
-          </Space>
-          <Space>
-            <Avatar src="https://i.pravatar.cc/150?img=12" icon={<UserOutlined />} />
-            <Text>Charlie Kirk</Text>
-          </Space>
-        </Space>
+        {loading ? (
+          <Skeleton active paragraph={{ rows: 6 }} />
+        ) : task ? (
+          <>
+            <Title level={3}>{task.title}</Title>
+
+            <Space style={{ marginBottom: 16 }}>
+              <Tag color={statusColor[task.status] || 'default'}>{task.status?.replace('_', ' ')}</Tag>
+              <Tag color={priorityColor[task.priority] || 'default'}>{task.priority}</Tag>
+            </Space>
+            
+            <Title level={5} style={{ marginTop: 16, marginBottom: 8 }}>Mô tả</Title>
+            <Paragraph type="secondary" style={{ fontSize: 14 }}>
+              {task.description || 'Không có mô tả'}
+            </Paragraph>
+            
+            <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Hạn chót</Title>
+            <Text>{task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Chưa đặt'}</Text>
+            
+            <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Người thực hiện</Title>
+            {task.assignee ? (
+              <Space>
+                <Avatar icon={<UserOutlined />} />
+                <Text>{task.assignee.full_name || task.assignee.email}</Text>
+              </Space>
+            ) : (
+              <Text type="secondary">Chưa được phân công</Text>
+            )}
+
+            <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Người tạo</Title>
+            {task.creator && (
+              <Space>
+                <Avatar icon={<UserOutlined />} />
+                <Text>{task.creator.full_name || task.creator.email}</Text>
+              </Space>
+            )}
+          </>
+        ) : (
+          <Text type="secondary">Không tìm thấy thông tin task.</Text>
+        )}
         
         <Divider style={{ margin: '24px 0' }} />
         
         <Title level={5} style={{ marginBottom: 16 }}>Bình luận</Title>
-        <List
-          dataSource={comments}
-          renderItem={item => (
-            <List.Item style={{ padding: '12px 0', borderBottom: 'none' }}>
-              <List.Item.Meta
-                avatar={<Avatar src={item.avatar} />}
-                title={<Space><Text strong>{item.author}</Text> <Text type="secondary" style={{ fontSize: 12 }}>{item.datetime}</Text></Space>}
-                description={<Text style={{ color: '#333' }}>{item.content}</Text>}
-              />
-            </List.Item>
-          )}
-        />
+        <List dataSource={[]} renderItem={() => <></>} locale={{ emptyText: 'Chưa có bình luận' }} />
         
         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-          <Avatar src="https://i.pravatar.cc/150?img=33" />
+          <Avatar icon={<UserOutlined />} />
           <div style={{ flex: 1, position: 'relative' }}>
             <TextArea 
               rows={2} 
@@ -116,3 +142,4 @@ export default function TaskDetailModal({ open, onCancel, taskTitle, onEditClick
     </Modal>
   );
 }
+

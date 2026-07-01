@@ -37,8 +37,8 @@ const STATUS_TRANSITIONS = {
 
 class TaskService {
     async getTasks(filters, currentUser) {
-        const page = Number(filters.page);
-        const limit = Number(filters.limit);
+        const page = filters.page ? Number(filters.page) : 1;
+        const limit = filters.limit ? Number(filters.limit) : 1000;
         const offset = (page - 1) * limit;
         const where = await this.buildTaskWhere(filters, currentUser);
 

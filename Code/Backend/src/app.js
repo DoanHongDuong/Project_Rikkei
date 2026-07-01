@@ -9,6 +9,12 @@ const adminRoutes = require('./routes/adminRoutes');
 const departmentRoutes = require("./routes/departmentRoutes");
 const projectRoutes = require('./routes/projectRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const roadmapRoutes = require('./routes/roadmapRoutes');
+
+// Inline route cho /api/users (dùng chung cho ADMIN + PM)
+const { verifyToken } = require('./middleware/authMiddleware');
+const { authorizeRoles } = require('./middleware/roleMiddleware');
+const userService = require('./services/userService');
 
 const app = express();
 
@@ -30,6 +36,22 @@ app.use('/api/admin', adminRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api', roadmapRoutes);
+
+// Route dùng chung: ADMIN + PM có thể lấy danh sách user để assign thành viên dự án
+app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, res) => {
+    try {
+        const filters = { ...req.query, limit: 100 };
+        if (req.user.role === 'PM') {
+            filters.department_id = req.user.department_id;
+        }
+        const { users, pagination } = await userService.getUsers(filters);
+        res.status(200).json({ success: true, message: 'OK', data: { users, pagination } });
+    } catch (error) {
+        console.error('GET /api/users error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server.' });
+    }
+});
 
 // Route kiểm tra mặc định khi vào trang chủ server
 app.get('/', (req, res) => {

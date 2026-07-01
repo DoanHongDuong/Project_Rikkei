@@ -73,9 +73,9 @@ class ProjectService {
     }
 
     async getProjects(filters, currentUser) {
-        const page = Number(filters.page);
-        const limit = Number(filters.limit);
-        const offset = (page - 1) * limit;
+        const page = Number(filters.page) || 1;
+        const limit = Number(filters.limit) || 10;
+        const offset = Math.max((page - 1) * limit, 0);
         const allowedProjectIds = currentUser.role === 'ADMIN'
             ? []
             : await this.getActiveMembershipProjectIds(currentUser.id);

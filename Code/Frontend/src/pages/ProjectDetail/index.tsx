@@ -1,11 +1,12 @@
-import { Tabs, Typography, Progress, Avatar, Divider, Space, Card, Tag, Button, Modal, Form, Input, Select, DatePicker, Table, message } from 'antd';
+import { Tabs, Typography, Progress, Avatar, Divider, Space, Card, Tag, Button, Modal, Form, Input, Select, DatePicker, Table, message, Skeleton } from 'antd';
 import { UserOutlined, UnorderedListOutlined, DesktopOutlined, EditOutlined, InfoCircleOutlined, DeleteOutlined, PlusOutlined, ProjectOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import KanbanBoard from './KanbanBoard';
 import AddMemberModal from './AddMemberModal';
 import RoadmapTab from './Roadmap';
 import dayjs from 'dayjs';
+import ProjectService from '../../services/projectService';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -14,18 +15,46 @@ const { TextArea } = Input;
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  const [project, setProject] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddMemberVisible, setIsAddMemberVisible] = useState(false);
   const [form] = Form.useForm();
 
+  const loadData = async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const [projectData, membersData] = await Promise.all([
+        ProjectService.getProjectDetail(id),
+        ProjectService.getProjectMembers(id)
+      ]);
+      setProject(projectData);
+      setMembers(membersData);
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi tải dữ liệu dự án');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
   const handleEditClick = () => {
-    form.setFieldsValue({
-      name: 'CRM System',
-      description: 'This CRM system is designed to manage customer relationships, track sales pipelines, and improve communication across the team.',
-      status: 'in_progress',
-      deadline: dayjs('2026-08-20'),
-    });
-    setIsEditModalVisible(true);
+    if (project) {
+      form.setFieldsValue({
+        name: project.name,
+        description: project.description,
+        status: project.status,
+        deadline: project.end_date ? dayjs(project.end_date) : null,
+      });
+      setIsEditModalVisible(true);
+    }
   };
 
   const handleCancel = () => {
@@ -34,27 +63,41 @@ export default function ProjectDetail() {
 
   const handleOk = () => {
     form.validateFields().then(values => {
+      // TODO: Connect updateProject API
       console.log('Update project:', values);
       setIsEditModalVisible(false);
     });
   };
 
-  const memberData = [
-    { key: '1', name: 'John Doe', role: 'Project Manager', status: 'Active' },
-    { key: '2', name: 'Jane Smith', role: 'Developer', status: 'Active' },
-    { key: '3', name: 'Bob Johnson', role: 'Designer', status: 'On Leave' },
-    { key: '4', name: 'Alice Williams', role: 'Tester', status: 'Active' },
-  ];
+  const handleDeleteMember = (userId: number) => {
+    Modal.confirm({
+      title: 'Xóa thành viên',
+      content: 'Bạn có chắc chắn muốn xóa thành viên này khỏi dự án?',
+      centered: true,
+      okText: 'Đồng ý',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        if (!id) return;
+        try {
+          await ProjectService.removeProjectMember(id, userId);
+          message.success('Đã xóa thành viên khỏi dự án!');
+          loadData(); // Refresh list
+        } catch (error: any) {
+          message.error(error.message || 'Lỗi khi xóa thành viên');
+        }
+      }
+    });
+  };
 
   const memberColumns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
+      title: 'Tên',
+      dataIndex: ['user', 'full_name'],
       key: 'name',
-      render: (text: string) => (
+      render: (text: string, record: any) => (
         <Space>
           <Avatar icon={<UserOutlined />} />
-          <Text strong>{text}</Text>
+          <Text strong style={{ opacity: record.is_active ? 1 : 0.5 }}>{text || record.user?.email}</Text>
         </Space>
       ),
     },
@@ -62,44 +105,42 @@ export default function ProjectDetail() {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
-      render: (role: string) => <Tag color={role === 'Project Manager' ? 'gold' : 'blue'}>{role}</Tag>,
+      render: (role: string) => <Tag color={role === 'LEAD' ? 'gold' : 'blue'}>{role}</Tag>,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
+      title: 'Trạng thái',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'Active' ? 'green' : 'red'}>{status}</Tag>
+      render: (_: any, record: any) => (
+        <Tag color={record.is_active ? 'green' : 'red'}>
+          {record.is_active ? 'Active' : 'Removed'}
+        </Tag>
       ),
     },
     {
-      title: 'Action',
+      title: 'Hành động',
       key: 'action',
-      render: (_: any, record: any) => (
+      render: (_: any, record: any) => record.is_active && (
         <Space size="middle">
-          <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.key}`)} />
+          <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.user_id}`)} />
           <Button 
             type="text" 
             danger 
             icon={<DeleteOutlined />} 
             title="Xóa khỏi dự án" 
-            onClick={() => {
-              Modal.confirm({
-                title: 'Xóa thành viên',
-                content: 'Bạn có chắc chắn muốn đuổi thành viên này khỏi dự án?',
-                centered: true,
-                okText: 'Đồng ý',
-                cancelText: 'Hủy',
-                onOk: () => {
-                  message.success('Đã đuổi thành viên khỏi dự án thành công!');
-                }
-              });
-            }}
+            onClick={() => handleDeleteMember(record.user_id)}
           />
         </Space>
       ),
     },
   ];
+
+  if (loading) {
+    return <div style={{ padding: 24 }}><Skeleton active paragraph={{ rows: 10 }} /></div>;
+  }
+
+  if (!project) {
+    return <div style={{ padding: 24 }}>Không tìm thấy dự án!</div>;
+  }
 
   const items = [
     {
@@ -114,11 +155,11 @@ export default function ProjectDetail() {
           extra={<Button type="default" icon={<EditOutlined />} onClick={handleEditClick}>Sửa thông tin</Button>}
         >
           <Paragraph>
-            This CRM system is designed to manage customer relationships, track sales pipelines, and improve communication across the team.
+            {project.description || 'Không có mô tả'}
           </Paragraph>
           <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div><Text strong>Project Manager:</Text> <Text>John Doe</Text></div>
-            <div><Text strong>Current Status:</Text> <Tag color="processing">In Progress</Tag></div>
+            <div><Text strong>Project Manager:</Text> <Text>{project.manager?.full_name || 'N/A'}</Text></div>
+            <div><Text strong>Trạng thái:</Text> <Tag color="processing">{project.status}</Tag></div>
           </div>
         </Card>
       ),
@@ -127,7 +168,7 @@ export default function ProjectDetail() {
       key: '2',
       label: 'Tasks',
       icon: <UnorderedListOutlined />,
-      children: <KanbanBoard />,
+      children: <KanbanBoard projectId={id} projectMembers={members} />,
     },
     {
       key: '3',
@@ -140,7 +181,7 @@ export default function ProjectDetail() {
           title="Danh sách thành viên"
           extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)}>Thêm thành viên</Button>}
         >
-          <Table columns={memberColumns} dataSource={memberData} pagination={false} />
+          <Table columns={memberColumns} dataSource={members} rowKey="id" pagination={false} />
         </Card>
       ),
     },
@@ -152,19 +193,21 @@ export default function ProjectDetail() {
     },
   ];
 
+  const activeMembersCount = members.filter(m => m.is_active).length;
+
   return (
     <div>
       <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: 8, marginBottom: 24, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div>
-              <Title level={2} style={{ margin: 0 }}>CRM System</Title>
-              <Text type="secondary">Customer Relationship Management - Project #{id}</Text>
+              <Title level={2} style={{ margin: 0 }}>{project.name}</Title>
+              <Text type="secondary">Project #{project.id}</Text>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <Text type="secondary">Deadline</Text>
-            <div><Text strong>20/08/2026</Text></div>
+            <div><Text strong>{project.end_date || 'N/A'}</Text></div>
           </div>
         </div>
         
@@ -174,18 +217,18 @@ export default function ProjectDetail() {
           <Space size="large">
             <div style={{ width: 200 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text>Progress</Text>
-                <Text strong>75%</Text>
+                <Text>Tiến độ</Text>
+                <Text strong>{project.progress || 0}%</Text>
               </div>
-              <Progress percent={75} showInfo={false} strokeColor="#2563EB" />
+              <Progress percent={project.progress || 0} showInfo={false} strokeColor="#2563EB" />
             </div>
             
             <Divider type="vertical" style={{ height: 40 }} />
             
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>Members (12)</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>Thành viên ({activeMembersCount})</Text>
               <Avatar.Group maxCount={4} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: Math.min(activeMembersCount, 4) }).map((_, i) => (
                   <Avatar key={i} icon={<UserOutlined />} />
                 ))}
               </Avatar.Group>
@@ -213,13 +256,13 @@ export default function ProjectDetail() {
           </Form.Item>
           <Form.Item name="status" label="Trạng thái">
             <Select>
-              <Option value="planning">Lên kế hoạch</Option>
-              <Option value="in_progress">Đang thực hiện</Option>
-              <Option value="completed">Đã hoàn thành</Option>
+              <Option value="ACTIVE">Active</Option>
+              <Option value="ON_HOLD">On Hold</Option>
+              <Option value="COMPLETED">Completed</Option>
             </Select>
           </Form.Item>
           <Form.Item name="deadline" label="Thời hạn (Deadline)">
-            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+            <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
           </Form.Item>
         </Form>
       </Modal>
@@ -227,8 +270,8 @@ export default function ProjectDetail() {
       <AddMemberModal 
         open={isAddMemberVisible} 
         onCancel={() => setIsAddMemberVisible(false)} 
-        onAdd={(userId) => {
-          console.log('Added user:', userId);
+        onAdd={() => {
+          loadData();
         }}
       />
     </div>
