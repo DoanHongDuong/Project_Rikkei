@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Typography, Avatar, Button, Space, Row, Col, Tag, message, Spin } from 'antd';
+import { Typography, Avatar, Button, Space, Row, Col, Tag, message, Spin, Table, Progress } from 'antd';
 import {
   LeftOutlined,
   MailOutlined,
@@ -161,6 +161,38 @@ export default function UserInfo() {
         >
           {userData.status === 'ACTIVE' ? 'Vô hiệu hóa (Disable)' : 'Kích hoạt (ACTIVE)'}
         </Button>
+      </div>
+
+      <div style={{ marginTop: 48 }}>
+        <Title level={4} style={{ fontWeight: 700, marginBottom: 16 }}>Danh sách nhiệm vụ đang đảm nhận</Title>
+        <Table 
+          dataSource={[
+            { key: '1', title: 'Thiết kế giao diện Login', project: 'TMS v2', status: 'In Progress', progress: 50 },
+            { key: '2', title: 'Tối ưu API', project: 'TMS v2', status: 'To Do', progress: 0 },
+            { key: '3', title: 'Fix bug Header', project: 'Internal Tools', status: 'Done', progress: 100 },
+          ]}
+          columns={[
+            { title: 'Tên nhiệm vụ', dataIndex: 'title', key: 'title' },
+            { title: 'Dự án', dataIndex: 'project', key: 'project' },
+            { 
+              title: 'Trạng thái', 
+              dataIndex: 'status', 
+              key: 'status',
+              render: (status) => (
+                <Tag color={status === 'Done' ? 'success' : status === 'In Progress' ? 'processing' : 'default'}>
+                  {status}
+                </Tag>
+              )
+            },
+            {
+              title: 'Tiến độ',
+              dataIndex: 'progress',
+              key: 'progress',
+              render: (progress) => <Progress percent={progress} size="small" />
+            }
+          ]}
+          pagination={false}
+        />
       </div>
     </div>
   );

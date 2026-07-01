@@ -9,13 +9,16 @@ import ProjectsPage from '../pages/Projects';
 import PMProjectsPage from '../pages/Projects/PMProjectsPage';
 import PMCreateProjectPage from '../pages/Projects/PMCreateProjectPage';
 import ProjectDetail from '../pages/ProjectDetail';
+import ProjectMemberInfo from '../pages/ProjectDetail/ProjectMemberInfo';
 import ForbiddenPage from '../pages/Error/ForbiddenPage';
 import ProtectedRoute from './ProtectedRoute';
 import UserManagement from '../pages/Users/UserManagement';
 import CreateUser from '../pages/Users/CreateUser';
 import UserInfo from '../pages/Users/UserInfo';
 import EditUser from '../pages/Users/EditUser';
+import PMUsersPage from '../pages/Users/PMUsersPage';
 import DepartmentsPage from '../pages/Departments';
+import PMDepartmentsPage from '../pages/Departments/PMDepartmentsPage';
 import AuthService from '../services/authService';
 
 const DashboardRoute = () => {
@@ -35,6 +38,18 @@ const CreateProjectRoute = () => {
   // Only PM has the specific create page for now, if others they can be routed to forbidden or default
   if (user?.role === 'PM') return <PMCreateProjectPage />;
   return <ForbiddenPage />; 
+};
+
+const DepartmentsRoute = () => {
+  const user = AuthService.getUser();
+  if (user?.role === 'PM') return <PMDepartmentsPage />;
+  return <DepartmentsPage />;
+};
+
+const UsersRoute = () => {
+  const user = AuthService.getUser();
+  if (user?.role === 'PM') return <PMUsersPage />;
+  return <UserManagement />;
 };
 
 export default function AppRoutes() {
@@ -85,10 +100,18 @@ export default function AppRoutes() {
           } 
         />
         <Route 
+          path="/projects/:projectId/members/:memberId" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
+              <ProjectMemberInfo />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/departments" 
           element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <DepartmentsPage />
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM']}>
+              <DepartmentsRoute />
             </ProtectedRoute>
           } 
         />
@@ -96,7 +119,7 @@ export default function AppRoutes() {
           path="/users" 
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
-              <UserManagement />
+              <UsersRoute />
             </ProtectedRoute>
           } 
         />

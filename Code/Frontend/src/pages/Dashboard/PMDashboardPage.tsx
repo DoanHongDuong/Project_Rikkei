@@ -20,7 +20,7 @@ export default function PMDashboardPage() {
   ];
 
   return (
-    <div className="pm-dashboard-container">
+    <div>
       <div style={{ display: 'flex', gap: '40px' }}>
         {/* Left Column: Projects Overview & Chart */}
         <div style={{ flex: 1 }}>

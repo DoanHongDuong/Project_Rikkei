@@ -22,8 +22,8 @@ export default function ProjectsPage() {
       <Row gutter={[24, 24]}>
         {projects.map(project => (
           <Col xs={24} sm={12} lg={8} key={project.id}>
-            <Card 
-              hoverable 
+            <Card
+              hoverable
               style={{ borderRadius: 8 }}
               onClick={() => navigate(`/projects/${project.id}`)}
             >
@@ -32,7 +32,7 @@ export default function ProjectsPage() {
                 <Text type="secondary">Deadline: {project.deadline}</Text>
               </div>
               <Progress percent={project.progress} strokeColor={project.progress > 80 ? '#22C55E' : '#2563EB'} />
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
                 <Avatar.Group maxCount={3} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
                   {Array.from({ length: Math.min(project.members, 4) }).map((_, i) => (
