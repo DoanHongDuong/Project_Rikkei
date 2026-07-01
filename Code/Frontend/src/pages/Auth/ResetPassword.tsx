@@ -1,13 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import type { AxiosError } from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES, API_ROUTES, APP_ROUTES } from '../../constants/authMessages';
 import './AuthDes.css';
-
-interface ApiErrorResponse {
-  message?: string;
-}
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -25,7 +20,7 @@ export default function ResetPassword() {
     setToken(params.get('token'));
   }, []);
 
-  const apiBase ='http://localhost:5000';
+  const apiBase = 'http://localhost:5000';
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -69,10 +64,9 @@ export default function ResetPassword() {
       setTimeout(() => {
         navigate(APP_ROUTES.LOGIN, { replace: true });
       }, 2200);
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiErrorResponse>;
+    } catch (error: any) {
       setIsError(true);
-      setStatus(axiosError.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT);
+      setStatus(error?.response?.data?.message || AUTH_MESSAGES.RESET_ERROR_DEFAULT);
     } finally {
       setLoading(false);
     }
@@ -164,11 +158,6 @@ export default function ResetPassword() {
                 </p>
               </div>
             </div>
-          </div>
-          <div className="text-13">
-            <Link className="text-black" to="/login">
-              Manual
-            </Link>
           </div>
         </div>
       </div>

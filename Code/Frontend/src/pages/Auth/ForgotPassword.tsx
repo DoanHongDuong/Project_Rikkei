@@ -1,12 +1,7 @@
 ﻿import { useState } from 'react';
 import axios from 'axios';
-import type { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import './AuthDes.css';
-
-interface ApiErrorResponse {
-  message?: string;
-}
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -28,9 +23,8 @@ export default function ForgotPassword() {
       });
       setMessage(response.data?.message || 'Yêu cầu thành công! Vui lòng kiểm tra email.');
       setIsError(false);
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<ApiErrorResponse>;
-      setMessage(axiosError.response?.data?.message || 'Gửi liên kết đặt lại mật khẩu thất bại.');
+    } catch (error: any) {
+      setMessage(error?.response?.data?.message || 'Gửi liên kết đặt lại mật khẩu thất bại.');
       setIsError(true);
     } finally {
       setLoading(false);
@@ -95,11 +89,6 @@ export default function ForgotPassword() {
                 </p>
               </div>
             </div>
-          </div>
-          <div className="text-13">
-            <Link to="/login" className="text-black">
-              Manual
-            </Link>
           </div>
         </div>
       </div>

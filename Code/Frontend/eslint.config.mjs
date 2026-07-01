@@ -4,9 +4,6 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import checkFile from 'eslint-plugin-check-file';
 
 export default tseslint.config(
-  {
-    ignores: ['dist/**', 'node_modules/**'],
-  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -27,16 +24,14 @@ export default tseslint.config(
         { 'vars': 'all', 'varsIgnorePattern': '^_', 'args': 'after-used', 'argsIgnorePattern': '^_' }
       ],
 
-      // 3. Cảnh báo quy tắc đặt tên file/folder theo kiểu kebab-case.
-      // Hạ từ "error" xuống "warn" để không block build/dev nhanh,
-      // nhưng team vẫn nhìn thấy cảnh báo và có thể chuẩn hóa dần.
+      // 3. Ép quy tắc đặt tên file/folder theo kiểu kebab-case
       'check-file/filename-naming-convention': [
-        'warn',
+        'error',
         { 'src/**/*.{ts,tsx}': 'KEBAB_CASE' },
         { 'ignoreMiddleExtensions': true }
       ],
       'check-file/folder-naming-convention': [
-        'warn',
+        'error',
         { 'src/**/': 'KEBAB_CASE' }
       ],
 
