@@ -90,11 +90,6 @@ export default function ForgotPassword() {
               </div>
             </div>
           </div>
-          <div className="text-13">
-            <Link to="/login" className="text-black">
-              Manual
-            </Link>
-          </div>
         </div>
       </div>
     </div>

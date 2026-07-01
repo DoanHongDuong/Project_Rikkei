@@ -30,34 +30,45 @@ export default function LoginPage() {
     <div className="auth-des-page">
       <div className="index-1">
         <form onSubmit={handleLogin} className="login-form-14">
-          <img src="/images/logo.png" className="logo" alt="Logo" />
+          <div className="logo-container">
+            <img src="/images/logo.png" className="logo" alt="Logo" />
+          </div>
+
+          <div className="form-header">
+            <h2>Welcome Back</h2>
+            <p>Please enter your details to sign in</p>
+          </div>
 
           <div className="email-16">
-            <p className="text-17">
-              <span className="text-black">Email/ID</span>
-            </p>
-            <input
-              id="email"
-              type="email"
-              className="emailbox-18"
-              placeholder="Enter email or ID"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
+            <label htmlFor="email" className="text-17">
+              <span className="text-white">Email / ID</span>
+            </label>
+            <div className="input-wrapper">
+              <input
+                id="email"
+                type="email"
+                className="emailbox-18"
+                placeholder="Enter your email or ID"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
           </div>
 
           <div className="password-19">
-            <p className="text-20">
-              <span className="text-black">Password</span>
-            </p>
+            <div className="password-label-row">
+              <label htmlFor="password" className="text-20">
+                <span className="text-white">Password</span>
+              </label>
+            </div>
             <div className="passwordbox-21">
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 className="password-input"
-                placeholder="Enter password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -68,13 +79,16 @@ export default function LoginPage() {
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={loading}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 <img
                   src={showPassword ? '/images/eyebrow.png' : '/images/eye-open.svg'}
-                  alt={showPassword ? 'Hide password' : 'Show password'}
+                  alt=""
+                  error-fallback="true"
                 />
               </button>
             </div>
+            {/* Chuyển khối này xuống dưới ô input */}
             <p className="text-23">
               <Link to="/auth/forgot" className="forgot-link">
                 Forgot password?
@@ -85,36 +99,33 @@ export default function LoginPage() {
           {error && <div className="status-message status-error">{error}</div>}
 
           <button type="submit" className="loginbtn-24" disabled={loading}>
-            <span className="text-25 text-black">{loading ? 'Processing...' : 'Login'}</span>
+            <span className="text-25">{loading ? 'Processing...' : 'Sign In'}</span>
           </button>
         </form>
 
-        <div className="contact-3">
+        <footer className="footer-contact">
           <div className="ctinfo-4">
             <p className="text-5">
-              <span className="text-black">Have an issue? Better call us:</span>
+              <span>Have an issue? Better call us:</span>
             </p>
             <div className="phonenemail-6">
               <div className="phone-7">
                 <img src="/images/vector-8.svg" className="vector-8" alt="Phone" />
                 <p className="text-9">
-                  <span className="text-black">0967676767</span>
+                  <span>0967676767</span>
                 </p>
               </div>
               <div className="email-10">
                 <img src="/images/vector-11.svg" className="vector-11" alt="Email" />
                 <p className="text-12">
-                  <span className="text-black">sadfghjk@asd.com</span>
+                  <span>sadfghjk@asd.com</span>
                 </p>
               </div>
             </div>
           </div>
           <div className="text-13">
-            <Link to="/login" className="text-black">
-              Manual
-            </Link>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   );

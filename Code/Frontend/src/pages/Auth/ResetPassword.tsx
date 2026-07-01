@@ -20,7 +20,7 @@ export default function ResetPassword() {
     setToken(params.get('token'));
   }, []);
 
-  const apiBase ='http://localhost:5000';
+  const apiBase = 'http://localhost:5000';
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -158,11 +158,6 @@ export default function ResetPassword() {
                 </p>
               </div>
             </div>
-          </div>
-          <div className="text-13">
-            <Link className="text-black" to="/login">
-              Manual
-            </Link>
           </div>
         </div>
       </div>
