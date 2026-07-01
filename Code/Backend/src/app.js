@@ -21,6 +21,9 @@ app.get('/', (req, res) => {
 app.use('/api/admin', adminRoutes);
 app.use("/api/departments", departmentRoutes);
 
+const roadmapRoutes = require('./routes/roadmapRoutes');
+app.use('/api', roadmapRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server đang chạy mượt mà tại cổng: http://localhost:${PORT}`);
