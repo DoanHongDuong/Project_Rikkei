@@ -33,7 +33,7 @@ export default function PMLayout({ children }: PMLayoutProps) {
     <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
       <header className="pm-layout-header">
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '24px', color: '#E11D48', marginRight: '60px', letterSpacing: '2px' }}>TMS</div>
+          <div style={{ fontWeight: 'bold', fontSize: '24px', color: '#2563EB', marginRight: '60px', letterSpacing: '2px' }}>TMS</div>
           
           <nav className="pm-nav">
             <NavLink 

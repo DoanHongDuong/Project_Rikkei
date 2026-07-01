@@ -2,10 +2,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #FFE5E0;
+  background-color: #FFFFFF;
   padding: 0 40px;
   height: 70px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .pm-logo {
@@ -30,17 +31,18 @@
 }
 
 .pm-nav-link:hover {
-  background-color: rgba(247, 197, 197, 0.5);
+  background-color: rgba(37, 99, 235, 0.08);
 }
 
 .pm-nav-link.active {
-  background-color: #F7C5C5;
+  background-color: #EFF6FF;
   font-weight: 700;
+  color: #2563EB;
 }
 
 .pm-bell-icon {
   font-size: 24px;
-  color: #F18F8F;
+  color: #6B7280;
   cursor: pointer;
 }
 
@@ -175,8 +177,8 @@
 }
 
 .pm-add-btn {
-  background-color: #F7C5C5;
-  color: #000;
+  background-color: #2563EB;
+  color: #fff;
   border: none;
   border-radius: 6px;
   padding: 8px 24px;
@@ -188,7 +190,7 @@
 }
 
 .pm-add-btn:hover {
-  background-color: #f5b0b0;
+  background-color: #1D4ED8;
 }
 
 .pm-search-container {

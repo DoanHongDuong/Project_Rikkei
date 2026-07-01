@@ -20,7 +20,7 @@ export default function PMProjectsPage() {
       <div className="pm-header-with-btn" style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={3} style={{ margin: 0 }}>Danh sách dự án</Title>
         <Link to="/projects/create">
-          <Button type="primary" icon={<PlusOutlined />} style={{ backgroundColor: '#c41d7f' }}>
+          <Button type="primary" icon={<PlusOutlined />}>
             Thêm dự án
           </Button>
         </Link>

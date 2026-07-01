@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import KanbanBoard from './KanbanBoard';
 import AddMemberModal from './AddMemberModal';
+import RoadmapTab from './Roadmap';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -106,8 +107,12 @@ export default function ProjectDetail() {
       label: 'Overview',
       icon: <DesktopOutlined />,
       children: (
-        <Card bordered={false} style={{ borderRadius: 8 }}>
-          <Title level={4}>Project Overview</Title>
+        <Card 
+          bordered={false} 
+          style={{ borderRadius: 8 }}
+          title={<Title level={4} style={{ margin: 0 }}>Project Overview</Title>}
+          extra={<Button type="default" icon={<EditOutlined />} onClick={handleEditClick}>Sửa thông tin</Button>}
+        >
           <Paragraph>
             This CRM system is designed to manage customer relationships, track sales pipelines, and improve communication across the team.
           </Paragraph>
@@ -133,7 +138,7 @@ export default function ProjectDetail() {
           bordered={false} 
           style={{ borderRadius: 8 }}
           title="Danh sách thành viên"
-          extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)} style={{ backgroundColor: '#c41d7f' }}>Thêm thành viên</Button>}
+          extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)}>Thêm thành viên</Button>}
         >
           <Table columns={memberColumns} dataSource={memberData} pagination={false} />
         </Card>
@@ -143,7 +148,7 @@ export default function ProjectDetail() {
       key: '4',
       label: 'Roadmap',
       icon: <ProjectOutlined />,
-      children: <Card bordered={false} style={{ borderRadius: 8 }}>Roadmap (Coming soon)</Card>,
+      children: <RoadmapTab />,
     },
   ];
 
@@ -156,7 +161,6 @@ export default function ProjectDetail() {
               <Title level={2} style={{ margin: 0 }}>CRM System</Title>
               <Text type="secondary">Customer Relationship Management - Project #{id}</Text>
             </div>
-            <Button type="default" icon={<EditOutlined />} onClick={handleEditClick} style={{ alignSelf: 'flex-start', marginTop: '4px' }}>Sửa thông tin</Button>
           </div>
           <div style={{ textAlign: 'right' }}>
             <Text type="secondary">Deadline</Text>

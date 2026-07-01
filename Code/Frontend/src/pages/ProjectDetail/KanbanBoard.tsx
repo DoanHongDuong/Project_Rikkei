@@ -28,13 +28,14 @@ interface Task {
   title: string;
   status: 'todo' | 'inprogress' | 'done';
   assignee: string;
+  deadline?: string;
 }
 
 const initialTasks: Task[] = [
-  { id: '1', title: 'Thiết kế giao diện Login', status: 'todo', assignee: 'Khoảng Phát' },
-  { id: '2', title: 'Xây dựng layout Dashboard', status: 'todo', assignee: 'Huy' },
-  { id: '3', title: 'Tích hợp API Users', status: 'inprogress', assignee: 'Dũng' },
-  { id: '4', title: 'Fix bug Header', status: 'done', assignee: 'Khoảng Phát' },
+  { id: '1', title: 'Thiết kế giao diện Login', status: 'todo', assignee: 'Khoảng Phát', deadline: '25/08/2026' },
+  { id: '2', title: 'Xây dựng layout Dashboard', status: 'todo', assignee: 'Huy', deadline: '26/08/2026' },
+  { id: '3', title: 'Tích hợp API Users', status: 'inprogress', assignee: 'Dũng', deadline: '20/08/2026' },
+  { id: '4', title: 'Fix bug Header', status: 'done', assignee: 'Khoảng Phát', deadline: '15/08/2026' },
 ];
 
 function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task) => void }) {
@@ -59,11 +60,19 @@ function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task)
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onClick(task)}>
       <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <Text strong style={{ display: 'block', marginBottom: '8px' }}>{task.title}</Text>
+        {task.deadline && (
+          <div style={{ marginBottom: '8px' }}>
+            <Text type="secondary" style={{ fontSize: '12px' }}>Deadline: {task.deadline}</Text>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Tag color={task.status === 'done' ? 'success' : task.status === 'inprogress' ? 'processing' : 'default'}>
             {task.status}
           </Tag>
-          <Avatar size="small" icon={<UserOutlined />} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Avatar size="small" icon={<UserOutlined />} />
+            <Text style={{ fontSize: '12px' }}>{task.assignee}</Text>
+          </div>
         </div>
       </Card>
     </div>
@@ -134,7 +143,7 @@ export default function KanbanBoard() {
     if (editingTask) {
       // Sửa task
       setTasks(tasks.map(t => 
-        t.id === editingTask.id ? { ...t, title: values.title, assignee: values.assignee || 'Unassigned' } : t
+        t.id === editingTask.id ? { ...t, title: values.title, assignee: values.assignee || 'Unassigned', deadline: values.deadline ? (typeof values.deadline.format === 'function' ? values.deadline.format('DD/MM/YYYY') : values.deadline) : undefined } : t
       ));
     } else {
       // Thêm task mới
@@ -143,6 +152,7 @@ export default function KanbanBoard() {
         title: values.title,
         status: values.status,
         assignee: values.assignee || 'Unassigned',
+        deadline: values.deadline ? (typeof values.deadline.format === 'function' ? values.deadline.format('DD/MM/YYYY') : values.deadline) : undefined
       };
       setTasks([...tasks, newTask]);
     }
@@ -229,9 +239,19 @@ export default function KanbanBoard() {
         {activeTask ? (
           <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', width: '100%' }}>
             <Text strong style={{ display: 'block', marginBottom: '8px' }}>{activeTask.title}</Text>
+            {activeTask.deadline && (
+              <div style={{ marginBottom: '8px' }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>Deadline: {activeTask.deadline}</Text>
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Tag>{activeTask.status}</Tag>
-              <Avatar size="small" icon={<UserOutlined />} />
+              <Tag color={activeTask.status === 'done' ? 'success' : activeTask.status === 'inprogress' ? 'processing' : 'default'}>
+                {activeTask.status}
+              </Tag>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Avatar size="small" icon={<UserOutlined />} />
+                <Text style={{ fontSize: '12px' }}>{activeTask.assignee}</Text>
+              </div>
             </div>
           </Card>
         ) : null}

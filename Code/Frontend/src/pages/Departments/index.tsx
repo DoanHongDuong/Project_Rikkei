@@ -154,7 +154,7 @@ export default function DepartmentsPage() {
         <Title level={2} style={{ margin: 0, fontWeight: 700 }}>
           Danh sách phòng ban
         </Title>
-        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={handleCreate} style={{ backgroundColor: '#c41d7f' }}>
+        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={handleCreate}>
           Tạo phòng ban
         </Button>
       </div>

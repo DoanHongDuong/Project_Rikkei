@@ -69,7 +69,7 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
             icon={isAdded ? <CheckOutlined style={{ color: '#52c41a' }} /> : <PlusOutlined />}
             onClick={() => !isAdded && handleAdd(record.id)}
             disabled={isAdded}
-            style={!isAdded ? { backgroundColor: '#c41d7f' } : {}}
+            style={{}}
           />
         );
       },

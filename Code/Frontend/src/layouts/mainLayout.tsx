@@ -77,10 +77,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
           left: 0,
           top: 0,
           bottom: 0,
-          backgroundColor: '#c41d7f'
+          backgroundColor: '#1E3A5F'
         }}
       >
-        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #9e1068' }}>
+        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #162D4A' }}>
           <h2 style={{ margin: 0, color: '#fff', fontWeight: 700 }}>TMS</h2>
         </div>
         <Menu
@@ -89,7 +89,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={handleMenuClick}
-          style={{ backgroundColor: '#c41d7f', borderRight: 0, paddingTop: 16 }}
+          style={{ backgroundColor: '#1E3A5F', borderRight: 0, paddingTop: 16 }}
         />
       </Sider>
       <Layout style={{ marginLeft: 240 }}>
@@ -99,7 +99,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             top: 0,
             zIndex: 1,
             width: '100%',
-            backgroundColor: '#ffe5e0',
+            backgroundColor: '#FFFFFF',
             padding: '0 24px',
             display: 'flex',
             alignItems: 'center',
@@ -112,7 +112,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </div>
           <Space size="large" align="center">
             <Badge count={5} size="small">
-              <BellFilled style={{ fontSize: 24, cursor: 'pointer', color: '#ff7a7a' }} />
+              <BellFilled style={{ fontSize: 24, cursor: 'pointer', color: '#6B7280' }} />
             </Badge>
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
               <Space style={{ cursor: 'pointer' }}>

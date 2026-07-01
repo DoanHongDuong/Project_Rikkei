@@ -17,8 +17,8 @@ function App() {
         },
         components: {
           Layout: {
-            headerBg: '#ffe5e0',
-            siderBg: '#ffffff',
+            headerBg: '#FFFFFF',
+            siderBg: '#1E3A5F',
             bodyBg: '#F8FAFC',
           },
         },
