@@ -21,9 +21,12 @@ import DepartmentsPage from '../pages/Departments';
 import PMDepartmentsPage from '../pages/Departments/PMDepartmentsPage';
 import AuthService from '../services/authService';
 
+import AdminDashboardPage from '../pages/Dashboard/AdminDashboardPage';
+
 const DashboardRoute = () => {
   const user = AuthService.getUser();
   if (user?.role === 'PM') return <PMDashboardPage />;
+  if (user?.role === 'ADMIN') return <AdminDashboardPage />;
   return <DashboardPage />;
 };
 
@@ -72,6 +75,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
               <DashboardRoute />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/my-tasks" 
+          element={
+            <ProtectedRoute allowedRoles={['MEMBER']}>
+              <DashboardPage />
             </ProtectedRoute>
           } 
         />

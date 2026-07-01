@@ -23,7 +23,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     }
   }
 
-  if (userRole === 'PM') {
+  if (userRole === 'PM' || userRole === 'MEMBER') {
     return (
       <PMLayout>
         {children}

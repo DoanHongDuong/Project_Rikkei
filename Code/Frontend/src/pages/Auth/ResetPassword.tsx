@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AUTH_MESSAGES, API_ROUTES, APP_ROUTES } from '../../constants/authMessages';
 import './AuthDes.css';
 
