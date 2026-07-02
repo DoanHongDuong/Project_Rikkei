@@ -45,7 +45,7 @@ router.post(
 router.get(
     '/users/:id',
     verifyToken,
-    adminOnly,
+    authorizeRoles('ADMIN', 'PM', 'MEMBER'),
     validate({ params: userIdParamsSchema }),
     (req, res) => adminController.getUserDetail(req, res)
 );

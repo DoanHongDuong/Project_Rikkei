@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import UserService from '../../services/userService';
+import DepartmentService from '../../services/departmentService';
 
 const { Title, Text } = Typography;
 
@@ -17,6 +18,7 @@ export default function UserInfo() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [userData, setUserData] = useState<any>(null);
+  const [departmentName, setDepartmentName] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   const fetchUserInfo = async () => {
@@ -26,6 +28,17 @@ export default function UserInfo() {
       const response = await UserService.getUserById(id);
       if (response.data) {
         setUserData(response.data);
+        if (response.data.department_id) {
+          try {
+            const deptsResponse = await DepartmentService.getAll();
+            const dept = deptsResponse.data?.find((d: any) => d.id === response.data.department_id);
+            if (dept) {
+              setDepartmentName(dept.name);
+            }
+          } catch (e) {
+            console.error('Failed to fetch departments', e);
+          }
+        }
       }
     } catch (error: any) {
       message.error(error.message || 'Lỗi khi tải thông tin người dùng');
@@ -96,7 +109,7 @@ export default function UserInfo() {
           <Space direction="vertical" size="middle">
             <Space>
               <BankOutlined style={{ fontSize: 18 }} />
-              <Text>Phòng ban: ID {userData.department_id || 'Chưa phân bổ'}</Text>
+              <Text>Phòng ban: {departmentName || 'Chưa phân bổ'}</Text>
             </Space>
             <Space>
               <MailOutlined style={{ fontSize: 18 }} />
@@ -161,38 +174,6 @@ export default function UserInfo() {
         >
           {userData.status === 'ACTIVE' ? 'Vô hiệu hóa (Disable)' : 'Kích hoạt (ACTIVE)'}
         </Button>
-      </div>
-
-      <div style={{ marginTop: 48 }}>
-        <Title level={4} style={{ fontWeight: 700, marginBottom: 16 }}>Danh sách nhiệm vụ đang đảm nhận</Title>
-        <Table 
-          dataSource={[
-            { key: '1', title: 'Thiết kế giao diện Login', project: 'TMS v2', status: 'In Progress', progress: 50 },
-            { key: '2', title: 'Tối ưu API', project: 'TMS v2', status: 'To Do', progress: 0 },
-            { key: '3', title: 'Fix bug Header', project: 'Internal Tools', status: 'Done', progress: 100 },
-          ]}
-          columns={[
-            { title: 'Tên nhiệm vụ', dataIndex: 'title', key: 'title' },
-            { title: 'Dự án', dataIndex: 'project', key: 'project' },
-            { 
-              title: 'Trạng thái', 
-              dataIndex: 'status', 
-              key: 'status',
-              render: (status) => (
-                <Tag color={status === 'Done' ? 'success' : status === 'In Progress' ? 'processing' : 'default'}>
-                  {status}
-                </Tag>
-              )
-            },
-            {
-              title: 'Tiến độ',
-              dataIndex: 'progress',
-              key: 'progress',
-              render: (progress) => <Progress percent={progress} size="small" />
-            }
-          ]}
-          pagination={false}
-        />
       </div>
     </div>
   );

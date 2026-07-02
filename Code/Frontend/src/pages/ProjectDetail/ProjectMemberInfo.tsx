@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Typography, Avatar, Tag, Button, Row, Col, Card } from 'antd';
-import { LeftOutlined, UserOutlined, EnvironmentOutlined, MailOutlined, CheckSquareOutlined, MessageOutlined } from '@ant-design/icons';
+import { Typography, Avatar, Tag, Button, Row, Col, Card, Spin, message } from 'antd';
+import { LeftOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
+import UserService from '../../services/userService';
+import TaskService from '../../services/taskService';
 
 const { Title, Paragraph } = Typography;
 
@@ -8,22 +11,45 @@ export default function ProjectMemberInfo() {
   const navigate = useNavigate();
   const { projectId, memberId } = useParams();
 
-  // Mock data dựa trên thiết kế
-  const member = {
-    id: memberId,
-    name: 'George Floyd',
-    role: 'Sales',
-    location: 'Houston, Texas',
-    email: 'gfloyd.cards@gmail.com',
-    about: 'Floyd born in Fayetteville, North Carolina, and grew up in Houston, Texas, playing football and basketball throughout high school and college.',
-  };
+  const [userData, setUserData] = useState<any>(null);
+  const [memberTasks, setMemberTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const tasks = [
-    { id: 1, title: 'Set a job', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', assignees: 2, comments: 1 },
-    { id: 2, title: 'Set a job', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', assignees: 2, comments: 1 },
-    { id: 3, title: 'Set a job', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', assignees: 2, comments: 1 },
-    { id: 4, title: 'Set a job', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', assignees: 2, comments: 1 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!projectId || !memberId) return;
+      try {
+        setLoading(true);
+        const [userRes, tasksRes] = await Promise.all([
+          UserService.getUserById(memberId),
+          TaskService.getTasks(projectId)
+        ]);
+        
+        if (userRes.data) setUserData(userRes.data);
+        
+        const assignedTasks = tasksRes.filter((t: any) => t.assignee_id === Number(memberId));
+        setMemberTasks(assignedTasks);
+      } catch (error: any) {
+        message.error(error.message || 'Lỗi khi tải dữ liệu');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [projectId, memberId]);
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>;
+  }
+
+  if (!userData) {
+    return (
+      <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px', borderRadius: 8 }}>
+        <Button type="text" icon={<LeftOutlined />} onClick={() => navigate(`/projects/${projectId || 1}`)}>Trở về</Button>
+        <div style={{ marginTop: 24 }}>Không tìm thấy thông tin thành viên</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px', borderRadius: 8 }}>
@@ -43,56 +69,45 @@ export default function ProjectMemberInfo() {
         {/* Cột trái: Thông tin cá nhân */}
         <Col xs={24} md={8} lg={6}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Avatar size={120} src="https://i.pravatar.cc/150?img=11" icon={<UserOutlined />} style={{ marginBottom: 16 }} />
+            <Avatar size={120} icon={<UserOutlined />} style={{ marginBottom: 16, backgroundColor: '#f0f0f0', color: '#8c8c8c' }} />
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Title level={4} style={{ margin: 0 }}>{member.name}</Title>
-              <Tag color="purple" style={{ borderRadius: 12 }}>{member.role}</Tag>
+              <Title level={4} style={{ margin: 0 }}>{userData.full_name}</Title>
+              <Tag color="purple" style={{ borderRadius: 12 }}>{userData.role}</Tag>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16, textAlign: 'left', color: '#666' }}>
-              <div><EnvironmentOutlined style={{ marginRight: 8 }} /> {member.location}</div>
-              <div><MailOutlined style={{ marginRight: 8 }} /> {member.email}</div>
+              <div><MailOutlined style={{ marginRight: 8 }} /> {userData.email}</div>
             </div>
-          </div>
-
-          <div>
-            <Title level={5}>Về tôi</Title>
-            <Paragraph type="secondary" style={{ fontSize: 14, lineHeight: '1.6' }}>
-              {member.about}
-            </Paragraph>
           </div>
         </Col>
 
         {/* Cột phải: Công việc */}
         <Col xs={24} md={16} lg={18}>
-          <Title level={5} style={{ marginBottom: 16 }}>Công việc</Title>
+          <Title level={5} style={{ marginBottom: 16 }}>Công việc đang đảm nhận</Title>
           <Row gutter={[16, 16]}>
-            {tasks.map(task => (
-              <Col xs={24} sm={12} xl={8} key={task.id}>
-                <Card 
-                  hoverable 
-                  style={{ borderRadius: 8, backgroundColor: '#f8f9fa' }}
-                  bodyStyle={{ padding: 16 }}
-                >
-                  <Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>{task.title}</Title>
-                  <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {task.description}
-                  </Paragraph>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Avatar.Group maxCount={3} size="small">
-                      <Avatar src="https://i.pravatar.cc/150?img=33" />
-                      <Avatar src="https://i.pravatar.cc/150?img=47" />
-                    </Avatar.Group>
-                    
-                    <div style={{ display: 'flex', gap: 12, color: '#888', fontSize: 12 }}>
-                      <span><MessageOutlined /> {task.comments}</span>
-                      <span><CheckSquareOutlined /> 0/1</span>
-                    </div>
-                  </div>
-                </Card>
+            {memberTasks.length > 0 ? (
+              memberTasks.map(task => (
+                <Col xs={24} sm={12} xl={8} key={task.id}>
+                  <Card 
+                    hoverable 
+                    style={{ borderRadius: 8, backgroundColor: '#f8f9fa' }}
+                    bodyStyle={{ padding: 16 }}
+                  >
+                    <Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>{task.name || task.title}</Title>
+                    <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {task.description || 'Không có mô tả'}
+                    </Paragraph>
+                    <Tag color={task.status === 'DONE' ? 'green' : (task.status === 'IN_PROGRESS' ? 'processing' : 'default')}>
+                      {task.status}
+                    </Tag>
+                  </Card>
+                </Col>
+              ))
+            ) : (
+              <Col span={24}>
+                <div style={{ padding: '20px 0', color: '#888' }}>Thành viên này chưa có công việc nào trong dự án.</div>
               </Col>
-            ))}
+            )}
           </Row>
         </Col>
       </Row>

@@ -198,36 +198,12 @@ export default function DepartmentsPage() {
                     {dept.name}
                   </Title>
                   
-                  {/* Mock stats for visual consistency as backend doesn't provide them yet */}
-                  <div style={{ display: 'flex', gap: 24, marginBottom: 16 }}>
+                  {/* Stats */}
+                  <div style={{ display: 'flex', gap: 24 }}>
                     <Space size={4}>
                       <TeamOutlined style={{ color: '#52c41a', fontSize: 16 }} />
                       <Text style={{ color: '#52c41a', fontWeight: 600 }}>{dept.users || 0}</Text>
                     </Space>
-                    <Space size={4}>
-                      <CheckSquareOutlined style={{ color: '#1677ff', fontSize: 16 }} />
-                      <Text style={{ color: '#1677ff', fontWeight: 600 }}>0</Text>
-                    </Space>
-                    <Space size={4}>
-                      <ContainerOutlined style={{ color: '#ff4d4f', fontSize: 16 }} />
-                      <Text style={{ color: '#ff4d4f', fontWeight: 600 }}>0</Text>
-                    </Space>
-                  </div>
-
-                  <div>
-                    <Tag 
-                      style={{ 
-                        margin: 0, 
-                        border: 'none', 
-                        borderRadius: 16, 
-                        padding: '2px 12px',
-                        backgroundColor: '#e6f4ff',
-                        color: '#1677ff',
-                        fontWeight: 500
-                      }}
-                    >
-                      Hoạt động
-                    </Tag>
                   </div>
                 </Card>
               </Col>
