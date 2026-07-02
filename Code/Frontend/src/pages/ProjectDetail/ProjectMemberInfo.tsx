@@ -24,7 +24,7 @@ export default function ProjectMemberInfo() {
         // Lấy danh sách thành viên dự án và tìm thành viên theo memberId
         const members = await ProjectService.getProjectMembers(projectId);
         const found = (members || []).find(
-          (m: any) => String(m.user_id) === String(memberId) || String(m.id) === String(memberId)
+          (m: any) => String(m.user_id) === String(memberId)
         );
         setMember(found || null);
 
@@ -33,7 +33,7 @@ export default function ProjectMemberInfo() {
           project_id: projectId,
           assignee_id: memberId
         });
-        setTasks(taskData || []);
+        setTasks(Array.isArray(taskData) ? taskData : taskData?.tasks || []);
       } catch (error: any) {
         message.error(error.message || 'Không thể tải thông tin thành viên');
       } finally {

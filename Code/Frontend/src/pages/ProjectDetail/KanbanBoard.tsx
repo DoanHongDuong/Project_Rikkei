@@ -40,7 +40,7 @@ interface Task {
   roadmap_item_id?: number | null;
 }
 
-function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task) => void }) {
+function SortableTaskItem({ task, onClick, isHighlighted }: { task: Task, onClick: (task: Task) => void, isHighlighted?: boolean }) {
   const {
     attributes,
     listeners,
@@ -58,6 +58,10 @@ function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task)
     cursor: 'grab'
   };
 
+  const cardStyle = isHighlighted
+    ? { borderRadius: '8px', border: '2px solid #1677ff', boxShadow: '0 0 8px rgba(22,119,255,0.5)' }
+    : { borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
+
   return (
     <div
       ref={setNodeRef}
@@ -69,7 +73,7 @@ function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task)
         onClick(task);
       }}
     >
-      <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+      <Card size="small" style={cardStyle}>
         <Text strong style={{ display: 'block', marginBottom: '8px' }}>{task.title}</Text>
         {task.deadline && (
           <div style={{ marginBottom: '8px' }}>
@@ -90,7 +94,7 @@ function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task)
   );
 }
 
-function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: string, status: string, tasks: Task[], onAddTask: (status: string) => void, onTaskClick: (task: Task) => void }) {
+function Column({ title, status, tasks, onAddTask, onTaskClick, hideAddButton, highlightTaskId }: { title: string, status: string, tasks: Task[], onAddTask: (status: string) => void, onTaskClick: (task: Task) => void, hideAddButton?: boolean, highlightTaskId?: string | null }) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { type: 'Column', status }
@@ -112,13 +116,13 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
         <Text strong>{title} <Badge count={tasks.length} style={{ backgroundColor: '#E5E7EB', color: '#374151' }} /></Text>
-        <Button size="small" type="text" icon={<PlusOutlined />} onClick={() => onAddTask(status)} />
+        {!hideAddButton && <Button size="small" type="text" icon={<PlusOutlined />} onClick={() => onAddTask(status)} />}
       </div>
 
       <SortableContext items={tasks.map(t => t.id.toString())} strategy={verticalListSortingStrategy}>
         <div style={{ flex: 1, minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
           {tasks.map(task => (
-            <SortableTaskItem key={task.id} task={task} onClick={onTaskClick} />
+            <SortableTaskItem key={task.id} task={task} onClick={onTaskClick} isHighlighted={highlightTaskId === task.id.toString()} />
           ))}
         </div>
       </SortableContext>
@@ -126,7 +130,7 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
   );
 }
 
-export default function KanbanBoard({ projectId, projectMembers, onTasksChanged }: { projectId?: string | number, projectMembers?: any[], onTasksChanged?: () => void }) {
+export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId }: { projectId?: string | number, projectMembers?: any[], onTasksChanged?: () => void, isMember?: boolean, highlightTaskId?: string | null }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -354,9 +358,9 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
       onDragEnd={handleDragEnd}
     >
       <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }}>
-        <Column title="To Do" status="TODO" tasks={tasks.filter(t => t.status === 'TODO')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} />
-        <Column title="In Progress" status="IN_PROGRESS" tasks={tasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} />
-        <Column title="Done" status="DONE" tasks={tasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} />
+        <Column title="To Do" status="TODO" tasks={tasks.filter(t => t.status === 'TODO')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={isMember} highlightTaskId={highlightTaskId} />
+        <Column title="In Progress" status="IN_PROGRESS" tasks={tasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
+        <Column title="Done" status="DONE" tasks={tasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
       </div>
 
       <DragOverlay>
@@ -402,6 +406,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
           setIsDetailModalVisible(false);
           loadTasks();
         }}
+        isMember={isMember}
       />
     </DndContext>
   );

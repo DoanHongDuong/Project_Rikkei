@@ -13,9 +13,10 @@ interface TaskDetailModalProps {
   taskId: string | number;
   onEditClick: () => void;
   onDeleteSuccess?: () => void;
+  isMember?: boolean;
 }
 
-export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess }: TaskDetailModalProps) {
+export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess, isMember }: TaskDetailModalProps) {
   const [newComment, setNewComment] = useState('');
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -95,8 +96,8 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
             Trở về <span style={{ marginLeft: 8 }}>Chi tiết công việc</span>
           </Button>
           <Space>
-            <Button icon={<EditOutlined />} onClick={onEditClick}>Sửa task</Button>
-            <Button danger icon={<DeleteOutlined />} loading={deleting} onClick={handleDelete}>Xóa việc</Button>
+            {!isMember && <Button icon={<EditOutlined />} onClick={onEditClick}>Sửa task</Button>}
+            {!isMember && <Button danger icon={<DeleteOutlined />} loading={deleting} onClick={handleDelete}>Xóa việc</Button>}
           </Space>
         </div>
       }

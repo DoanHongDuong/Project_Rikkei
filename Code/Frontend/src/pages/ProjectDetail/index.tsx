@@ -1,6 +1,6 @@
 import { Tabs, Typography, Progress, Avatar, Divider, Space, Card, Tag, Button, Modal, Form, Input, Select, DatePicker, Table, message, Skeleton } from 'antd';
 import { UserOutlined, UnorderedListOutlined, DesktopOutlined, EditOutlined, InfoCircleOutlined, DeleteOutlined, PlusOutlined, ProjectOutlined } from '@ant-design/icons';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import KanbanBoard from './KanbanBoard';
 import AddMemberModal from './AddMemberModal';
@@ -16,6 +16,19 @@ const { TextArea } = Input;
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const tabFromQuery = queryParams.get('tab') || '1';
+  const highlightTaskId = queryParams.get('highlightTask');
+
+  const [activeTab, setActiveTab] = useState(tabFromQuery);
+
+  useEffect(() => {
+    if (tabFromQuery) {
+      setActiveTab(tabFromQuery);
+    }
+  }, [tabFromQuery]);
 
   const [project, setProject] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -190,7 +203,7 @@ export default function ProjectDetail() {
       key: '2',
       label: 'Tasks',
       icon: <UnorderedListOutlined />,
-      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} />,
+      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} isMember={isMember} highlightTaskId={highlightTaskId} />,
     },
     {
       key: '3',
@@ -259,7 +272,7 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      <Tabs defaultActiveKey="1" items={items} />
+      <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)} items={items} />
 
       <Modal
         title="Sửa thông tin dự án"

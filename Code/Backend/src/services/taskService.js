@@ -267,7 +267,18 @@ class TaskService {
             return where;
         }
 
-        where.assignee_id = currentUser.id;
+        const memberships = await ProjectMember.findAll({
+            where: { user_id: currentUser.id, is_active: true },
+            attributes: ['project_id']
+        });
+        const memberProjectIds = memberships.map(m => m.project_id);
+
+        if (where.project_id && !memberProjectIds.map(Number).includes(Number(where.project_id))) {
+            where.project_id = { [Op.in]: [] };
+            return where;
+        }
+
+        where.project_id = where.project_id || { [Op.in]: memberProjectIds };
         return where;
     }
 
@@ -363,7 +374,15 @@ class TaskService {
             return;
         }
 
-        if (Number(task.assignee_id) === Number(currentUser.id)) {
+        const membership = await ProjectMember.findOne({
+            where: {
+                project_id: task.project_id,
+                user_id: currentUser.id,
+                is_active: true
+            }
+        });
+
+        if (membership) {
             return;
         }
 

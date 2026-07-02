@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Row, Col, Card, Typography, Tabs, Dropdown, message, Spin, Empty, Tag } from 'antd';
-import type { MenuProps } from 'antd';
-import { MoreOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Row, Col, Card, Typography, Tabs, message, Spin, Empty, Tag } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import TaskService from '../../services/taskService';
 import dayjs from 'dayjs';
 
@@ -9,6 +8,7 @@ const { Title, Text, Paragraph } = Typography;
 
 export default function MyTasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = async () => {
@@ -28,25 +28,7 @@ export default function MyTasksPage() {
     fetchTasks();
   }, []);
 
-  const handleMarkAsDone = async (taskId: number) => {
-    try {
-      await TaskService.updateTaskStatus(taskId, 'DONE');
-      message.success('Đã đánh dấu hoàn thành');
-      fetchTasks();
-    } catch (error: any) {
-      message.error(error.message || 'Lỗi khi cập nhật trạng thái');
-    }
-  };
 
-  const getDropdownMenuItems = (task: any): MenuProps['items'] => [
-    { 
-      key: '2', 
-      label: 'Đánh dấu đã xong',
-      icon: <CheckCircleOutlined />,
-      disabled: task.status === 'DONE',
-      onClick: () => handleMarkAsDone(task.id)
-    }
-  ];
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -61,6 +43,13 @@ export default function MyTasksPage() {
   const TaskCard = ({ task }: { task: any }) => (
     <Card 
       bordered={false} 
+      hoverable
+      onClick={() => {
+        const pId = task.project_id || task.project?.id;
+        if (pId) {
+          navigate(`/projects/${pId}?tab=2&highlightTask=${task.id}`);
+        }
+      }}
       style={{ 
         backgroundColor: '#F3F4F6', 
         borderRadius: '8px',
@@ -99,9 +88,6 @@ export default function MyTasksPage() {
             </Tag>
           </div>
         </div>
-        <Dropdown menu={{ items: getDropdownMenuItems(task) }} trigger={['click']} placement="bottomRight">
-          <MoreOutlined style={{ fontSize: '20px', cursor: 'pointer', color: '#6B7280' }} />
-        </Dropdown>
       </div>
     </Card>
   );
