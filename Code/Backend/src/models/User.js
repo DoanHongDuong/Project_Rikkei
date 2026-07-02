@@ -54,6 +54,6 @@ const User = sequelize.define('User', {
     updatedAt: "updated_at"
 });
 
-Department.hasMany(User, { foreignKey: 'department_id' });
-User.belongsTo(Department, { foreignKey: 'department_id' });
+Department.hasMany(User, { foreignKey: 'department_id', as: 'users' });
+User.belongsTo(Department, { foreignKey: 'department_id', as: 'department' });
 module.exports = User;

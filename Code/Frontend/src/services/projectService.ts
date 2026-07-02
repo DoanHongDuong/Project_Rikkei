@@ -115,8 +115,8 @@ class ProjectService {
   }
 
   static async archiveProject(id: number): Promise<Project> {
-    const response = await fetch(`${API_BASE_URL}/api/projects/${id}/archive`, {
-      method: 'PATCH',
+    const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+      method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
 

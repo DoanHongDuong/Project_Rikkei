@@ -1,34 +1,49 @@
-import { Modal, Input, Table, Space, Avatar, Button, Typography } from 'antd';
+import { Modal, Input, Table, Space, Avatar, Button, Typography, Spin, message } from 'antd';
 import { SearchOutlined, PlusOutlined, CheckOutlined, UserOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import UserService from '../../services/userService';
 
 const { Text } = Typography;
 
 interface AddMemberModalProps {
   open: boolean;
   onCancel: () => void;
-  onAdd: (userId: string) => void;
+  onAdd: (userId: number) => void;
+  projectId?: number;
 }
 
-export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModalProps) {
+export default function AddMemberModal({ open, onCancel, onAdd, projectId }: AddMemberModalProps) {
   const [searchText, setSearchText] = useState('');
-  const [addedMembers, setAddedMembers] = useState<string[]>([]);
+  const [addedMembers, setAddedMembers] = useState<number[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data cho danh sách user có thể thêm vào
-  const availableUsers = [
-    { id: 'M001', name: 'Nguyễn Văn A', role: 'Developer' },
-    { id: 'M002', name: 'Trần Thị B', role: 'Tester' },
-    { id: 'M003', name: 'Lê Văn C', role: 'Designer' },
-    { id: 'M004', name: 'Phạm Thị D', role: 'Business Analyst' },
-    { id: 'M005', name: 'Hoàng Văn E', role: 'Project Manager' },
-  ];
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await UserService.getAllUsers(searchText);
+      if (response.data) {
+        setAvailableUsers(response.data);
+      }
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi tải danh sách người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      loadUsers();
+    }
+  }, [open, searchText]);
 
   const filteredUsers = availableUsers.filter(user =>
-    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.id.toLowerCase().includes(searchText.toLowerCase())
+    user.full_name?.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleAdd = (id: string) => {
+  const handleAdd = (id: number) => {
     setAddedMembers(prev => [...prev, id]);
     onAdd(id);
   };
@@ -36,8 +51,8 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
   const columns = [
     {
       title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'full_name',
+      key: 'full_name',
       render: (text: string) => (
         <Space>
           <Avatar icon={<UserOutlined />} />
@@ -46,10 +61,10 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
       ),
     },
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id: string) => <Text type="secondary">{id}</Text>
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      render: (email: string) => <Text type="secondary">{email}</Text>
     },
     {
       title: 'Role',
@@ -92,13 +107,19 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
           onChange={e => setSearchText(e.target.value)}
         />
       </div>
-      <Table
-        columns={columns}
-        dataSource={filteredUsers}
-        pagination={{ pageSize: 5 }}
-        rowKey="id"
-        size="small"
-      />
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin />
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredUsers}
+          pagination={{ pageSize: 5 }}
+          rowKey="id"
+          size="small"
+        />
+      )}
     </Modal>
   );
 }

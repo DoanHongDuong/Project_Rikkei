@@ -78,8 +78,8 @@ class UserService {
     }
 
     async getUsers(filters) {
-        const page = Number(filters.page);
-        const limit = Number(filters.limit);
+        const page = Number(filters.page) || 1;
+        const limit = Number(filters.limit) || 10;
         const offset = (page - 1) * limit;
         const where = this.buildUserWhere(filters);
 

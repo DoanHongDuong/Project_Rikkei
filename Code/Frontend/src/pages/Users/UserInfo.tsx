@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import UserService from '../../services/userService';
+import DepartmentService from '../../services/departmentService';
 
 const { Title, Text } = Typography;
 
@@ -18,6 +19,7 @@ export default function UserInfo() {
   const { id } = useParams();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [departmentName, setDepartmentName] = useState<string>('');
 
   const fetchUserInfo = async () => {
     if (!id) return;
@@ -26,6 +28,18 @@ export default function UserInfo() {
       const response = await UserService.getUserById(id);
       if (response.data) {
         setUserData(response.data);
+
+        // Fetch department name if department_id exists
+        if (response.data.department_id) {
+          try {
+            const deptResponse = await DepartmentService.getById(response.data.department_id);
+            if (deptResponse.data) {
+              setDepartmentName(deptResponse.data.name);
+            }
+          } catch (deptError) {
+            console.error('Error fetching department:', deptError);
+          }
+        }
       }
     } catch (error: any) {
       message.error(error.message || 'Lỗi khi tải thông tin người dùng');
@@ -96,7 +110,7 @@ export default function UserInfo() {
           <Space direction="vertical" size="middle">
             <Space>
               <BankOutlined style={{ fontSize: 18 }} />
-              <Text>Phòng ban: ID {userData.department_id || 'Chưa phân bổ'}</Text>
+              <Text>Phòng ban: {departmentName || 'Chưa phân bổ'}</Text>
             </Space>
             <Space>
               <MailOutlined style={{ fontSize: 18 }} />

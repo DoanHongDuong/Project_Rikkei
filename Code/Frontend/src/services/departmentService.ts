@@ -56,6 +56,25 @@ class DepartmentService {
     }
   }
 
+  // Lấy thông tin phòng ban theo ID
+  static async getById(id: number) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/departments/${id}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Lỗi khi tải thông tin phòng ban');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // Tạo mới
   static async create(data: DepartmentData) {
     try {
