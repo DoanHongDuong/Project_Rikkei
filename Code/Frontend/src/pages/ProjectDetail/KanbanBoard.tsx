@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
-import { 
-  DndContext, 
-  closestCorners, 
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
+import {
+  DndContext,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
   useSensors,
   DragOverlay
 } from '@dnd-kit/core';
-import { 
-  arrayMove, 
-  SortableContext, 
+import {
+  arrayMove,
+  SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy 
+  verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -21,6 +21,7 @@ import { UserOutlined, PlusOutlined } from '@ant-design/icons';
 import TaskFormModal from './TaskFormModal';
 import TaskDetailModal from './TaskDetailModal';
 import TaskService from '../../services/taskService';
+import RoadmapService from '../../services/roadmapService';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
@@ -32,6 +33,7 @@ interface Task {
   assignee?: string;
   assignee_id?: number | null;
   deadline?: string;
+  roadmap_item_id?: number | null;
 }
 
 function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task) => void }) {
@@ -82,12 +84,12 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
   });
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
-      style={{ 
-        flex: 1, 
-        backgroundColor: '#F3F4F6', 
-        padding: '16px', 
+      style={{
+        flex: 1,
+        backgroundColor: '#F3F4F6',
+        padding: '16px',
         borderRadius: '8px',
         minHeight: '400px'
       }}
@@ -96,7 +98,7 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
         <Text strong>{title} <Badge count={tasks.length} style={{ backgroundColor: '#E5E7EB', color: '#374151' }} /></Text>
         <Button size="small" type="text" icon={<PlusOutlined />} onClick={() => onAddTask(status)} />
       </div>
-      
+
       <SortableContext items={tasks.map(t => t.id.toString())} strategy={verticalListSortingStrategy}>
         {tasks.map(task => (
           <SortableTaskItem key={task.id} task={task} onClick={onTaskClick} />
@@ -106,14 +108,15 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
   );
 }
 
-export default function KanbanBoard({ projectId, projectMembers }: { projectId?: string | number, projectMembers?: any[] }) {
+export default function KanbanBoard({ projectId, projectMembers, onTasksChanged }: { projectId?: string | number, projectMembers?: any[], onTasksChanged?: () => void }) {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  
+
   const [detailTaskId, setDetailTaskId] = useState<string | number>('');
   const [currentStatusForNewTask, setCurrentStatusForNewTask] = useState('TODO');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -123,7 +126,7 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
     try {
       setLoading(true);
       const data = await TaskService.getTasks(projectId);
-      
+
       const tasksList = Array.isArray(data) ? data : data.tasks || [];
       const mappedTasks = tasksList.map((t: any) => ({
         id: t.id,
@@ -131,9 +134,10 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
         status: t.status,
         assignee_id: t.assignee_id,
         assignee: t.assignee?.full_name,
-        deadline: t.deadline ? dayjs(t.deadline).format('YYYY-MM-DD') : undefined
+        deadline: t.deadline ? dayjs(t.deadline).format('YYYY-MM-DD') : undefined,
+        roadmap_item_id: t.roadmap_item_id
       }));
-      
+
       setTasks(mappedTasks);
     } catch (error: any) {
       message.error(error.message || 'Lỗi tải công việc');
@@ -142,8 +146,22 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
     }
   };
 
+  const loadMilestones = async () => {
+    if (!projectId) return;
+    try {
+      const roadmap = await RoadmapService.getRoadmapByProject(projectId);
+      if (roadmap) {
+        const items = await RoadmapService.getRoadmapItems(roadmap.id);
+        setMilestones(items || []);
+      }
+    } catch (error) {
+      // Không có roadmap/milestone cũng không sao, dropdown milestone chỉ để trống.
+    }
+  };
+
   useEffect(() => {
     loadTasks();
+    loadMilestones();
   }, [projectId]);
 
   const handleAddTask = (status: string) => {
@@ -168,18 +186,19 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
 
   const handleModalOk = async (values: any) => {
     if (!projectId) return;
-    
+
     try {
       if (editingTask) {
         // Cập nhật task
         const payload = {
           title: values.title,
           description: values.description,
-          due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined
+          due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined,
+          roadmap_item_id: values.roadmap_item_id ?? null
         };
         await TaskService.updateTask(editingTask.id, payload);
         if (values.assignee_id !== undefined) {
-           await TaskService.assignTask(editingTask.id, values.assignee_id);
+          await TaskService.assignTask(editingTask.id, values.assignee_id);
         }
         message.success('Cập nhật task thành công!');
       } else {
@@ -190,7 +209,8 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
           description: values.description,
           status: values.status,
           assignee_id: values.assignee_id,
-          due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined
+          due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined,
+          roadmap_item_id: values.roadmap_item_id ?? null
         };
         await TaskService.createTask(payload);
         message.success('Tạo task thành công!');
@@ -198,6 +218,7 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
       setIsModalVisible(false);
       setEditingTask(null);
       loadTasks(); // Refresh board
+      onTasksChanged?.(); // Đồng bộ lại % progress ở project header
     } catch (error: any) {
       message.error(error.message || 'Có lỗi xảy ra');
     }
@@ -227,10 +248,10 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
     setActiveTask(null);
 
     if (!over) return;
-    
+
     const activeId = active.id;
     const overId = over.id;
-    
+
     const isActiveTask = active.data.current?.type === 'Task';
     const isOverTask = over.data.current?.type === 'Task';
     const isOverColumn = over.data.current?.type === 'Column';
@@ -240,23 +261,24 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
     // Tìm cột đích
     let newStatus = '';
     if (isOverTask) {
-       const overTask = tasks.find(t => t.id.toString() === overId.toString());
-       newStatus = overTask?.status || '';
+      const overTask = tasks.find(t => t.id.toString() === overId.toString());
+      newStatus = overTask?.status || '';
     } else if (isOverColumn) {
-       newStatus = over.data.current?.status;
+      newStatus = over.data.current?.status;
     }
 
     const activeTaskData = tasks.find(t => t.id.toString() === activeId.toString());
 
     if (newStatus && activeTaskData && activeTaskData.status !== newStatus) {
       // Optimistic update UI
-      setTasks(prev => prev.map(t => 
+      setTasks(prev => prev.map(t =>
         t.id.toString() === activeId.toString() ? { ...t, status: newStatus as any } : t
       ));
-      
+
       try {
         await TaskService.updateTaskStatus(activeTaskData.id, newStatus);
         // Có thể loadTasks() lại để đảm bảo đồng bộ 
+        onTasksChanged?.(); // Đồng bộ lại % progress ở project header
       } catch (error: any) {
         message.error(error.message || 'Lỗi cập nhật trạng thái');
         loadTasks(); // Revert back
@@ -269,9 +291,9 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
   }
 
   return (
-    <DndContext 
-      sensors={sensors} 
-      collisionDetection={closestCorners} 
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
@@ -280,7 +302,7 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
         <Column title="In Progress" status="IN_PROGRESS" tasks={tasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} />
         <Column title="Done" status="DONE" tasks={tasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} />
       </div>
-      
+
       <DragOverlay>
         {activeTask ? (
           <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', width: '100%' }}>
@@ -303,18 +325,19 @@ export default function KanbanBoard({ projectId, projectMembers }: { projectId?:
         ) : null}
       </DragOverlay>
 
-      <TaskFormModal 
-        visible={isModalVisible} 
+      <TaskFormModal
+        visible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
           setEditingTask(null);
-        }} 
-        onOk={handleModalOk} 
-        initialValues={editingTask ? { id: editingTask.id, title: editingTask.title, assignee_id: editingTask.assignee_id, status: editingTask.status, deadline: editingTask.deadline ? dayjs(editingTask.deadline) : undefined } : { status: currentStatusForNewTask }}
+        }}
+        onOk={handleModalOk}
+        initialValues={editingTask ? { id: editingTask.id, title: editingTask.title, assignee_id: editingTask.assignee_id, status: editingTask.status, deadline: editingTask.deadline ? dayjs(editingTask.deadline) : undefined, roadmap_item_id: editingTask.roadmap_item_id } : { status: currentStatusForNewTask }}
         projectMembers={projectMembers}
+        milestones={milestones}
       />
 
-      <TaskDetailModal 
+      <TaskDetailModal
         open={isDetailModalVisible}
         onCancel={() => setIsDetailModalVisible(false)}
         taskId={detailTaskId}

@@ -21,11 +21,11 @@ export default function RoadmapHeader({ onSearch, onAddMilestone }: RoadmapHeade
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
       <Title level={3} style={{ margin: 0, fontWeight: 700 }}>Roadmap</Title>
-      
+
       <Space wrap>
-        <Input 
-          placeholder="Search milestones..." 
-          prefix={<SearchOutlined style={{ color: '#9CA3AF' }} />} 
+        <Input
+          placeholder="Search milestones..."
+          prefix={<SearchOutlined style={{ color: '#9CA3AF' }} />}
           style={{ width: 250, borderRadius: 6 }}
           onChange={(e) => onSearch(e.target.value)}
           allowClear

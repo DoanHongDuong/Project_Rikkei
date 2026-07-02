@@ -2,14 +2,18 @@ import { Timeline } from 'antd';
 import type { Milestone } from '../types/roadmap';
 import MilestoneCard from './MilestoneCard';
 
-export default function MilestoneTimeline({ 
-  milestones, 
-  onEdit, 
-  onDelete 
-}: { 
+export default function MilestoneTimeline({
+  milestones,
+  onEdit,
+  onDelete,
+  onAddTask,
+  onTaskStatusChange
+}: {
   milestones: Milestone[];
   onEdit?: (m: Milestone) => void;
   onDelete?: (id: number) => void;
+  onAddTask?: (m: Milestone) => void;
+  onTaskStatusChange?: (taskId: string | number, newStatus: string) => void;
 }) {
   const getTimelineColor = (status: string) => {
     switch (status) {
@@ -29,7 +33,7 @@ export default function MilestoneTimeline({
       <Timeline
         items={milestones.map(milestone => ({
           color: getTimelineColor(milestone.status),
-          children: <MilestoneCard milestone={milestone} onEdit={onEdit} onDelete={onDelete} />,
+          children: <MilestoneCard milestone={milestone} onEdit={onEdit} onDelete={onDelete} onAddTask={onAddTask} onTaskStatusChange={onTaskStatusChange} />,
         }))}
       />
     </div>

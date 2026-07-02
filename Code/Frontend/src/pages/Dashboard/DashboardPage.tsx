@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Typography } from 'antd';
 import { ProjectOutlined, CheckCircleOutlined, WarningOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import AuthService from '../../services/authService';
-import type { AuthUser } from '../../types/auth'; // Đã đưa lên đầu file
+import type { AuthUser } from '../../types/auth';
 
 const { Title, Text } = Typography;
 

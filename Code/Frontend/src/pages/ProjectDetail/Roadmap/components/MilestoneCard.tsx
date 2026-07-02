@@ -1,18 +1,22 @@
 import { Card, Typography, Progress, Badge, Avatar, Space, Collapse, Tooltip, Button, Popconfirm } from 'antd';
-import { UserOutlined, ClockCircleOutlined, TeamOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UserOutlined, ClockCircleOutlined, TeamOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { Milestone } from '../types/roadmap';
 import TaskList from './TaskList';
 
 const { Text, Title, Paragraph } = Typography;
 
-export default function MilestoneCard({ 
+export default function MilestoneCard({
   milestone,
   onEdit,
-  onDelete
-}: { 
+  onDelete,
+  onAddTask,
+  onTaskStatusChange
+}: {
   milestone: Milestone;
   onEdit?: (m: Milestone) => void;
   onDelete?: (id: number) => void;
+  onAddTask?: (m: Milestone) => void;
+  onTaskStatusChange?: (taskId: string | number, newStatus: string) => void;
 }) {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -29,13 +33,17 @@ export default function MilestoneCard({
 
   const statusColor = getStatusColor(milestone.status);
   const tasks = milestone.tasks || [];
-  const progress = milestone.progress || (milestone.status === 'DONE' ? 100 : milestone.status === 'IN_PROGRESS' ? 50 : 0);
+  // Ưu tiên progress thật từ API (tính theo tỉ lệ task DONE / tổng task của milestone).
+  // Dùng typeof thay vì `||` vì progress thật có thể = 0 (falsy) nhưng vẫn hợp lệ.
+  const progress = typeof milestone.progress === 'number'
+    ? milestone.progress
+    : (milestone.status === 'DONE' ? 100 : milestone.status === 'IN_PROGRESS' ? 50 : 0);
 
   return (
-    <Card 
-      bordered={false} 
-      style={{ 
-        borderRadius: 12, 
+    <Card
+      bordered={false}
+      style={{
+        borderRadius: 12,
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         marginBottom: 24,
         overflow: 'hidden',
@@ -48,19 +56,19 @@ export default function MilestoneCard({
           <div style={{ flex: 1, minWidth: 250 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
               <Title level={4} style={{ margin: 0, color: '#111827' }}>{milestone.title}</Title>
-              <Badge 
-                count={milestone.status} 
-                style={{ 
-                  backgroundColor: `${statusColor}15`, 
-                  color: statusColor, 
-                  fontWeight: 600, 
+              <Badge
+                count={milestone.status}
+                style={{
+                  backgroundColor: `${statusColor}15`,
+                  color: statusColor,
+                  fontWeight: 600,
                   boxShadow: 'none',
                   borderRadius: 4,
                   padding: '0 8px'
-                }} 
+                }}
               />
             </div>
-            
+
             {milestone.description && (
               <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 14 }}>
                 {milestone.description}
@@ -87,6 +95,11 @@ export default function MilestoneCard({
 
           <div style={{ width: 150, textAlign: 'right' }}>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 12 }}>
+              {onAddTask && (
+                <Button size="small" icon={<PlusOutlined />} onClick={() => onAddTask(milestone)}>
+                  Thêm task
+                </Button>
+              )}
               {onEdit && (
                 <Button size="small" type="text" icon={<EditOutlined />} onClick={() => onEdit(milestone)} />
               )}
@@ -98,9 +111,9 @@ export default function MilestoneCard({
             </div>
 
             <Text style={{ fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Progress</Text>
-            <Progress 
-              percent={progress} 
-              strokeColor={statusColor} 
+            <Progress
+              percent={progress}
+              strokeColor={statusColor}
               trailColor="#F3F4F6"
               strokeWidth={8}
             />
@@ -121,11 +134,11 @@ export default function MilestoneCard({
 
       {tasks.length > 0 && (
         <Collapse ghost style={{ backgroundColor: '#F9FAFB', borderTop: '1px solid #F3F4F6' }}>
-          <Collapse.Panel 
-            header={<span style={{ fontWeight: 500, color: '#4B5563' }}>View Tasks ({tasks.length})</span>} 
+          <Collapse.Panel
+            header={<span style={{ fontWeight: 500, color: '#4B5563' }}>View Tasks ({tasks.length})</span>}
             key="1"
           >
-            <TaskList tasks={tasks} />
+            <TaskList tasks={tasks} onTaskStatusChange={onTaskStatusChange} />
           </Collapse.Panel>
         </Collapse>
       )}

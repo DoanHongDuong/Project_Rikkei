@@ -1,7 +1,9 @@
 const { Op } = require('sequelize');
+const { sequelize } = require('../config/database');
 const Project = require('../models/Project');
 const ProjectMember = require('../models/ProjectMember');
 const User = require('../models/User');
+const Task = require('../models/Task');
 
 const PROJECT_SAFE_ATTRIBUTES = [
     'id',
@@ -60,6 +62,71 @@ class ProjectService {
         return where;
     }
 
+    // Đếm task theo project_id + status (bỏ qua task đã xóa mềm và task CANCELED)
+    // để tính % hoàn thành. Dùng 1 query group-by duy nhất để tránh N+1.
+    async getProjectsTaskStats(projectIds) {
+        if (!projectIds.length) {
+            return {};
+        }
+
+        const rows = await Task.findAll({
+            attributes: [
+                'project_id',
+                'status',
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+            ],
+            where: {
+                project_id: { [Op.in]: projectIds },
+                is_deleted: false,
+                status: { [Op.ne]: 'CANCELED' }
+            },
+            group: ['project_id', 'status'],
+            raw: true
+        });
+
+        const stats = {};
+
+        rows.forEach((row) => {
+            const projectId = row.project_id;
+
+            if (!stats[projectId]) {
+                stats[projectId] = { total: 0, done: 0 };
+            }
+
+            const count = Number(row.count);
+
+            stats[projectId].total += count;
+
+            if (row.status === 'DONE') {
+                stats[projectId].done += count;
+            }
+        });
+
+        return stats;
+    }
+
+    calculateProgressPercent(stat) {
+        if (!stat || !stat.total) {
+            return 0;
+        }
+
+        return Math.round((stat.done / stat.total) * 100);
+    }
+
+    // Gắn field "progress" (%) vào 1 project hoặc mảng project.
+    // progress = số task DONE / tổng số task hợp lệ của project * 100.
+    async attachProgress(projectOrProjects) {
+        const list = Array.isArray(projectOrProjects) ? projectOrProjects : [projectOrProjects];
+        const projectIds = list.map((project) => project.id);
+        const stats = await this.getProjectsTaskStats(projectIds);
+
+        list.forEach((project) => {
+            project.dataValues.progress = this.calculateProgressPercent(stats[project.id]);
+        });
+
+        return projectOrProjects;
+    }
+
     async getActiveMembershipProjectIds(userId) {
         const memberships = await ProjectMember.findAll({
             where: {
@@ -97,6 +164,8 @@ class ProjectService {
             offset,
             distinct: true
         });
+
+        await this.attachProgress(rows);
 
         return {
             projects: rows,
@@ -139,6 +208,8 @@ class ProjectService {
         }
 
         await this.ensureCanViewProject(project.id, project.manager_id, currentUser);
+
+        await this.attachProgress(project);
 
         return project;
     }

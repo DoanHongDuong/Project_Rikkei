@@ -15,11 +15,11 @@ const { TextArea } = Input;
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [project, setProject] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddMemberVisible, setIsAddMemberVisible] = useState(false);
   const [form] = Form.useForm();
@@ -44,6 +44,19 @@ export default function ProjectDetail() {
   useEffect(() => {
     loadData();
   }, [id]);
+
+  // Refetch riêng project (nhẹ hơn loadData) để cập nhật lại % progress
+  // ngay khi task thay đổi (đổi status, tạo mới...) mà không cần F5.
+  const refreshProjectProgress = async () => {
+    if (!id) return;
+    try {
+      const projectData = await ProjectService.getProjectDetail(id);
+      setProject(projectData);
+    } catch (error) {
+      // im lặng bỏ qua: đây chỉ là refresh nền, không nên làm phiền user
+      // bằng message lỗi nếu request phụ này thất bại.
+    }
+  };
 
   const handleEditClick = () => {
     if (project) {
@@ -122,11 +135,11 @@ export default function ProjectDetail() {
       render: (_: any, record: any) => record.is_active && (
         <Space size="middle">
           <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.user_id}`)} />
-          <Button 
-            type="text" 
-            danger 
-            icon={<DeleteOutlined />} 
-            title="Xóa khỏi dự án" 
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            title="Xóa khỏi dự án"
             onClick={() => handleDeleteMember(record.user_id)}
           />
         </Space>
@@ -148,8 +161,8 @@ export default function ProjectDetail() {
       label: 'Overview',
       icon: <DesktopOutlined />,
       children: (
-        <Card 
-          bordered={false} 
+        <Card
+          bordered={false}
           style={{ borderRadius: 8 }}
           title={<Title level={4} style={{ margin: 0 }}>Project Overview</Title>}
           extra={<Button type="default" icon={<EditOutlined />} onClick={handleEditClick}>Sửa thông tin</Button>}
@@ -168,15 +181,15 @@ export default function ProjectDetail() {
       key: '2',
       label: 'Tasks',
       icon: <UnorderedListOutlined />,
-      children: <KanbanBoard projectId={id} projectMembers={members} />,
+      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} />,
     },
     {
       key: '3',
       label: 'Members',
       icon: <UserOutlined />,
       children: (
-        <Card 
-          bordered={false} 
+        <Card
+          bordered={false}
           style={{ borderRadius: 8 }}
           title="Danh sách thành viên"
           extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)}>Thêm thành viên</Button>}
@@ -210,9 +223,9 @@ export default function ProjectDetail() {
             <div><Text strong>{project.end_date || 'N/A'}</Text></div>
           </div>
         </div>
-        
+
         <Divider style={{ margin: '16px 0' }} />
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Space size="large">
             <div style={{ width: 200 }}>
@@ -222,9 +235,9 @@ export default function ProjectDetail() {
               </div>
               <Progress percent={project.progress || 0} showInfo={false} strokeColor="#2563EB" />
             </div>
-            
+
             <Divider type="vertical" style={{ height: 40 }} />
-            
+
             <div>
               <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>Thành viên ({activeMembersCount})</Text>
               <Avatar.Group maxCount={4} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
@@ -267,9 +280,9 @@ export default function ProjectDetail() {
         </Form>
       </Modal>
 
-      <AddMemberModal 
-        open={isAddMemberVisible} 
-        onCancel={() => setIsAddMemberVisible(false)} 
+      <AddMemberModal
+        open={isAddMemberVisible}
+        onCancel={() => setIsAddMemberVisible(false)}
         onAdd={() => {
           loadData();
         }}

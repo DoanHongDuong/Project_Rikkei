@@ -4,9 +4,9 @@ import type { Milestone } from '../types/roadmap';
 
 export default function StatsCards({ milestones }: { milestones: Milestone[] }) {
   const total = milestones.length;
-  const completed = milestones.filter(m => m.status === 'Completed' || m.status === 'DONE').length;
-  const inProgress = milestones.filter(m => m.status === 'In Progress' || m.status === 'IN_PROGRESS').length;
-  const todo = milestones.filter(m => m.status === 'Delayed' || m.status === 'TODO').length;
+  const completed = milestones.filter(m => m.status === 'DONE').length;
+  const inProgress = milestones.filter(m => m.status === 'IN_PROGRESS').length;
+  const todo = milestones.filter(m => m.status === 'TODO').length;
 
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

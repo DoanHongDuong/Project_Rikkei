@@ -50,7 +50,21 @@ class RoadmapService {
       throw new Error(error.message || 'Lỗi khi tải milestones');
     }
     const data = await response.json();
-    return data.data;
+    const items = data.data || [];
+
+    // Chuẩn hóa task thật từ backend (assignee_id, deadline...) sang shape
+    // mà MilestoneCard/TaskList đang dùng (assignee: string, dueDate: string).
+    return items.map((item: any) => ({
+      ...item,
+      tasks: (item.tasks || []).map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        status: task.status,
+        priority: task.priority,
+        assignee: task.assignee?.full_name || 'Unassigned',
+        dueDate: task.deadline,
+      })),
+    }));
   }
 
   // Create a roadmap item (milestone)

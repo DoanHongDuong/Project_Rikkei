@@ -3,9 +3,12 @@ import { Skeleton, message } from 'antd';
 import { useParams } from 'react-router-dom';
 import type { Milestone } from './types/roadmap';
 import RoadmapService from '../../../services/roadmapService';
+import TaskService from '../../../services/taskService';
+import ProjectService from '../../../services/projectService';
+import TaskFormModal from '../TaskFormModal';
 import RoadmapHeader from './components/RoadmapHeader';
 import StatsCards from './components/StatsCards';
-import Filters from './components/Filters';
+import Filters, { FilterValues } from './components/Filters';
 import MilestoneTimeline from './components/MilestoneTimeline';
 import EmptyState from './components/EmptyState';
 import MilestoneModal from './components/MilestoneModal';
@@ -16,10 +19,16 @@ export default function RoadmapTab() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [roadmapId, setRoadmapId] = useState<number | null>(null);
+  const [filters, setFilters] = useState<FilterValues>({});
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
+
+  // Task modal state (tạo task trực tiếp từ 1 milestone)
+  const [members, setMembers] = useState<any[]>([]);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [targetMilestone, setTargetMilestone] = useState<Milestone | null>(null);
 
   // Fetch roadmap and items from API
   const fetchRoadmap = useCallback(async () => {
@@ -50,10 +59,37 @@ export default function RoadmapTab() {
     fetchRoadmap();
   }, [fetchRoadmap]);
 
+  useEffect(() => {
+    if (!projectId) return;
+    ProjectService.getProjectMembers(projectId)
+      .then(setMembers)
+      .catch(() => {
+        // Không tải được members cũng không chặn trang Roadmap hoạt động,
+        // chỉ dropdown "Người thực hiện" trong modal tạo task sẽ trống.
+      });
+  }, [projectId]);
+
   const filteredMilestones = useMemo(() => {
-    if (!searchText) return milestones;
-    return milestones.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
-  }, [milestones, searchText]);
+    let result = milestones;
+    if (searchText) {
+      result = result.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
+    }
+    if (filters.status) {
+      result = result.filter(m => m.status === filters.status);
+    }
+    if (filters.year) {
+      result = result.filter(m => m.start_date?.startsWith(filters.year!));
+    }
+    if (filters.quarter) {
+      result = result.filter(m => {
+        if (!m.start_date) return false;
+        const month = new Date(m.start_date).getMonth() + 1;
+        const q = Math.ceil(month / 3);
+        return `Q${q}` === filters.quarter;
+      });
+    }
+    return result;
+  }, [milestones, searchText, filters]);
 
   // ── CRUD Handlers ──
 
@@ -99,10 +135,47 @@ export default function RoadmapTab() {
     }
   };
 
+  const handleAddTaskForMilestone = (milestone: Milestone) => {
+    setTargetMilestone(milestone);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleTaskStatusChange = async (taskId: string | number, newStatus: string) => {
+    try {
+      await TaskService.updateTaskStatus(taskId, newStatus);
+      message.success('Đã cập nhật trạng thái công việc!');
+      fetchRoadmap();
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi cập nhật trạng thái');
+    }
+  };
+
+  const handleTaskModalSubmit = async (values: any) => {
+    if (!projectId) return;
+    try {
+      await TaskService.createTask({
+        project_id: Number(projectId),
+        title: values.title,
+        description: values.description,
+        status: values.status || 'TODO',
+        priority: values.priority || 'MEDIUM',
+        assignee_id: values.assignee_id,
+        due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined,
+        roadmap_item_id: values.roadmap_item_id ?? targetMilestone?.id ?? null
+      });
+      message.success('Đã tạo task cho milestone!');
+      setIsTaskModalOpen(false);
+      setTargetMilestone(null);
+      fetchRoadmap(); // refresh lại số "X tasks" và % progress của milestone
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi tạo task');
+    }
+  };
+
   return (
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8, minHeight: '600px' }}>
       <RoadmapHeader onSearch={setSearchText} onAddMilestone={handleAddMilestone} />
-      
+
       {loading ? (
         <>
           <Skeleton active paragraph={{ rows: 4 }} />
@@ -114,11 +187,13 @@ export default function RoadmapTab() {
       ) : (
         <>
           <StatsCards milestones={filteredMilestones} />
-          <Filters />
-          <MilestoneTimeline 
+          <Filters filters={filters} onChange={setFilters} />
+          <MilestoneTimeline
             milestones={filteredMilestones}
             onEdit={handleEditMilestone}
             onDelete={handleDeleteMilestone}
+            onAddTask={handleAddTaskForMilestone}
+            onTaskStatusChange={handleTaskStatusChange}
           />
         </>
       )}
@@ -128,6 +203,18 @@ export default function RoadmapTab() {
         onCancel={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
         initialValues={editingMilestone}
+      />
+
+      <TaskFormModal
+        visible={isTaskModalOpen}
+        onCancel={() => {
+          setIsTaskModalOpen(false);
+          setTargetMilestone(null);
+        }}
+        onOk={handleTaskModalSubmit}
+        initialValues={{ status: 'TODO', priority: 'MEDIUM', roadmap_item_id: targetMilestone?.id }}
+        projectMembers={members}
+        milestones={milestones}
       />
     </div>
   );

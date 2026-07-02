@@ -1,4 +1,22 @@
 const RoadmapItem = require('../models/RoadmapItem');
+const Task = require('../models/Task');
+const User = require('../models/User');
+
+const TASK_ATTRIBUTES = ['id', 'title', 'status', 'priority', 'deadline', 'assignee_id'];
+
+// Task hợp lệ để tính progress: bỏ task đã xóa mềm và task CANCELED
+// (đồng bộ với cách tính progress ở cấp Project trong projectService.js)
+const calculateItemProgress = (tasks) => {
+    const validTasks = (tasks || []).filter((task) => task.status !== 'CANCELED');
+
+    if (!validTasks.length) {
+        return 0;
+    }
+
+    const doneCount = validTasks.filter((task) => task.status === 'DONE').length;
+
+    return Math.round((doneCount / validTasks.length) * 100);
+};
 
 const createItem = async (roadmapId, data) => {
     return await RoadmapItem.create({
@@ -15,10 +33,30 @@ const createItem = async (roadmapId, data) => {
 };
 
 const getItemsByRoadmap = async (roadmapId) => {
-    return await RoadmapItem.findAll({
+    const items = await RoadmapItem.findAll({
         where: { roadmap_id: roadmapId },
-        order: [['sort_order', 'ASC']]
+        order: [['sort_order', 'ASC']],
+        include: [
+            {
+                model: Task,
+                as: 'tasks',
+                attributes: TASK_ATTRIBUTES,
+                where: { is_deleted: false },
+                required: false,
+                separate: true,
+                order: [['id', 'ASC']],
+                include: [
+                    { model: User, as: 'assignee', attributes: ['id', 'full_name'] }
+                ]
+            }
+        ]
     });
+
+    items.forEach((item) => {
+        item.setDataValue('progress', calculateItemProgress(item.tasks));
+    });
+
+    return items;
 };
 
 const updateItem = async (itemId, data) => {

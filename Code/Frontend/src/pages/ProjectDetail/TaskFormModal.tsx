@@ -10,9 +10,10 @@ interface TaskFormModalProps {
   onOk: (values: any) => void;
   initialValues?: any;
   projectMembers?: any[];
+  milestones?: any[];
 }
 
-export default function TaskFormModal({ visible, onCancel, onOk, initialValues, projectMembers = [] }: TaskFormModalProps) {
+export default function TaskFormModal({ visible, onCancel, onOk, initialValues, projectMembers = [], milestones = [] }: TaskFormModalProps) {
   const [form] = Form.useForm();
 
   return (
@@ -22,9 +23,9 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
       width={600}
       title={
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: 16 }}>
-          <Button 
-            type="text" 
-            icon={<LeftOutlined />} 
+          <Button
+            type="text"
+            icon={<LeftOutlined />}
             onClick={() => {
               form.resetFields();
               onCancel();
@@ -57,7 +58,7 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
         form={form}
         layout="vertical"
         name="task_form"
-        initialValues={initialValues || { status: 'TODO' }}
+        initialValues={initialValues || { status: 'TODO', priority: 'MEDIUM' }}
       >
         <Form.Item
           name="title"
@@ -86,7 +87,32 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
             ))}
           </Select>
         </Form.Item>
-        
+
+        <Form.Item
+          name="roadmap_item_id"
+          label="Thuộc milestone"
+        >
+          <Select placeholder="Chọn milestone (không bắt buộc)" allowClear>
+            {milestones.map(milestone => (
+              <Option key={milestone.id} value={milestone.id}>
+                {milestone.title}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="priority"
+          label="Mức độ ưu tiên"
+        >
+          <Select placeholder="Chọn mức độ ưu tiên" allowClear>
+            <Option value="LOW">Thấp</Option>
+            <Option value="MEDIUM">Trung bình</Option>
+            <Option value="HIGH">Cao</Option>
+            <Option value="URGENT">Khẩn cấp</Option>
+          </Select>
+        </Form.Item>
+
         <Form.Item
           name="status"
           label="Trạng thái"
@@ -94,7 +120,7 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
         >
           <Input />
         </Form.Item>
-        
+
         <Form.Item
           name="deadline"
           label="Hạn chót"

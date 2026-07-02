@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const Project = require('./Project');
 const User = require('./User');
+const RoadmapItem = require('./RoadmapItem');
 
 const Task = sequelize.define('Task', {
     id: {
@@ -108,8 +109,10 @@ Task.belongsTo(User, { foreignKey: 'assignee_id', as: 'assignee' });
 Task.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
 Task.belongsTo(User, { foreignKey: 'updated_by', as: 'updater' });
 Task.belongsTo(User, { foreignKey: 'deleted_by', as: 'deleter' });
+Task.belongsTo(RoadmapItem, { foreignKey: 'roadmap_item_id', as: 'roadmapItem' });
 
 Project.hasMany(Task, { foreignKey: 'project_id', as: 'tasks' });
 User.hasMany(Task, { foreignKey: 'assignee_id', as: 'assigned_tasks' });
+RoadmapItem.hasMany(Task, { foreignKey: 'roadmap_item_id', as: 'tasks' });
 
 module.exports = Task;
