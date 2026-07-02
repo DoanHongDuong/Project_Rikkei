@@ -224,7 +224,7 @@ export default function ProjectDetail() {
       key: '4',
       label: 'Roadmap',
       icon: <ProjectOutlined />,
-      children: <RoadmapTab />,
+      children: <RoadmapTab isMember={isMember} />,
     },
   ];
 

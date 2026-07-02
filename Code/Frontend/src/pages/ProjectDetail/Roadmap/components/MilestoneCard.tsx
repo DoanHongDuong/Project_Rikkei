@@ -95,11 +95,6 @@ export default function MilestoneCard({
 
           <div style={{ width: 150, textAlign: 'right' }}>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 12 }}>
-              {onAddTask && (
-                <Button size="small" icon={<PlusOutlined />} onClick={() => onAddTask(milestone)}>
-                  Thêm task
-                </Button>
-              )}
               {onEdit && (
                 <Button size="small" type="text" icon={<EditOutlined />} onClick={() => onEdit(milestone)} />
               )}
@@ -117,17 +112,7 @@ export default function MilestoneCard({
               trailColor="#F3F4F6"
               strokeWidth={8}
             />
-            {tasks.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                <Avatar.Group size="small" maxCount={3} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
-                  {tasks.map(t => t.assignee).filter((v, i, a) => a.indexOf(v) === i).map((assignee, idx) => (
-                    <Tooltip key={idx} title={assignee}>
-                      <Avatar icon={<UserOutlined />} />
-                    </Tooltip>
-                  ))}
-                </Avatar.Group>
-              </div>
-            )}
+
           </div>
         </div>
       </div>

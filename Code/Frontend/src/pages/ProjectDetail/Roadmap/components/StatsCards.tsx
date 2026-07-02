@@ -18,9 +18,6 @@ export default function StatsCards({ milestones }: { milestones: Milestone[] }) 
             prefix={<ProjectOutlined style={{ color: '#8B5CF6' }} />}
             valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
           />
-          <div style={{ marginTop: 8, fontSize: '12px', color: '#10B981' }}>
-            <ArrowUpOutlined /> 12% from last month
-          </div>
         </Card>
       </Col>
       <Col xs={24} sm={12} lg={6}>
@@ -31,9 +28,6 @@ export default function StatsCards({ milestones }: { milestones: Milestone[] }) 
             prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />}
             valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
           />
-          <div style={{ marginTop: 8, fontSize: '12px', color: '#10B981' }}>
-            <ArrowUpOutlined /> 5% from last month
-          </div>
         </Card>
       </Col>
       <Col xs={24} sm={12} lg={6}>
@@ -44,9 +38,6 @@ export default function StatsCards({ milestones }: { milestones: Milestone[] }) 
             prefix={<SyncOutlined style={{ color: '#3B82F6' }} />}
             valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
           />
-          <div style={{ marginTop: 8, fontSize: '12px', color: '#6B7280' }}>
-            Stable
-          </div>
         </Card>
       </Col>
       <Col xs={24} sm={12} lg={6}>
@@ -57,9 +48,6 @@ export default function StatsCards({ milestones }: { milestones: Milestone[] }) 
             prefix={<ClockCircleOutlined style={{ color: '#F59E0B' }} />}
             valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
           />
-          <div style={{ marginTop: 8, fontSize: '12px', color: '#6B7280' }}>
-            Pending tasks
-          </div>
         </Card>
       </Col>
     </Row>

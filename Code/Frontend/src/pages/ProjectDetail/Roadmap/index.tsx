@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Skeleton, message } from 'antd';
 import { useParams } from 'react-router-dom';
+import dayjs from 'dayjs';
 import type { Milestone } from './types/roadmap';
 import RoadmapService from '../../../services/roadmapService';
 import TaskService from '../../../services/taskService';
@@ -12,11 +13,12 @@ import MilestoneTimeline from './components/MilestoneTimeline';
 import EmptyState from './components/EmptyState';
 import MilestoneModal from './components/MilestoneModal';
 
-export default function RoadmapTab() {
+export default function RoadmapTab({ isMember }: { isMember?: boolean }) {
   const { id: projectId } = useParams();
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState<[any, any] | null>(null);
   const [roadmapId, setRoadmapId] = useState<number | null>(null);
 
   // Modal state
@@ -79,9 +81,22 @@ export default function RoadmapTab() {
   }, [projectId]);
 
   const filteredMilestones = useMemo(() => {
-    if (!searchText) return milestones;
-    return milestones.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
-  }, [milestones, searchText]);
+    let result = milestones;
+    if (searchText) {
+      result = result.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
+    }
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const startFilter = dateRange[0].startOf('day');
+      const endFilter = dateRange[1].endOf('day');
+      result = result.filter(m => {
+        if (!m.start_date || !m.end_date) return true;
+        const mStart = dayjs(m.start_date);
+        const mEnd = dayjs(m.end_date);
+        return mStart.isBefore(endFilter) && mEnd.isAfter(startFilter);
+      });
+    }
+    return result;
+  }, [milestones, searchText, dateRange]);
 
   // ── CRUD Handlers ──
 
@@ -166,7 +181,7 @@ export default function RoadmapTab() {
 
   return (
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8, minHeight: '600px' }}>
-      <RoadmapHeader onSearch={setSearchText} onAddMilestone={handleAddMilestone} />
+      <RoadmapHeader onSearch={setSearchText} onAddMilestone={handleAddMilestone} isMember={isMember} onDateChange={setDateRange} />
 
       {loading ? (
         <>
@@ -181,9 +196,8 @@ export default function RoadmapTab() {
           <StatsCards milestones={filteredMilestones} />
           <MilestoneTimeline
             milestones={filteredMilestones}
-            onEdit={handleEditMilestone}
-            onDelete={handleDeleteMilestone}
-            onAddTask={handleAddTaskForMilestone}
+            onEdit={!isMember ? handleEditMilestone : undefined}
+            onDelete={!isMember ? handleDeleteMilestone : undefined}
             onTaskStatusChange={handleTaskStatusChange}
           />
         </>
