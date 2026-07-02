@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DndContext,
-  closestCorners,
-  KeyboardSensor,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
-  DragOverlay
+  DragOverlay,
+  useDroppable,
+  pointerWithin,
+  closestCorners
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -29,10 +31,12 @@ const { Text } = Typography;
 interface Task {
   id: string | number;
   title: string;
+  description?: string;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   assignee?: string;
   assignee_id?: number | null;
   deadline?: string;
+  priority?: string;
   roadmap_item_id?: number | null;
 }
 
@@ -49,13 +53,22 @@ function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
     marginBottom: '12px',
     cursor: 'grab'
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={() => onClick(task)}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick(task);
+      }}
+    >
       <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <Text strong style={{ display: 'block', marginBottom: '8px' }}>{task.title}</Text>
         {task.deadline && (
@@ -78,7 +91,7 @@ function SortableTaskItem({ task, onClick }: { task: Task, onClick: (task: Task)
 }
 
 function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: string, status: string, tasks: Task[], onAddTask: (status: string) => void, onTaskClick: (task: Task) => void }) {
-  const { setNodeRef } = useSortable({
+  const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { type: 'Column', status }
   });
@@ -88,10 +101,13 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
       ref={setNodeRef}
       style={{
         flex: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: isOver ? '#E5E7EB' : '#F3F4F6',
         padding: '16px',
         borderRadius: '8px',
-        minHeight: '400px'
+        minHeight: '500px',
+        transition: 'background-color 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -100,9 +116,11 @@ function Column({ title, status, tasks, onAddTask, onTaskClick }: { title: strin
       </div>
 
       <SortableContext items={tasks.map(t => t.id.toString())} strategy={verticalListSortingStrategy}>
-        {tasks.map(task => (
-          <SortableTaskItem key={task.id} task={task} onClick={onTaskClick} />
-        ))}
+        <div style={{ flex: 1, minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+          {tasks.map(task => (
+            <SortableTaskItem key={task.id} task={task} onClick={onTaskClick} />
+          ))}
+        </div>
       </SortableContext>
     </div>
   );
@@ -113,6 +131,8 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const dragStartTaskRef = useRef<Task | null>(null);   // task gốc khi bắt đầu kéo
+  const dragTargetStatusRef = useRef<string>('');        // status đích khi kéo qua column
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
@@ -126,18 +146,18 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
     try {
       setLoading(true);
       const data = await TaskService.getTasks(projectId);
-
       const tasksList = Array.isArray(data) ? data : data.tasks || [];
       const mappedTasks = tasksList.map((t: any) => ({
         id: t.id,
         title: t.title,
+        description: t.description,
         status: t.status,
         assignee_id: t.assignee_id,
         assignee: t.assignee?.full_name,
         deadline: t.deadline ? dayjs(t.deadline).format('YYYY-MM-DD') : undefined,
+        priority: t.priority,
         roadmap_item_id: t.roadmap_item_id
       }));
-
       setTasks(mappedTasks);
     } catch (error: any) {
       message.error(error.message || 'Lỗi tải công việc');
@@ -154,9 +174,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
         const items = await RoadmapService.getRoadmapItems(roadmap.id);
         setMilestones(items || []);
       }
-    } catch (error) {
-      // Không có roadmap/milestone cũng không sao, dropdown milestone chỉ để trống.
-    }
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -186,13 +204,12 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
 
   const handleModalOk = async (values: any) => {
     if (!projectId) return;
-
     try {
       if (editingTask) {
-        // Cập nhật task
         const payload = {
           title: values.title,
           description: values.description,
+          priority: values.priority || 'MEDIUM',
           due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined,
           roadmap_item_id: values.roadmap_item_id ?? null
         };
@@ -202,12 +219,12 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
         }
         message.success('Cập nhật task thành công!');
       } else {
-        // Thêm task mới
         const payload = {
           project_id: Number(projectId),
           title: values.title,
           description: values.description,
           status: values.status,
+          priority: values.priority || 'MEDIUM',
           assignee_id: values.assignee_id,
           due_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : undefined,
           roadmap_item_id: values.roadmap_item_id ?? null
@@ -217,29 +234,75 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
       }
       setIsModalVisible(false);
       setEditingTask(null);
-      loadTasks(); // Refresh board
-      onTasksChanged?.(); // Đồng bộ lại % progress ở project header
+      loadTasks();
+      onTasksChanged?.();
     } catch (error: any) {
       message.error(error.message || 'Có lỗi xảy ra');
     }
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragStart = (event: any) => {
     const { active } = event;
-    const { data } = active;
-    if (data.current?.type === 'Task') {
-      setActiveTask(data.current.task);
+    if (active.data.current?.type === 'Task') {
+      const task = active.data.current.task as Task;
+      setActiveTask(task);
+      dragStartTaskRef.current = task;
+      dragTargetStatusRef.current = task.status; // khởi tạo bằng status hiện tại
+    }
+  };
+
+  const handleDragOver = (event: any) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
+
+    if (activeId === overId) return;
+
+    const isActiveTask = active.data.current?.type === 'Task';
+    if (!isActiveTask) return;
+
+    const isOverTask = over.data.current?.type === 'Task';
+    const isOverColumn = over.data.current?.type === 'Column';
+
+    let newStatus = '';
+    if (isOverTask) {
+      const overTask = tasks.find(t => t.id.toString() === overId);
+      newStatus = overTask?.status || '';
+    } else if (isOverColumn) {
+      newStatus = over.data.current?.status || overId;
+    }
+
+    if (newStatus && ['TODO', 'IN_PROGRESS', 'DONE'].includes(newStatus)) {
+      dragTargetStatusRef.current = newStatus; // cập nhật status đích vào ref
+      setTasks(prev => {
+        const activeIndex = prev.findIndex(t => t.id.toString() === activeId);
+        if (activeIndex === -1) return prev;
+
+        const currentTask = prev[activeIndex];
+        if (currentTask.status === newStatus) {
+          if (isOverTask) {
+            const overIndex = prev.findIndex(t => t.id.toString() === overId);
+            return arrayMove(prev, activeIndex, overIndex);
+          }
+          return prev;
+        }
+
+        const updatedTasks = [...prev];
+        updatedTasks[activeIndex] = { ...currentTask, status: newStatus as any };
+
+        if (isOverTask) {
+          const overIndex = prev.findIndex(t => t.id.toString() === overId);
+          return arrayMove(updatedTasks, activeIndex, overIndex);
+        }
+        return updatedTasks;
+      });
     }
   };
 
@@ -247,43 +310,35 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
     const { active, over } = event;
     setActiveTask(null);
 
-    if (!over) return;
+    const originalTask = dragStartTaskRef.current;
+    const finalStatus = dragTargetStatusRef.current;
+    dragStartTaskRef.current = null;
+    dragTargetStatusRef.current = '';
 
-    const activeId = active.id;
-    const overId = over.id;
+    if (!over || !originalTask) return;
 
     const isActiveTask = active.data.current?.type === 'Task';
-    const isOverTask = over.data.current?.type === 'Task';
-    const isOverColumn = over.data.current?.type === 'Column';
-
     if (!isActiveTask) return;
 
-    // Tìm cột đích
-    let newStatus = '';
-    if (isOverTask) {
-      const overTask = tasks.find(t => t.id.toString() === overId.toString());
-      newStatus = overTask?.status || '';
-    } else if (isOverColumn) {
-      newStatus = over.data.current?.status;
-    }
-
-    const activeTaskData = tasks.find(t => t.id.toString() === activeId.toString());
-
-    if (newStatus && activeTaskData && activeTaskData.status !== newStatus) {
-      // Optimistic update UI
-      setTasks(prev => prev.map(t =>
-        t.id.toString() === activeId.toString() ? { ...t, status: newStatus as any } : t
-      ));
-
+    // Chỉ gọi API nếu status thực sự thay đổi so với lúc bắt đầu kéo
+    if (finalStatus && finalStatus !== originalTask.status) {
       try {
-        await TaskService.updateTaskStatus(activeTaskData.id, newStatus);
-        // Có thể loadTasks() lại để đảm bảo đồng bộ 
-        onTasksChanged?.(); // Đồng bộ lại % progress ở project header
+        await TaskService.updateTaskStatus(originalTask.id, finalStatus);
+        onTasksChanged?.();
       } catch (error: any) {
         message.error(error.message || 'Lỗi cập nhật trạng thái');
-        loadTasks(); // Revert back
+        loadTasks(); // revert về dữ liệu gốc từ server
       }
     }
+  };
+
+  // Custom Thuật toán va chạm: Ưu tiên bắt theo toạ độ chuột trước, nếu lệch ra ngoài thì lấy va chạm gần nhất
+  const customCollisionDetection = (args: any) => {
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions;
+    }
+    return closestCorners(args);
   };
 
   if (loading) {
@@ -293,8 +348,9 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={customCollisionDetection} // Thay thế closestCorners bằng custom logic nhảy chuột chuẩn xác
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }}>
@@ -305,7 +361,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
 
       <DragOverlay>
         {activeTask ? (
-          <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', width: '100%' }}>
+          <Card size="small" style={{ borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', width: '100%', cursor: 'grabbing' }}>
             <Text strong style={{ display: 'block', marginBottom: '8px' }}>{activeTask.title}</Text>
             {activeTask.deadline && (
               <div style={{ marginBottom: '8px' }}>
@@ -332,7 +388,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
           setEditingTask(null);
         }}
         onOk={handleModalOk}
-        initialValues={editingTask ? { id: editingTask.id, title: editingTask.title, assignee_id: editingTask.assignee_id, status: editingTask.status, deadline: editingTask.deadline ? dayjs(editingTask.deadline) : undefined, roadmap_item_id: editingTask.roadmap_item_id } : { status: currentStatusForNewTask }}
+        initialValues={editingTask ? { id: editingTask.id, title: editingTask.title, description: editingTask.description, assignee_id: editingTask.assignee_id, status: editingTask.status, priority: editingTask.priority || 'MEDIUM', deadline: editingTask.deadline ? dayjs(editingTask.deadline) : undefined, roadmap_item_id: editingTask.roadmap_item_id } : { status: currentStatusForNewTask, priority: 'MEDIUM' }}
         projectMembers={projectMembers}
         milestones={milestones}
       />

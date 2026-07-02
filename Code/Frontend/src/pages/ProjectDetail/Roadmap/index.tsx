@@ -45,7 +45,18 @@ export default function RoadmapTab() {
 
       // Fetch items for this roadmap
       const items = await RoadmapService.getRoadmapItems(roadmap.id);
-      setMilestones(items || []);
+      const mappedItems = (items || []).map((item: any) => ({
+        ...item,
+        tasks: (item.tasks || []).map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status,
+          priority: t.priority,
+          assignee: t.assignee?.full_name || 'Unassigned',
+          dueDate: t.deadline ?? ''
+        }))
+      }));
+      setMilestones(mappedItems);
     } catch (error: any) {
       message.error(error.message || 'Không thể tải dữ liệu roadmap');
     } finally {
