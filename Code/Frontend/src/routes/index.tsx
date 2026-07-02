@@ -4,6 +4,7 @@ import LoginPage from '../pages/Auth/LoginPage';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
+import MyTasksPage from '../pages/MyTasks';
 import PMDashboardPage from '../pages/Dashboard/PMDashboardPage';
 import ProjectsPage from '../pages/Projects';
 import PMProjectsPage from '../pages/Projects/PMProjectsPage';
@@ -22,10 +23,12 @@ import DepartmentsPage from '../pages/Departments';
 import PMDepartmentsPage from '../pages/Departments/PMDepartmentsPage';
 import AuthService from '../services/authService';
 
-// --- Hàm bổ trợ kiểm soát luồng giao diện theo Vai trò (Role) ---
+import AdminDashboardPage from '../pages/Dashboard/AdminDashboardPage';
+
 const DashboardRoute = () => {
   const user = AuthService.getUser();
   if (user?.role === 'PM') return <PMDashboardPage />;
+  if (user?.role === 'ADMIN') return <AdminDashboardPage />;
   return <DashboardPage />;
 };
 
@@ -90,6 +93,14 @@ export default function AppRoutes() {
         />
 
         {/* Quản lý dự án */}
+        <Route 
+          path="/my-tasks" 
+          element={
+            <ProtectedRoute allowedRoles={['MEMBER']}>
+              <MyTasksPage />
+            </ProtectedRoute>
+          } 
+        />
         <Route 
           path="/projects" 
           element={
