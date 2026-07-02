@@ -1,5 +1,5 @@
-import { Modal, Typography, Avatar, Space, Button, Divider, List, Input, Skeleton, Tag } from 'antd';
-import { LeftOutlined, UserOutlined, DeleteOutlined, EditOutlined, SendOutlined } from '@ant-design/icons';
+import { Modal, Typography, Avatar, Space, Button, Divider, List, Input, Skeleton, Tag, message } from 'antd';
+import { LeftOutlined, UserOutlined, DeleteOutlined, EditOutlined, SendOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import TaskService from '../../services/taskService';
 import dayjs from 'dayjs';
@@ -12,12 +12,14 @@ interface TaskDetailModalProps {
   onCancel: () => void;
   taskId: string | number;
   onEditClick: () => void;
+  onDeleteSuccess?: () => void;
 }
 
-export default function TaskDetailModal({ open, onCancel, taskId, onEditClick }: TaskDetailModalProps) {
+export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess }: TaskDetailModalProps) {
   const [newComment, setNewComment] = useState('');
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (open && taskId) {
@@ -35,6 +37,31 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick }:
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = () => {
+    Modal.confirm({
+      title: 'Xác nhận xóa công việc',
+      icon: <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />,
+      content: `Bạn có chắc chắn muốn xóa công việc "${task?.title}" không? Hành động này không thể hoàn tác.`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      okButtonProps: { loading: deleting },
+      onOk: async () => {
+        try {
+          setDeleting(true);
+          await TaskService.deleteTask(taskId);
+          message.success('Đã xóa công việc thành công');
+          onCancel();
+          onDeleteSuccess?.();
+        } catch (error: any) {
+          message.error(error.message || 'Lỗi khi xóa công việc');
+        } finally {
+          setDeleting(false);
+        }
+      }
+    });
   };
 
   const priorityColor: Record<string, string> = {
@@ -69,7 +96,7 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick }:
           </Button>
           <Space>
             <Button icon={<EditOutlined />} onClick={onEditClick}>Sửa task</Button>
-            <Button danger icon={<DeleteOutlined />}>Xóa việc</Button>
+            <Button danger icon={<DeleteOutlined />} loading={deleting} onClick={handleDelete}>Xóa việc</Button>
           </Space>
         </div>
       }

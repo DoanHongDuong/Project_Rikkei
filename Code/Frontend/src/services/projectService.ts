@@ -63,6 +63,13 @@ class ProjectService {
     return data.data;
   }
 
+  static async getProjectMemberDetail(projectId: number | string, memberId: number | string) {
+    // Fetch members list then find the specific member
+    const members = await this.getProjectMembers(projectId);
+    const member = (members || []).find((m: any) => String(m.user_id) === String(memberId) || String(m.id) === String(memberId));
+    return member || null;
+  }
+
   static async addProjectMember(id: number | string, user_id: number | string, role: string = 'MEMBER') {
     const response = await fetch(`${API_BASE_URL}/api/projects/${id}/members`, {
       method: 'POST',

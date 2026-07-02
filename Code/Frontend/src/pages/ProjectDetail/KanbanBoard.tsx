@@ -398,6 +398,10 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged 
         onCancel={() => setIsDetailModalVisible(false)}
         taskId={detailTaskId}
         onEditClick={handleEditTaskClick}
+        onDeleteSuccess={() => {
+          setIsDetailModalVisible(false);
+          loadTasks();
+        }}
       />
     </DndContext>
   );

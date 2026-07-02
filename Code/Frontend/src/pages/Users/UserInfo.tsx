@@ -11,6 +11,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import UserService from '../../services/userService';
 import DepartmentService from '../../services/departmentService';
+import TaskService from '../../services/taskService';
 
 const { Title, Text } = Typography;
 
@@ -20,6 +21,8 @@ export default function UserInfo() {
   const [userData, setUserData] = useState<any>(null);
   const [departmentName, setDepartmentName] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
 
   const fetchUserInfo = async () => {
     if (!id) return;
@@ -49,6 +52,22 @@ export default function UserInfo() {
 
   useEffect(() => {
     fetchUserInfo();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!id) return;
+      setTasksLoading(true);
+      try {
+        const data = await TaskService.getTasks({ assignee_id: id });
+        setTasks(data || []);
+      } catch {
+        // không cản giao diện nếu lỗi task
+      } finally {
+        setTasksLoading(false);
+      }
+    };
+    fetchTasks();
   }, [id]);
 
   const handleToggleStatus = async () => {
