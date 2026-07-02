@@ -6,6 +6,7 @@ import KanbanBoard from './KanbanBoard';
 import AddMemberModal from './AddMemberModal';
 import RoadmapTab from './Roadmap';
 import dayjs from 'dayjs';
+import AuthService from '../../services/authService';
 import ProjectService from '../../services/projectService';
 
 const { Title, Text, Paragraph } = Typography;
@@ -23,6 +24,9 @@ export default function ProjectDetail() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddMemberVisible, setIsAddMemberVisible] = useState(false);
   const [form] = Form.useForm();
+  
+  const user = AuthService.getUser();
+  const isMember = user?.role === 'MEMBER';
 
   const loadData = async () => {
     if (!id) return;
@@ -121,14 +125,27 @@ export default function ProjectDetail() {
       key: 'action',
       render: (_: any, record: any) => record.is_active && (
         <Space size="middle">
-          <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.user_id}`)} />
-          <Button 
-            type="text" 
-            danger 
-            icon={<DeleteOutlined />} 
-            title="Xóa khỏi dự án" 
-            onClick={() => handleDeleteMember(record.user_id)}
-          />
+          <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.key}`)} />
+          {!isMember && (
+            <Button 
+              type="text" 
+              danger 
+              icon={<DeleteOutlined />} 
+              title="Xóa khỏi dự án" 
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xóa thành viên',
+                  content: 'Bạn có chắc chắn muốn đuổi thành viên này khỏi dự án?',
+                  centered: true,
+                  okText: 'Đồng ý',
+                  cancelText: 'Hủy',
+                  onOk: () => {
+                    message.success('Đã đuổi thành viên khỏi dự án thành công!');
+                  }
+                });
+              }}
+            />
+          )}
         </Space>
       ),
     },
@@ -152,7 +169,7 @@ export default function ProjectDetail() {
           bordered={false} 
           style={{ borderRadius: 8 }}
           title={<Title level={4} style={{ margin: 0 }}>Project Overview</Title>}
-          extra={<Button type="default" icon={<EditOutlined />} onClick={handleEditClick}>Sửa thông tin</Button>}
+          extra={!isMember && <Button type="default" icon={<EditOutlined />} onClick={handleEditClick}>Sửa thông tin</Button>}
         >
           <Paragraph>
             {project.description || 'Không có mô tả'}
@@ -179,7 +196,7 @@ export default function ProjectDetail() {
           bordered={false} 
           style={{ borderRadius: 8 }}
           title="Danh sách thành viên"
-          extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)}>Thêm thành viên</Button>}
+          extra={!isMember && <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)}>Thêm thành viên</Button>}
         >
           <Table columns={memberColumns} dataSource={members} rowKey="id" pagination={false} />
         </Card>

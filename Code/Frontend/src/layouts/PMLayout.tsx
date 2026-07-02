@@ -42,24 +42,36 @@ export default function PMLayout({ children }: PMLayoutProps) {
             >
               Dashboard
             </NavLink>
+            {user?.role === 'MEMBER' && (
+              <NavLink 
+                to="/my-tasks" 
+                className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
+              >
+                Công việc
+              </NavLink>
+            )}
             <NavLink 
               to="/projects" 
               className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
             >
               Dự án
             </NavLink>
-            <NavLink 
-              to="/departments" 
-              className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
-            >
-              Phòng ban
-            </NavLink>
-            <NavLink 
-              to="/users" 
-              className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
-            >
-              Nhân sự
-            </NavLink>
+            {user?.role === 'PM' && (
+              <>
+                <NavLink 
+                  to="/departments" 
+                  className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Phòng ban
+                </NavLink>
+                <NavLink 
+                  to="/users" 
+                  className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Nhân sự
+                </NavLink>
+              </>
+            )}
           </nav>
         </div>
 
