@@ -1,5 +1,6 @@
 import { Modal, Form, Input, Select, DatePicker, Button, Space, Avatar } from 'antd';
 import { LeftOutlined, UserOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -15,6 +16,14 @@ interface TaskFormModalProps {
 
 export default function TaskFormModal({ visible, onCancel, onOk, initialValues, projectMembers = [], milestones = [] }: TaskFormModalProps) {
   const [form] = Form.useForm();
+
+  // Ant Design Form chỉ đọc initialValues 1 lần khi mount.
+  // Khi mở form sửa task mới, cần gọi setFieldsValue để điền lại dữ liệu.
+  useEffect(() => {
+    if (visible) {
+      form.setFieldsValue(initialValues || { status: 'TODO', priority: 'MEDIUM' });
+    }
+  }, [visible, initialValues]);
 
   return (
     <Modal

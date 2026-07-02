@@ -2,7 +2,7 @@ export interface Task {
   id: string | number;
   title: string;
   status: 'Completed' | 'In Progress' | 'Planning' | 'Delayed' | 'TODO' | 'IN_PROGRESS' | 'DONE';
-  priority: 'High' | 'Medium' | 'Low';
+  priority: 'High' | 'Medium' | 'Low' | 'HIGH' | 'MEDIUM' | 'LOW' | 'URGENT';
   assignee: string;
   dueDate: string;
 }
