@@ -8,7 +8,6 @@ import ProjectService from '../../../services/projectService';
 import TaskFormModal from '../TaskFormModal';
 import RoadmapHeader from './components/RoadmapHeader';
 import StatsCards from './components/StatsCards';
-import Filters, { FilterValues } from './components/Filters';
 import MilestoneTimeline from './components/MilestoneTimeline';
 import EmptyState from './components/EmptyState';
 import MilestoneModal from './components/MilestoneModal';
@@ -19,7 +18,6 @@ export default function RoadmapTab() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [roadmapId, setRoadmapId] = useState<number | null>(null);
-  const [filters, setFilters] = useState<FilterValues>({});
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -70,26 +68,9 @@ export default function RoadmapTab() {
   }, [projectId]);
 
   const filteredMilestones = useMemo(() => {
-    let result = milestones;
-    if (searchText) {
-      result = result.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
-    }
-    if (filters.status) {
-      result = result.filter(m => m.status === filters.status);
-    }
-    if (filters.year) {
-      result = result.filter(m => m.start_date?.startsWith(filters.year!));
-    }
-    if (filters.quarter) {
-      result = result.filter(m => {
-        if (!m.start_date) return false;
-        const month = new Date(m.start_date).getMonth() + 1;
-        const q = Math.ceil(month / 3);
-        return `Q${q}` === filters.quarter;
-      });
-    }
-    return result;
-  }, [milestones, searchText, filters]);
+    if (!searchText) return milestones;
+    return milestones.filter(m => m.title.toLowerCase().includes(searchText.toLowerCase()));
+  }, [milestones, searchText]);
 
   // ── CRUD Handlers ──
 
@@ -187,7 +168,6 @@ export default function RoadmapTab() {
       ) : (
         <>
           <StatsCards milestones={filteredMilestones} />
-          <Filters filters={filters} onChange={setFilters} />
           <MilestoneTimeline
             milestones={filteredMilestones}
             onEdit={handleEditMilestone}
