@@ -10,6 +10,8 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import UserService from '../../services/userService';
+import TaskService from '../../services/taskService';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -18,6 +20,8 @@ export default function UserInfo() {
   const { id } = useParams();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
 
   const fetchUserInfo = async () => {
     if (!id) return;
@@ -36,6 +40,22 @@ export default function UserInfo() {
 
   useEffect(() => {
     fetchUserInfo();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!id) return;
+      setTasksLoading(true);
+      try {
+        const data = await TaskService.getTasks({ assignee_id: id });
+        setTasks(data || []);
+      } catch {
+        // không cản giao diện nếu lỗi task
+      } finally {
+        setTasksLoading(false);
+      }
+    };
+    fetchTasks();
   }, [id]);
 
   const handleToggleStatus = async () => {
@@ -166,32 +186,42 @@ export default function UserInfo() {
       <div style={{ marginTop: 48 }}>
         <Title level={4} style={{ fontWeight: 700, marginBottom: 16 }}>Danh sách nhiệm vụ đang đảm nhận</Title>
         <Table 
-          dataSource={[
-            { key: '1', title: 'Thiết kế giao diện Login', project: 'TMS v2', status: 'In Progress', progress: 50 },
-            { key: '2', title: 'Tối ưu API', project: 'TMS v2', status: 'To Do', progress: 0 },
-            { key: '3', title: 'Fix bug Header', project: 'Internal Tools', status: 'Done', progress: 100 },
-          ]}
+          dataSource={tasks.map(t => ({ ...t, key: t.id }))}
+          loading={tasksLoading}
           columns={[
             { title: 'Tên nhiệm vụ', dataIndex: 'title', key: 'title' },
-            { title: 'Dự án', dataIndex: 'project', key: 'project' },
+            {
+              title: 'Dự án',
+              key: 'project',
+              render: (_: any, r: any) => r.project?.name || 'N/A'
+            },
             { 
               title: 'Trạng thái', 
               dataIndex: 'status', 
               key: 'status',
-              render: (status) => (
-                <Tag color={status === 'Done' ? 'success' : status === 'In Progress' ? 'processing' : 'default'}>
+              render: (status: string) => (
+                <Tag color={status === 'DONE' ? 'success' : status === 'IN_PROGRESS' ? 'processing' : 'default'}>
                   {status}
                 </Tag>
               )
             },
             {
-              title: 'Tiến độ',
-              dataIndex: 'progress',
-              key: 'progress',
-              render: (progress) => <Progress percent={progress} size="small" />
+              title: 'Hạn chót',
+              dataIndex: 'deadline',
+              key: 'deadline',
+              render: (d: string) => d ? dayjs(d).format('DD/MM/YYYY') : '—'
+            },
+            {
+              title: 'Ưu tiên',
+              dataIndex: 'priority',
+              key: 'priority',
+              render: (priority: string) => {
+                const color = priority === 'URGENT' || priority === 'HIGH' ? 'red' : priority === 'MEDIUM' ? 'orange' : 'green';
+                return <Tag color={color}>{priority}</Tag>;
+              }
             }
           ]}
-          pagination={false}
+          pagination={{ pageSize: 8 }}
         />
       </div>
     </div>

@@ -9,8 +9,18 @@ class TaskService {
     };
   }
 
-  static async getTasks(projectId: string | number) {
-    const response = await fetch(`${API_BASE_URL}/api/tasks?project_id=${projectId}&limit=100`, {
+  static async getTasks(filters?: any) {
+    let url = `${API_BASE_URL}/api/tasks?limit=100`;
+    if (filters) {
+      if (typeof filters === 'string' || typeof filters === 'number') {
+        url += `&project_id=${filters}`;
+      } else {
+        if (filters.project_id) url += `&project_id=${filters.project_id}`;
+        if (filters.status) url += `&status=${filters.status}`;
+        if (filters.assignee_id) url += `&assignee_id=${filters.assignee_id}`;
+      }
+    }
+    const response = await fetch(url, {
       method: 'GET',
       headers: this.getHeaders(),
     });
@@ -86,6 +96,19 @@ class TaskService {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Lỗi khi phân công công việc');
+    }
+    const data = await response.json();
+    return data.data;
+  }
+
+  static async deleteTask(id: string | number) {
+    const response = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Lỗi khi xóa công việc');
     }
     const data = await response.json();
     return data.data;
