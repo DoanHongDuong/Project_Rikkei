@@ -45,8 +45,6 @@ const CreateProjectRoute = () => {
 };
 
 const DepartmentsRoute = () => {
-  const user = AuthService.getUser();
-  if (user?.role === 'PM') return <PMDepartmentsPage />;
   return <DepartmentsPage />;
 };
 
@@ -141,7 +139,7 @@ export default function AppRoutes() {
         <Route 
           path="/departments" 
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'PM']}>
+            <ProtectedRoute allowedRoles={['ADMIN']}>
               <DepartmentsRoute />
             </ProtectedRoute>
           } 

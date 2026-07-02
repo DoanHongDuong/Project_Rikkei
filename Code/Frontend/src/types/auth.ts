@@ -3,4 +3,5 @@ export interface AuthUser {
   full_name: string;
   email: string;
   role: 'ADMIN' | 'PM' | 'MEMBER';
+  department_id?: number;
 }

@@ -1,11 +1,14 @@
-import { Typography, Table, Space, Avatar, Button } from 'antd';
+import { useState, useEffect } from 'react';
+import { Typography, Table, Space, Avatar, Button, message } from 'antd';
 import { SearchOutlined, UserOutlined, InfoCircleFilled } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import AuthService from '../../services/authService';
+import DepartmentService from '../../services/departmentService';
 import '../Dashboard/PMStyles.css';
 
 const { Title } = Typography;
 
-interface UserMockData {
+interface UserData {
   id: number;
   name: string;
   department: string;
@@ -16,18 +19,49 @@ interface UserMockData {
 }
 
 export default function PMUsersPage() {
-  const users: UserMockData[] = [
-    { id: 1, name: 'Nguyễn A', department: 'Developer', role: 'PM', status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-    { id: 2, name: 'Nguyễn A', department: 'Marketing', role: 'Member', status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-    { id: 3, name: 'Nguyễn A', department: 'Developer', role: 'PM', status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-    { id: 4, name: 'Nguyễn A', department: 'Developer', role: 'Member', status: 'Quá tải', statusBg: '#FEE2E2', statusText: '#DC2626' },
-    { id: 5, name: 'Nguyễn A', department: 'Design', role: 'Member', status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-    { id: 6, name: 'Nguyễn A', department: 'Developer', role: 'Member', status: 'Trung bình', statusBg: '#FEF3C7', statusText: '#D97706' },
-    { id: 7, name: 'Nguyễn A', department: 'QA', role: 'Member', status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-    { id: 8, name: 'Nguyễn A', department: 'Developer', role: 'Member', status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-  ];
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState('');
 
-  const columns: ColumnsType<UserMockData> = [
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const currentUser = AuthService.getUser();
+      if (!currentUser?.department_id) {
+        message.warning('Tài khoản của bạn chưa được gán phòng ban');
+        return;
+      }
+      
+      const response = await DepartmentService.getMembers(currentUser.department_id);
+      
+      if (response.success && response.data) {
+        const mappedUsers: UserData[] = response.data.map((u: any) => ({
+          id: u.id,
+          name: u.full_name || u.email,
+          department: response.department || 'N/A',
+          role: u.role,
+          status: u.status,
+          statusBg: u.status === 'ACTIVE' ? '#E0F2FE' : '#FEE2E2',
+          statusText: u.status === 'ACTIVE' ? '#0284C7' : '#DC2626',
+        }));
+        setUsers(mappedUsers);
+      }
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi tải danh sách nhân sự');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const filteredUsers = users.filter(u => 
+    u.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const columns: ColumnsType<UserData> = [
     {
       title: 'Tên',
       dataIndex: 'name',
@@ -65,14 +99,6 @@ export default function PMUsersPage() {
         </span>
       ),
     },
-    {
-      title: '',
-      key: 'action',
-      render: () => (
-        <Button type="text" icon={<InfoCircleFilled style={{ color: '#1677ff', fontSize: 18 }} />} />
-      ),
-      width: 60,
-    },
   ];
 
   return (
@@ -84,6 +110,8 @@ export default function PMUsersPage() {
           type="text" 
           className="pm-search-input" 
           placeholder="Tìm kiếm nhân sự..." 
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
         <div className="pm-search-icon">
           <SearchOutlined />
@@ -93,9 +121,10 @@ export default function PMUsersPage() {
       <div style={{ border: '1px solid #f0f0f0', borderRadius: 8, overflow: 'hidden' }}>
         <Table 
           columns={columns} 
-          dataSource={users} 
+          dataSource={filteredUsers} 
           rowKey="id" 
           pagination={false}
+          loading={loading}
           components={{
             header: {
               cell: (props: any) => (
