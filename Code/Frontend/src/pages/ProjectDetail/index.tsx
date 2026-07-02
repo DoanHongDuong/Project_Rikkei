@@ -16,15 +16,15 @@ const { TextArea } = Input;
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [project, setProject] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddMemberVisible, setIsAddMemberVisible] = useState(false);
   const [form] = Form.useForm();
-  
+
   const user = AuthService.getUser();
   const isMember = user?.role === 'MEMBER';
 
@@ -73,26 +73,6 @@ export default function ProjectDetail() {
     });
   };
 
-  const handleDeleteMember = (userId: number) => {
-    Modal.confirm({
-      title: 'Xóa thành viên',
-      content: 'Bạn có chắc chắn muốn xóa thành viên này khỏi dự án?',
-      centered: true,
-      okText: 'Đồng ý',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        if (!id) return;
-        try {
-          await ProjectService.removeProjectMember(id, userId);
-          message.success('Đã xóa thành viên khỏi dự án!');
-          loadData(); // Refresh list
-        } catch (error: any) {
-          message.error(error.message || 'Lỗi khi xóa thành viên');
-        }
-      }
-    });
-  };
-
   const memberColumns = [
     {
       title: 'Tên',
@@ -127,11 +107,11 @@ export default function ProjectDetail() {
         <Space size="middle">
           <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.key}`)} />
           {!isMember && (
-            <Button 
-              type="text" 
-              danger 
-              icon={<DeleteOutlined />} 
-              title="Xóa khỏi dự án" 
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              title="Xóa khỏi dự án"
               onClick={() => {
                 Modal.confirm({
                   title: 'Xóa thành viên',
@@ -139,8 +119,20 @@ export default function ProjectDetail() {
                   centered: true,
                   okText: 'Đồng ý',
                   cancelText: 'Hủy',
-                  onOk: () => {
-                    message.success('Đã đuổi thành viên khỏi dự án thành công!');
+                  onOk: async () => {
+                    if (!id) return;
+                    try {
+                      const userId = record.user_id || record.user?.id;
+                      if (!userId) {
+                        message.error('Không tìm thấy thông tin thành viên');
+                        return;
+                      }
+                      await ProjectService.removeProjectMember(id, userId);
+                      message.success('Đã đuổi thành viên khỏi dự án thành công!');
+                      loadData();
+                    } catch (error: any) {
+                      message.error(error.message || 'Lỗi khi xóa thành viên');
+                    }
                   }
                 });
               }}
@@ -165,8 +157,8 @@ export default function ProjectDetail() {
       label: 'Overview',
       icon: <DesktopOutlined />,
       children: (
-        <Card 
-          bordered={false} 
+        <Card
+          bordered={false}
           style={{ borderRadius: 8 }}
           title={<Title level={4} style={{ margin: 0 }}>Project Overview</Title>}
           extra={!isMember && <Button type="default" icon={<EditOutlined />} onClick={handleEditClick}>Sửa thông tin</Button>}
@@ -192,8 +184,8 @@ export default function ProjectDetail() {
       label: 'Members',
       icon: <UserOutlined />,
       children: (
-        <Card 
-          bordered={false} 
+        <Card
+          bordered={false}
           style={{ borderRadius: 8 }}
           title="Danh sách thành viên"
           extra={!isMember && <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddMemberVisible(true)}>Thêm thành viên</Button>}
@@ -227,9 +219,9 @@ export default function ProjectDetail() {
             <div><Text strong>{project.end_date || 'N/A'}</Text></div>
           </div>
         </div>
-        
+
         <Divider style={{ margin: '16px 0' }} />
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Space size="large">
             <div style={{ width: 200 }}>
@@ -239,9 +231,9 @@ export default function ProjectDetail() {
               </div>
               <Progress percent={project.progress || 0} showInfo={false} strokeColor="#2563EB" />
             </div>
-            
+
             <Divider type="vertical" style={{ height: 40 }} />
-            
+
             <div>
               <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>Thành viên ({activeMembersCount})</Text>
               <Avatar.Group maxCount={4} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
@@ -284,9 +276,9 @@ export default function ProjectDetail() {
         </Form>
       </Modal>
 
-      <AddMemberModal 
-        open={isAddMemberVisible} 
-        onCancel={() => setIsAddMemberVisible(false)} 
+      <AddMemberModal
+        open={isAddMemberVisible}
+        onCancel={() => setIsAddMemberVisible(false)}
         onAdd={() => {
           loadData();
         }}
