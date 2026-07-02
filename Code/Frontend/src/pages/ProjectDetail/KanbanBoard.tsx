@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, Avatar, Typography, Badge, Tag, Button, message, Skeleton } from 'antd';
+import { Card, Avatar, Typography, Badge, Tag, Button, message, Skeleton, Select } from 'antd';
 import { UserOutlined, PlusOutlined } from '@ant-design/icons';
 import TaskFormModal from './TaskFormModal';
 import TaskDetailModal from './TaskDetailModal';
@@ -144,6 +144,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
   const [detailTaskId, setDetailTaskId] = useState<string | number>('');
   const [currentStatusForNewTask, setCurrentStatusForNewTask] = useState('TODO');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [filterAssigneeId, setFilterAssigneeId] = useState<number | null>(null);
 
   const loadTasks = async () => {
     if (!projectId) return;
@@ -349,19 +350,37 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
 
+  const filteredTasks = filterAssigneeId
+    ? tasks.filter(t => t.assignee_id === filterAssigneeId)
+    : tasks;
+
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={customCollisionDetection} // Thay thế closestCorners bằng custom logic nhảy chuột chuẩn xác
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }}>
-        <Column title="To Do" status="TODO" tasks={tasks.filter(t => t.status === 'TODO')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={isMember} highlightTaskId={highlightTaskId} />
-        <Column title="In Progress" status="IN_PROGRESS" tasks={tasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
-        <Column title="Done" status="DONE" tasks={tasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
+    <>
+      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+        <Select
+          allowClear
+          placeholder="Lọc theo thành viên"
+          style={{ width: 250 }}
+          value={filterAssigneeId}
+          onChange={(val) => setFilterAssigneeId(val)}
+          options={projectMembers?.map(member => ({
+            value: member.user_id,
+            label: member.user?.full_name || member.user?.username || `User ${member.user_id}`
+          }))}
+        />
       </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={customCollisionDetection} // Thay thế closestCorners bằng custom logic nhảy chuột chuẩn xác
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }}>
+          <Column title="To Do" status="TODO" tasks={filteredTasks.filter(t => t.status === 'TODO')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={isMember} highlightTaskId={highlightTaskId} />
+          <Column title="In Progress" status="IN_PROGRESS" tasks={filteredTasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
+          <Column title="Done" status="DONE" tasks={filteredTasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
+        </div>
 
       <DragOverlay>
         {activeTask ? (
@@ -409,5 +428,6 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
         isMember={isMember}
       />
     </DndContext>
+    </>
   );
 }

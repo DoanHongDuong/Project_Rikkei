@@ -1,17 +1,18 @@
-import { useEffect, useState, useMemo } from 'react';
-import { Row, Col, Card, Typography, Tabs, Dropdown, message, Spin, Tag, Empty } from 'antd';
-import type { MenuProps } from 'antd';
-import { MoreOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
+import { Row, Col, Card, Typography, message, Skeleton, Statistic, Progress, Badge, Empty } from 'antd';
+import { ProjectOutlined, CheckSquareOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import AuthService from '../../services/authService';
-import TaskService from '../../services/taskService';
+import DashboardService from '../../services/dashboardService';
 import type { AuthUser } from '../../types/auth';
-import dayjs from 'dayjs';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
+
+const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function DashboardPage() {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,13 +20,15 @@ export default function DashboardPage() {
     setUser(userData);
   }, []);
 
-  const fetchTasks = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await TaskService.getTasks();
-      setTasks(data || []);
+      const response = await DashboardService.getMemberDashboard();
+      if (response.success && response.data) {
+        setMetrics(response.data);
+      }
     } catch (error: any) {
-      message.error(error.message || 'Lỗi tải công việc');
+      message.error(error.message || 'Lỗi tải dữ liệu dashboard');
     } finally {
       setLoading(false);
     }
@@ -33,272 +36,171 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      fetchTasks();
+      fetchDashboardData();
     }
   }, [user]);
 
-  const handleMarkAsDone = async (taskId: number) => {
-    try {
-      await TaskService.updateTaskStatus(taskId, 'DONE');
-      message.success('Đã đánh dấu hoàn thành');
-      fetchTasks();
-    } catch (error: any) {
-      message.error(error.message || 'Lỗi khi cập nhật trạng thái');
-    }
-  };
-
-  const getDropdownMenuItems = (task: any): MenuProps['items'] => [
-    { 
-      key: '2', 
-      label: 'Đánh dấu đã xong',
-      icon: <CheckCircleOutlined />,
-      disabled: task.status === 'DONE',
-      onClick: () => handleMarkAsDone(task.id)
-    }
-  ];
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'URGENT':
-      case 'HIGH': return 'red';
-      case 'MEDIUM': return 'orange';
-      case 'LOW': return 'green';
-      default: return 'default';
-    }
-  };
-
-  const TaskCard = ({ task }: { task: any }) => (
-    <Card 
-      bordered={false} 
-      style={{ 
-        backgroundColor: '#F3F4F6', 
-        borderRadius: '8px',
-        marginBottom: '16px',
-        opacity: task.status === 'DONE' ? 0.7 : 1
-      }}
-      bodyStyle={{ padding: '16px' }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1 }}>
-          <Title level={5} style={{ margin: '0 0 8px 0', fontSize: '16px', textDecoration: task.status === 'DONE' ? 'line-through' : 'none' }}>
-            {task.title}
-          </Title>
-          <Paragraph 
-            style={{ 
-              color: '#4B5563', 
-              fontSize: '12px', 
-              marginBottom: '12px',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden'
-            }}
-          >
-            {task.description || 'Không có mô tả'}
-          </Paragraph>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {task.deadline && (
-              <Text style={{ fontWeight: 500, fontSize: '13px', color: dayjs(task.deadline).isBefore(dayjs().startOf('day')) && task.status !== 'DONE' ? 'red' : 'inherit' }}>
-                Hạn chót: {dayjs(task.deadline).format('DD/MM/YYYY')}
-              </Text>
-            )}
-            <Tag color={getPriorityColor(task.priority)}>{task.priority}</Tag>
-            <Tag color={task.status === 'DONE' ? 'success' : task.status === 'IN_PROGRESS' ? 'processing' : 'default'}>
-              {task.status}
-            </Tag>
-          </div>
-        </div>
-        <Dropdown menu={{ items: getDropdownMenuItems(task) }} trigger={['click']} placement="bottomRight">
-          <MoreOutlined style={{ fontSize: '20px', cursor: 'pointer', color: '#6B7280' }} />
-        </Dropdown>
-      </div>
-    </Card>
-  );
-
-  const { groupedTasks, stats } = useMemo(() => {
-    const today = dayjs().startOf('day');
-    
-    const groups = {
-      today: [] as any[],
-      thisWeek: [] as any[],
-      overdue: [] as any[],
-      done: [] as any[]
-    };
-
-    let doneCount = 0;
-    let overdueCount = 0;
-    let inProgressCount = 0;
-
-    tasks.forEach(task => {
-      // For stats
-      const deadline = task.deadline ? dayjs(task.deadline).startOf('day') : null;
-      const isOverdue = deadline && deadline.isBefore(today) && task.status !== 'DONE';
-
-      if (task.status === 'DONE') {
-        doneCount++;
-      } else if (isOverdue) {
-        overdueCount++;
-      } else {
-        inProgressCount++;
-      }
-
-      // For tabs
-      if (task.status === 'DONE') {
-        groups.done.push(task);
-      } else if (isOverdue) {
-        groups.overdue.push(task);
-      } else if (deadline && deadline.isSame(today, 'day')) {
-        groups.today.push(task);
-      } else {
-        groups.thisWeek.push(task);
-      }
-    });
-
-    const total = tasks.length;
-    const donePercent = total > 0 ? (doneCount / total) * 100 : 0;
-    const overduePercent = total > 0 ? (overdueCount / total) * 100 : 0;
-    const inProgressPercent = total > 0 ? (inProgressCount / total) * 100 : 0;
-
-    return {
-      groupedTasks: groups,
-      stats: { total, doneCount, overdueCount, inProgressCount, donePercent, overduePercent, inProgressPercent }
-    };
-  }, [tasks]);
-
-  if (!user) {
-    return <div style={{ padding: 24, textAlign: 'center' }}><Spin /></div>;
+  if (!user || loading) {
+    return <div style={{ padding: 24 }}><Skeleton active paragraph={{ rows: 10 }} /></div>;
   }
 
-  const renderTabContent = (taskList: any[]) => {
-    if (taskList.length === 0) return <Empty description="Không có công việc nào" style={{ padding: '40px 0' }} />;
-    return (
-      <Row gutter={[16, 16]}>
-        {taskList.map(task => (
-          <Col xs={24} sm={12} key={task.id}>
-            <TaskCard task={task} />
-          </Col>
-        ))}
-      </Row>
-    );
-  };
-
-  const tabItems = [
-    { key: '1', label: 'Hôm nay', children: renderTabContent(groupedTasks.today) },
-    { key: '2', label: 'Tương lai / Khác', children: renderTabContent(groupedTasks.thisWeek) },
-    { key: '3', label: 'Quá hạn', children: renderTabContent(groupedTasks.overdue) },
-    { key: '4', label: 'Đã xong', children: renderTabContent(groupedTasks.done) },
-  ];
-
-  // Logic to render conic gradient dynamically based on stats
-  // Order: Completed (Green #68D391), In Progress (Yellow #F6E05E), Overdue (Red #FC8181)
-  const p1 = stats.donePercent;
-  const p2 = p1 + stats.inProgressPercent;
-  // Overdue will be from p2 to 100%
-
-  const conicGradient = `conic-gradient(#68D391 0% ${p1}%, #F6E05E ${p1}% ${p2}%, #FC8181 ${p2}% 100%)`;
+  const { totalProjects, totalTasks, completedTasks, overdueTasks, taskStatusDistribution, taskPriorityDistribution, activeProjects } = metrics || {};
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>Chào buổi sáng, {user.full_name}!</Title>
+        <Text type="secondary">Đây là tổng quan tiến độ và công việc của bạn.</Text>
+      </div>
+
       <Row gutter={[24, 24]}>
-        {/* Left Column: Công việc của tôi */}
-        <Col xs={24} lg={16}>
+        <Col xs={24} sm={12} lg={6}>
+          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <Statistic 
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Dự án tham gia</span>}
+              value={totalProjects || 0} 
+              prefix={<ProjectOutlined style={{ color: '#8b5cf6' }} />} 
+              valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <Statistic 
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Công việc được giao</span>}
+              value={totalTasks || 0} 
+              prefix={<CheckSquareOutlined style={{ color: '#3B82F6' }} />} 
+              valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <Statistic 
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Đã hoàn thành</span>}
+              value={completedTasks || 0} 
+              prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />} 
+              valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <Statistic 
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Đang trễ hạn</span>}
+              value={overdueTasks || 0} 
+              prefix={<WarningOutlined style={{ color: '#EF4444' }} />} 
+              valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24} lg={12}>
           <Card 
+            title="Trạng thái Công việc" 
             bordered={false} 
-            style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
-            bodyStyle={{ padding: '24px' }}
+            style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
-            <Title level={4} style={{ marginTop: 0, marginBottom: '20px' }}>Công việc của tôi</Title>
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px' }}><Spin /></div>
+            {taskStatusDistribution && taskStatusDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={taskStatusDistribution}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="count"
+                    nameKey="status"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {taskStatusDistribution.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             ) : (
-              <Tabs 
-                defaultActiveKey="1" 
-                items={tabItems}
-                tabBarStyle={{ marginBottom: '24px' }}
-              />
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>Không có dữ liệu công việc</div>
             )}
           </Card>
         </Col>
-
-        {/* Right Column: Thống kê công việc */}
-        <Col xs={24} lg={8}>
+        <Col xs={24} lg={12}>
           <Card 
+            title="Công việc theo Mức độ Ưu tiên" 
             bordered={false} 
-            style={{ 
-              borderRadius: '12px', 
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              height: '100%'
-            }}
-            bodyStyle={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%' }}
+            style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
-            <Title level={4} style={{ marginTop: 0, marginBottom: '40px', textAlign: 'center' }}>Thống kê công việc</Title>
-            
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {/* Donut Chart */}
-              <div 
-                style={{
-                  width: '220px',
-                  height: '220px',
-                  borderRadius: '50%',
-                  background: stats.total === 0 ? '#E5E7EB' : conicGradient,
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '40px'
-                }}
-              >
-                <div 
-                  style={{
-                    position: 'absolute',
-                    width: '130px',
-                    height: '130px',
-                    backgroundColor: '#fff',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
+             {taskPriorityDistribution && taskPriorityDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={taskPriorityDistribution}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
-                  <Text style={{ fontSize: '12px', color: '#4B5563', textAlign: 'center', lineHeight: '1.2' }}>Tổng số lượng<br/>công việc</Text>
-                  <Title level={2} style={{ margin: '4px 0 0 0' }}>{stats.total}</Title>
-                </div>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="priority" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#F59E0B" name="Số lượng" radius={[4, 4, 0, 0]}>
+                    {taskPriorityDistribution.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>Không có dữ liệu công việc</div>
+            )}
+          </Card>
+        </Col>
+      </Row>
 
-                {/* Percentage Labels on Chart can be complex to position dynamically, we'll rely on the legend for clarity, or approximate positions */}
-                {stats.inProgressCount > 0 && (
-                   <span style={{ position: 'absolute', right: '-30px', top: '50%', transform: 'translateY(-50%)', color: '#F6E05E', fontWeight: 'bold', fontSize: '14px', textShadow: '0 1px 1px rgba(0,0,0,0.2)' }}>
-                     {stats.inProgressCount} ({stats.inProgressPercent.toFixed(1)}%)
-                   </span>
-                )}
-                {stats.doneCount > 0 && (
-                   <span style={{ position: 'absolute', left: '-30px', top: '20%', color: '#68D391', fontWeight: 'bold', fontSize: '14px', textShadow: '0 1px 1px rgba(0,0,0,0.2)' }}>
-                     {stats.doneCount} ({stats.donePercent.toFixed(1)}%)
-                   </span>
-                )}
-                {stats.overdueCount > 0 && (
-                   <span style={{ position: 'absolute', left: '50%', bottom: '-20px', transform: 'translateX(-50%)', color: '#FC8181', fontWeight: 'bold', fontSize: '14px', textShadow: '0 1px 1px rgba(0,0,0,0.2)' }}>
-                     {stats.overdueCount} ({stats.overduePercent.toFixed(1)}%)
-                   </span>
-                )}
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card 
+            title="Dự án đang tham gia" 
+            bordered={false} 
+            style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+          >
+            {!activeProjects || activeProjects.length === 0 ? (
+              <Empty description="Bạn chưa tham gia dự án nào" />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {activeProjects.map((project: any) => (
+                  <div key={project.id} style={{ 
+                    padding: '16px', 
+                    backgroundColor: '#F3F4F6', 
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <Title level={5} style={{ margin: 0, color: '#111827' }}>{project.name}</Title>
+                        <Badge 
+                          count={project.role} 
+                          style={{ backgroundColor: '#E0F2FE', color: '#0284C7', border: '1px solid #BAE6FD', fontWeight: 600, boxShadow: 'none' }} 
+                        />
+                        <Badge 
+                          count={project.status} 
+                          style={{ backgroundColor: project.status === 'ACTIVE' ? '#D1FAE5' : '#F3F4F6', color: project.status === 'ACTIVE' ? '#059669' : '#4B5563', border: '1px solid #A7F3D0', fontWeight: 600, boxShadow: 'none' }} 
+                        />
+                      </div>
+                    </div>
+                    <div style={{ width: '30%', minWidth: '150px' }}>
+                      <Text style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px', display: 'block' }}>Tiến độ công việc (Tổng quan)</Text>
+                      <Progress percent={project.progress} size="small" strokeColor={project.progress === 100 ? '#10B981' : '#3B82F6'} />
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              {/* Legend */}
-              <div style={{ width: '100%', paddingLeft: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#68D391', marginRight: '8px' }}></div>
-                  <Text style={{ color: '#4B5563' }}>Hoàn thành: {stats.doneCount}</Text>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#F6E05E', marginRight: '8px' }}></div>
-                  <Text style={{ color: '#4B5563' }}>Đang thực hiện (Tương lai/Hôm nay): {stats.inProgressCount}</Text>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FC8181', marginRight: '8px' }}></div>
-                  <Text style={{ color: '#4B5563' }}>Quá hạn: {stats.overdueCount}</Text>
-                </div>
-              </div>
-            </div>
+            )}
           </Card>
         </Col>
       </Row>

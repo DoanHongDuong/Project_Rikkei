@@ -77,4 +77,12 @@ router.delete(
     (req, res) => adminController.deleteUser(req, res)
 );
 
+// 7. [GET] Lấy dữ liệu dashboard
+router.get(
+    '/dashboard',
+    verifyToken,
+    adminOnly,
+    (req, res) => adminController.getDashboardMetrics(req, res)
+);
+
 module.exports = router;
