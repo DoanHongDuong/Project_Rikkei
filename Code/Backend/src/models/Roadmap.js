@@ -49,4 +49,9 @@ const Roadmap = sequelize.define(
 }
 );
 
+const Project = require('./Project');
+
+Roadmap.belongsTo(Project, { foreignKey: 'project_id', as: 'project' });
+Project.hasMany(Roadmap, { foreignKey: 'project_id', as: 'roadmaps' });
+
 module.exports = Roadmap;
