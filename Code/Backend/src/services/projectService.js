@@ -157,6 +157,19 @@ class ProjectService {
                     as: 'manager',
                     attributes: USER_SAFE_ATTRIBUTES,
                     required: false
+                },
+                {
+                    model: ProjectMember,
+                    as: 'members',
+                    required: false,
+                    where: { is_active: true },
+                    include: [
+                        {
+                            model: User,
+                            as: 'user',
+                            attributes: USER_SAFE_ATTRIBUTES
+                        }
+                    ]
                 }
             ],
             order: [['id', 'DESC']],

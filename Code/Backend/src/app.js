@@ -21,7 +21,7 @@ const userService = require('./services/userService');
 const app = express();
 
 // --- Cấu hình CORS (Chỉ giữ lại 1 bản tối ưu nhất, hỗ trợ cả .env) ---
-const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigin = process.env.FRONTEND_URL;
 app.use(cors({
     origin: allowedOrigin,
     credentials: true
