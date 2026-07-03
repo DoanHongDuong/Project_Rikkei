@@ -18,18 +18,11 @@ export default function TaskList({ tasks, onTaskStatusChange }: { tasks: Task[],
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Task['status']) => {
     switch (status) {
-      case 'Completed':
       case 'DONE': return '#10B981';
-      case 'In Progress':
-      case 'IN_PROGRESS':
-      case 'REVIEW': return '#3B82F6';
-      case 'Planning':
+      case 'IN_PROGRESS': return '#3B82F6';
       case 'TODO': return '#F59E0B';
-      case 'Delayed':
-      case 'BLOCKED':
-      case 'CANCELED': return '#EF4444';
       default: return '#6B7280';
     }
   };
@@ -53,10 +46,10 @@ export default function TaskList({ tasks, onTaskStatusChange }: { tasks: Task[],
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: 8 }}>
               <Space size="middle">
                 <Checkbox 
-                  checked={task.status === 'Completed' || task.status === 'DONE'} 
+                  checked={task.status === 'DONE'} 
                   onChange={(e) => onTaskStatusChange?.(task.id, e.target.checked ? 'DONE' : 'TODO')}
                 />
-                <Text delete={task.status === 'Completed' || task.status === 'DONE'} style={{ fontWeight: 500, color: (task.status === 'Completed' || task.status === 'DONE') ? '#9CA3AF' : '#374151' }}>
+                <Text delete={task.status === 'DONE'} style={{ fontWeight: 500, color: task.status === 'DONE' ? '#9CA3AF' : '#374151' }}>
                   {task.title}
                 </Text>
               </Space>

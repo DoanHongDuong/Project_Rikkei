@@ -18,15 +18,11 @@ export default function MilestoneCard({
   onAddTask?: (m: Milestone) => void;
   onTaskStatusChange?: (taskId: string | number, newStatus: string) => void;
 }) {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Milestone['status']) => {
     switch (status) {
-      case 'DONE': return '#10B981'; // Green
-      case 'Completed': return '#10B981';
-      case 'IN_PROGRESS': return '#3B82F6'; // Blue
-      case 'In Progress': return '#3B82F6';
-      case 'TODO': return '#F59E0B'; // Orange
-      case 'Planning': return '#F59E0B';
-      case 'Delayed': return '#EF4444'; // Red
+      case 'DONE': return '#10B981';
+      case 'IN_PROGRESS': return '#3B82F6';
+      case 'TODO': return '#F59E0B';
       default: return '#6B7280';
     }
   };

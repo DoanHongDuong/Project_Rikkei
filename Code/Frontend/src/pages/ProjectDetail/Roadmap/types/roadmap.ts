@@ -15,4 +15,8 @@ export interface Milestone {
   end_date: string;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   sort_order: number;
+  description?: string;
+  progress?: number;
+  owner?: string;
+  tasks?: Task[];
 }
