@@ -1,6 +1,7 @@
 import { Modal, Form, Input, Select, DatePicker, Button, Space, Avatar } from 'antd';
 import { LeftOutlined, UserOutlined } from '@ant-design/icons';
 import { useEffect } from 'react';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -12,9 +13,10 @@ interface TaskFormModalProps {
   initialValues?: any;
   projectMembers?: any[];
   milestones?: any[];
+  projectEndDate?: string;
 }
 
-export default function TaskFormModal({ visible, onCancel, onOk, initialValues, projectMembers = [], milestones = [] }: TaskFormModalProps) {
+export default function TaskFormModal({ visible, onCancel, onOk, initialValues, projectMembers = [], milestones = [], projectEndDate }: TaskFormModalProps) {
   const [form] = Form.useForm();
 
   // Ant Design Form chỉ đọc initialValues 1 lần khi mount.
@@ -134,7 +136,15 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
           name="deadline"
           label="Hạn chót"
         >
-          <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+          <DatePicker 
+            style={{ width: '100%' }} 
+            format="YYYY-MM-DD" 
+            disabledDate={(current) => {
+              if (!projectEndDate) return false;
+              // Không cho chọn ngày sau projectEndDate
+              return current && current > dayjs(projectEndDate).endOf('day');
+            }}
+          />
         </Form.Item>
       </Form>
     </Modal>

@@ -13,7 +13,7 @@ import MilestoneTimeline from './components/MilestoneTimeline';
 import EmptyState from './components/EmptyState';
 import MilestoneModal from './components/MilestoneModal';
 
-export default function RoadmapTab({ isMember }: { isMember?: boolean }) {
+export default function RoadmapTab({ isMember, projectEndDate, projectStartDate }: { isMember?: boolean, projectEndDate?: string, projectStartDate?: string }) {
   const { id: projectId } = useParams();
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -208,6 +208,8 @@ export default function RoadmapTab({ isMember }: { isMember?: boolean }) {
         onCancel={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
         initialValues={editingMilestone}
+        projectStartDate={projectStartDate}
+        projectEndDate={projectEndDate}
       />
 
       <TaskFormModal
@@ -220,6 +222,7 @@ export default function RoadmapTab({ isMember }: { isMember?: boolean }) {
         initialValues={{ status: 'TODO', priority: 'MEDIUM', roadmap_item_id: targetMilestone?.id }}
         projectMembers={members}
         milestones={milestones}
+        projectEndDate={projectEndDate}
       />
     </div>
   );

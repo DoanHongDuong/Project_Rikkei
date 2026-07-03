@@ -130,7 +130,16 @@ function Column({ title, status, tasks, onAddTask, onTaskClick, hideAddButton, h
   );
 }
 
-export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId }: { projectId?: string | number, projectMembers?: any[], onTasksChanged?: () => void, isMember?: boolean, highlightTaskId?: string | null }) {
+interface KanbanBoardProps {
+  projectId?: string | number;
+  projectMembers?: any[];
+  onTasksChanged?: () => void;
+  isMember?: boolean;
+  highlightTaskId?: string | null;
+  projectEndDate?: string;
+}
+
+export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId, projectEndDate }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -414,6 +423,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
         initialValues={editingTask ? { id: editingTask.id, title: editingTask.title, description: editingTask.description, assignee_id: editingTask.assignee_id, status: editingTask.status, priority: editingTask.priority || 'MEDIUM', deadline: editingTask.deadline ? dayjs(editingTask.deadline) : undefined, roadmap_item_id: editingTask.roadmap_item_id } : { status: currentStatusForNewTask, priority: 'MEDIUM' }}
         projectMembers={projectMembers}
         milestones={milestones}
+        projectEndDate={projectEndDate}
       />
 
       <TaskDetailModal

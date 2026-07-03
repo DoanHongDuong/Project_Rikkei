@@ -1,6 +1,8 @@
 const RoadmapItem = require('../models/RoadmapItem');
 const Task = require('../models/Task');
 const User = require('../models/User');
+const Roadmap = require('../models/Roadmap');
+const Project = require('../models/Project');
 
 const TASK_ATTRIBUTES = ['id', 'title', 'status', 'priority', 'deadline', 'assignee_id'];
 
@@ -18,7 +20,37 @@ const calculateItemProgress = (tasks) => {
     return Math.round((doneCount / validTasks.length) * 100);
 };
 
+const ensureDateRange = (startDate, endDate, projectStartDate, projectEndDate) => {
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        const error = new Error('Ngày bắt đầu không được lớn hơn ngày kết thúc.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (startDate && projectStartDate && new Date(startDate) < new Date(projectStartDate)) {
+        const error = new Error(`Ngày bắt đầu không được sớm hơn ngày bắt đầu dự án (${projectStartDate}).`);
+        error.statusCode = 400;
+        throw error;
+    }
+    if (endDate && projectEndDate && new Date(endDate) > new Date(projectEndDate)) {
+        const error = new Error(`Ngày kết thúc không được vượt quá ngày kết thúc dự án (${projectEndDate}).`);
+        error.statusCode = 400;
+        throw error;
+    }
+};
+
+const getProjectByRoadmapId = async (roadmapId) => {
+    const roadmap = await Roadmap.findByPk(roadmapId, {
+        include: [{ model: Project, as: 'project' }]
+    });
+    if (!roadmap || !roadmap.project) {
+        throw new Error('Không tìm thấy dự án tương ứng với Roadmap.');
+    }
+    return roadmap.project;
+};
+
 const createItem = async (roadmapId, data) => {
+    const project = await getProjectByRoadmapId(roadmapId);
+    ensureDateRange(data.start_date, data.end_date, project.start_date, project.end_date);
     return await RoadmapItem.create({
         roadmap_id: roadmapId,
         title: data.title,
@@ -62,6 +94,16 @@ const getItemsByRoadmap = async (roadmapId) => {
 const updateItem = async (itemId, data) => {
     const item = await RoadmapItem.findByPk(itemId);
     if (!item) throw new Error('Item not found');
+    
+    const project = await getProjectByRoadmapId(item.roadmap_id);
+    
+    ensureDateRange(
+        data.start_date || item.start_date, 
+        data.end_date || item.end_date,
+        project.start_date,
+        project.end_date
+    );
+    
     return await item.update(data);
 };
 

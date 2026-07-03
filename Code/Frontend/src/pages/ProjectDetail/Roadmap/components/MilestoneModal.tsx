@@ -10,9 +10,11 @@ interface MilestoneModalProps {
   onCancel: () => void;
   onSubmit: (values: any) => void;
   initialValues?: Milestone | null;
+  projectStartDate?: string;
+  projectEndDate?: string;
 }
 
-const MilestoneModal: React.FC<MilestoneModalProps> = ({ open, onCancel, onSubmit, initialValues }) => {
+const MilestoneModal: React.FC<MilestoneModalProps> = ({ open, onCancel, onSubmit, initialValues, projectStartDate, projectEndDate }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -64,7 +66,21 @@ const MilestoneModal: React.FC<MilestoneModalProps> = ({ open, onCancel, onSubmi
           label="Ngày bắt đầu"
           rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}
         >
-          <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <DatePicker 
+            style={{ width: '100%' }} 
+            format="DD/MM/YYYY" 
+            disabledDate={(current) => {
+              if (!current) return false;
+              let isDisabled = false;
+              if (projectStartDate) {
+                isDisabled = isDisabled || current < dayjs(projectStartDate).startOf('day');
+              }
+              if (projectEndDate) {
+                isDisabled = isDisabled || current > dayjs(projectEndDate).endOf('day');
+              }
+              return isDisabled;
+            }}
+          />
         </Form.Item>
 
         <Form.Item
@@ -86,7 +102,21 @@ const MilestoneModal: React.FC<MilestoneModalProps> = ({ open, onCancel, onSubmi
             }),
           ]}
         >
-          <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <DatePicker 
+            style={{ width: '100%' }} 
+            format="DD/MM/YYYY" 
+            disabledDate={(current) => {
+              if (!current) return false;
+              let isDisabled = false;
+              if (projectStartDate) {
+                isDisabled = isDisabled || current < dayjs(projectStartDate).startOf('day');
+              }
+              if (projectEndDate) {
+                isDisabled = isDisabled || current > dayjs(projectEndDate).endOf('day');
+              }
+              return isDisabled;
+            }}
+          />
         </Form.Item>
 
         <Form.Item

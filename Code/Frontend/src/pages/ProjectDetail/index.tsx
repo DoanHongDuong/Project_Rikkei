@@ -146,7 +146,7 @@ export default function ProjectDetail() {
               onClick={() => {
                 Modal.confirm({
                   title: 'Xóa thành viên',
-                  content: 'Bạn có chắc chắn muốn đuổi thành viên này khỏi dự án?',
+                  content: 'Bạn có chắc chắn muốn xóa thành viên này khỏi dự án?',
                   centered: true,
                   okText: 'Đồng ý',
                   cancelText: 'Hủy',
@@ -159,7 +159,7 @@ export default function ProjectDetail() {
                         return;
                       }
                       await ProjectService.removeProjectMember(id, userId);
-                      message.success('Đã đuổi thành viên khỏi dự án thành công!');
+                      message.success('Đã xóa thành viên khỏi dự án thành công!');
                       loadData();
                     } catch (error: any) {
                       message.error(error.message || 'Lỗi khi xóa thành viên');
@@ -208,7 +208,7 @@ export default function ProjectDetail() {
       key: '2',
       label: 'Tasks',
       icon: <UnorderedListOutlined />,
-      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} isMember={isMember} highlightTaskId={highlightTaskId} />,
+      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} isMember={isMember} highlightTaskId={highlightTaskId} projectEndDate={project.end_date} />,
     },
     {
       key: '3',
@@ -229,7 +229,7 @@ export default function ProjectDetail() {
       key: '4',
       label: 'Roadmap',
       icon: <ProjectOutlined />,
-      children: <RoadmapTab isMember={isMember} />,
+      children: <RoadmapTab isMember={isMember} projectEndDate={project.end_date} projectStartDate={project.start_date} />,
     },
   ];
 

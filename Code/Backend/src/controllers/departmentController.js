@@ -1,5 +1,6 @@
 const Department = require("../models/Department");
 const User = require("../models/User");
+const Project = require("../models/Project");
 
 const { Op } = require("sequelize");
 
@@ -112,6 +113,25 @@ exports.deleteDepartment = async (req, res, next) => {
         const department = await Department.findByPk(id);
         if (!department) {
             return res.status(404).json({ success: false, message: "Không tìm thấy phòng ban cần xóa!" });
+        }
+
+        // Kiểm tra xem phòng ban có dự án nào đang chạy không
+        const activeProjectsCount = await Project.count({
+            include: [{
+                model: User,
+                as: 'manager',
+                where: { department_id: id }
+            }],
+            where: {
+                status: ['ACTIVE', 'ON_HOLD']
+            }
+        });
+
+        if (activeProjectsCount > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Không thể xóa phòng ban đang có dự án đang chạy (ACTIVE/ON_HOLD)!" 
+            });
         }
 
         // Thực hiện xóa cứng/xóa mềm tùy cấu hình hệ thống của bạn (ở đây dùng destroy chuẩn)

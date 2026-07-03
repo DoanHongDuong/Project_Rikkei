@@ -88,6 +88,10 @@ class TaskService {
         }
 
         this.ensureDateRange(taskData.start_date, taskData.due_date);
+        
+        if (taskData.due_date && project.end_date && new Date(taskData.due_date) > new Date(project.end_date)) {
+            throw this.createError(`Deadline của công việc không được vượt quá Deadline của dự án (${project.end_date}).`, 400);
+        }
 
         const task = await Task.create({
             project_id: taskData.project_id,
@@ -121,6 +125,11 @@ class TaskService {
             safeUpdateData.start_date || task.start_date,
             safeUpdateData.deadline || task.deadline
         );
+
+        const checkDeadline = safeUpdateData.deadline || task.deadline;
+        if (checkDeadline && project.end_date && new Date(checkDeadline) > new Date(project.end_date)) {
+            throw this.createError(`Deadline của công việc không được vượt quá Deadline của dự án (${project.end_date}).`, 400);
+        }
 
         await task.update({
             ...safeUpdateData,

@@ -14,9 +14,11 @@ interface TaskDetailModalProps {
   onCancel: () => void;
   taskId: string | number;
   onEditClick: () => void;
+  onDeleteSuccess?: () => void;
+  isMember?: boolean;
 }
 
-export default function TaskDetailModal({ open, onCancel, taskId, onEditClick }: TaskDetailModalProps) {
+export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess, isMember }: TaskDetailModalProps) {
   const [newComment, setNewComment] = useState('');
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -137,8 +139,33 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick }:
             Trở về <span style={{ marginLeft: 8 }}>Chi tiết công việc</span>
           </Button>
           <Space>
-            <Button icon={<EditOutlined />} onClick={onEditClick}>Sửa task</Button>
-            <Button danger icon={<DeleteOutlined />}>Xóa việc</Button>
+            {!isMember && <Button icon={<EditOutlined />} onClick={onEditClick}>Sửa task</Button>}
+            {!isMember && (
+              <Button 
+                danger 
+                icon={<DeleteOutlined />} 
+                onClick={() => {
+                  Modal.confirm({
+                    title: 'Xóa công việc',
+                    content: 'Bạn có chắc chắn muốn xóa công việc này không?',
+                    okText: 'Xóa',
+                    okType: 'danger',
+                    cancelText: 'Hủy',
+                    onOk: async () => {
+                      try {
+                        await TaskService.deleteTask(taskId);
+                        message.success('Đã xóa công việc thành công');
+                        if (onDeleteSuccess) onDeleteSuccess();
+                      } catch (error: any) {
+                        message.error(error.message || 'Lỗi khi xóa công việc');
+                      }
+                    }
+                  });
+                }}
+              >
+                Xóa việc
+              </Button>
+            )}
           </Space>
         </div>
       }
