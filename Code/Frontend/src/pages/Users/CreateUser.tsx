@@ -32,7 +32,7 @@ export default function CreateUser() {
       await UserService.createUser({
         full_name: values.name,
         email: values.email,
-        password: values.password,
+        password: values.password || '123456',
         role: values.role,
         department_id: values.department_id,
       });

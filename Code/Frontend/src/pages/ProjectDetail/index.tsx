@@ -92,10 +92,22 @@ export default function ProjectDetail() {
   };
 
   const handleOk = () => {
-    form.validateFields().then(values => {
-      // TODO: Connect updateProject API
-      console.log('Update project:', values);
-      setIsEditModalVisible(false);
+    form.validateFields().then(async values => {
+      if (!id) return;
+      try {
+        const payload = {
+          name: values.name,
+          description: values.description,
+          status: values.status,
+          end_date: values.deadline ? values.deadline.format('YYYY-MM-DD') : null,
+        };
+        await ProjectService.updateProject(id, payload);
+        message.success('Cập nhật dự án thành công');
+        setIsEditModalVisible(false);
+        loadData();
+      } catch (error: any) {
+        message.error(error.message || 'Lỗi khi cập nhật dự án');
+      }
     });
   };
 
