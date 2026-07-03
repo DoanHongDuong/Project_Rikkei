@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,7 @@ export default function ForgotPassword() {
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const apiBase = 'http://localhost:5000';
+  const API_BASE_URL = import.meta.env.BACKEND_URL;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,7 +23,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${apiBase}/api/auth/forgot-password`, {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, {
         email,
       });
       setMessage(response.data?.message || 'Yêu cầu thành công! Vui lòng kiểm tra email.');

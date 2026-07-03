@@ -29,7 +29,7 @@ export default function AddMemberModal({ open, onCancel, onAdd }: AddMemberModal
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5000/api/users?status=ACTIVE&limit=100', {
+      const response = await fetch(`${import.meta.env.BACKEND_URL}/api/users?status=ACTIVE&limit=100`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

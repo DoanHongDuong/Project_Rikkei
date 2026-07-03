@@ -25,7 +25,7 @@ export default function ResetPassword() {
     setToken(params.get('token'));
   }, []);
 
-  const apiBase = 'http://localhost:5000';
+  const API_BASE_URL = import.meta.env.BACKEND_URL;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -60,7 +60,7 @@ export default function ResetPassword() {
 
     try {
       const response = await axios.post(
-        `${apiBase}${API_ROUTES.RESET_PASSWORD}/${encodeURIComponent(token)}`,
+        `${API_BASE_URL}${API_ROUTES.RESET_PASSWORD}/${encodeURIComponent(token)}`,
         { password }
       );
 

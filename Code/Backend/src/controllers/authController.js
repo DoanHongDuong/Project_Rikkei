@@ -93,7 +93,7 @@ const forgotPassword = async (req, res) => {
       { expiresIn: RESET_PASSWORD_TOKEN_EXPIRES_IN }
     );
 
-    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/reset?token=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset?token=${token}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
