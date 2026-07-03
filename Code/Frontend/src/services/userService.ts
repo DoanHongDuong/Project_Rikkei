@@ -79,8 +79,8 @@ class UserService {
 
   static async updateUserStatus(id: string | number, status: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${id}/status`, {
+        method: 'PATCH',
         headers: this.getHeaders(),
         body: JSON.stringify({ status }),
       });

@@ -120,11 +120,16 @@ export default function ProjectDetail() {
     {
       title: 'Trạng thái',
       key: 'status',
-      render: (_: any, record: any) => (
-        <Tag color={record.is_active ? 'green' : 'red'}>
-          {record.is_active ? 'Active' : 'Removed'}
-        </Tag>
-      ),
+      render: (_: any, record: any) => {
+        if (record.user?.status === 'DISABLED') {
+          return <Tag color="default">Tài khoản vô hiệu hóa</Tag>;
+        }
+        return (
+          <Tag color={record.is_active ? 'green' : 'red'}>
+            {record.is_active ? 'Active' : 'Removed'}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Hành động',
@@ -263,9 +268,15 @@ export default function ProjectDetail() {
             <div>
               <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>Thành viên ({activeMembersCount})</Text>
               <Avatar.Group maxCount={4} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
-                {Array.from({ length: Math.min(activeMembersCount, 4) }).map((_, i) => (
-                  <Avatar key={i} icon={<UserOutlined />} />
-                ))}
+                {members.filter((m: any) => m.is_active).map((member: any) => {
+                  const userName = member.user?.full_name || 'U';
+                  return (
+                    <Avatar key={member.id || member.user_id} style={{ backgroundColor: '#1890ff' }}>
+                      {userName.charAt(0).toUpperCase()}
+                    </Avatar>
+                  );
+                })}
+                {activeMembersCount === 0 && <Avatar icon={<UserOutlined />} />}
               </Avatar.Group>
             </div>
           </Space>

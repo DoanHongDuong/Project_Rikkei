@@ -58,10 +58,15 @@ export default function ProjectsPage() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
                     <Avatar.Group maxCount={3} maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}>
-                      {Array.from({ length: Math.min(membersCount, 4) }).map((_, i) => (
-                        <Avatar key={i} icon={<UserOutlined />} />
-                      ))}
-                      {membersCount === 0 && <Avatar icon={<UserOutlined />} />}
+                      {project.members && project.members.map((member: any) => {
+                        const userName = member.user?.full_name || 'U';
+                        return (
+                          <Avatar key={member.id || member.user_id} style={{ backgroundColor: '#1890ff' }}>
+                            {userName.charAt(0).toUpperCase()}
+                          </Avatar>
+                        );
+                      })}
+                      {(!project.members || project.members.length === 0) && <Avatar icon={<UserOutlined />} />}
                     </Avatar.Group>
                     <Text type="secondary">{membersCount} Members</Text>
                   </div>

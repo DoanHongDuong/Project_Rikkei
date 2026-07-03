@@ -89,7 +89,7 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
           label="Người thực hiện"
         >
           <Select placeholder="Chọn người thực hiện" allowClear>
-            {projectMembers.filter(m => m.is_active).map(member => (
+            {projectMembers.filter(m => m.is_active && m.user?.status !== 'DISABLED').map(member => (
               <Option key={member.user_id} value={member.user_id}>
                 <Space><Avatar size="small" icon={<UserOutlined />} /> {member.user?.full_name || member.user?.email}</Space>
               </Option>

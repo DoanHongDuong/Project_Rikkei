@@ -45,7 +45,7 @@ app.use('/api', commentRoutes);
 // Route dùng chung: ADMIN + PM có thể lấy danh sách user để assign thành viên dự án
 app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, res) => {
     try {
-        const filters = { ...req.query, limit: 100 };
+        const filters = { ...req.query, limit: 100, status: 'ACTIVE' };
         if (req.user.role === 'PM') {
             filters.department_id = req.user.department_id;
         }
