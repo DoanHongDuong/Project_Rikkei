@@ -28,7 +28,7 @@ export default function TaskFormModal({ visible, onCancel, onOk, initialValues, 
   return (
     <Modal
       open={visible}
-      closeIcon={null}
+      maskClosable={false}
       width={600}
       title={
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: 16 }}>

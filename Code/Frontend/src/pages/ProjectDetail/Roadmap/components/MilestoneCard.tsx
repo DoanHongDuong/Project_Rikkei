@@ -1,5 +1,5 @@
-import { Card, Typography, Progress, Badge, Avatar, Space, Collapse, Tooltip, Button, Popconfirm } from 'antd';
-import { UserOutlined, ClockCircleOutlined, TeamOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Card, Typography, Progress, Badge, Space, Collapse, Button, Popconfirm } from 'antd';
+import { ClockCircleOutlined, TeamOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { Milestone } from '../types/roadmap';
 import TaskList from './TaskList';
 
@@ -9,7 +9,6 @@ export default function MilestoneCard({
   milestone,
   onEdit,
   onDelete,
-  onAddTask,
   onTaskStatusChange
 }: {
   milestone: Milestone;

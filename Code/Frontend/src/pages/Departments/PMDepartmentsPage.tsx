@@ -1,6 +1,6 @@
 import { Typography, Row, Col, Card } from 'antd';
 import { SearchOutlined, UserOutlined, CheckSquareOutlined, CloseSquareOutlined } from '@ant-design/icons';
-import '../Dashboard/PMStyles.css';
+// import '../Dashboard/PMStyles.css';
 
 const { Title } = Typography;
 
@@ -17,12 +17,12 @@ export default function PMDepartmentsPage() {
   return (
     <div>
       <Title level={3} style={{ marginBottom: 20 }}>Danh sách phòng ban</Title>
-      
+
       <div className="pm-search-container" style={{ marginBottom: 30 }}>
-        <input 
-          type="text" 
-          className="pm-search-input" 
-          placeholder="Tìm kiếm phòng ban..." 
+        <input
+          type="text"
+          className="pm-search-input"
+          placeholder="Tìm kiếm phòng ban..."
         />
         <div className="pm-search-icon">
           <SearchOutlined />
@@ -32,8 +32,8 @@ export default function PMDepartmentsPage() {
       <Row gutter={[24, 24]}>
         {departments.map(dept => (
           <Col xs={24} sm={12} lg={8} key={dept.id}>
-            <Card 
-              hoverable 
+            <Card
+              hoverable
               style={{ borderRadius: 8, height: '100%', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               bodyStyle={{ padding: '20px' }}
             >
@@ -41,7 +41,7 @@ export default function PMDepartmentsPage() {
                 <div style={{ fontSize: '18px', fontWeight: 600, color: dept.nameColor, marginBottom: '20px' }}>
                   {dept.name}
                 </div>
-                
+
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', color: '#10B981', fontWeight: 500 }}>
                     <UserOutlined style={{ marginRight: 4 }} /> {dept.active}
@@ -55,10 +55,10 @@ export default function PMDepartmentsPage() {
                 </div>
 
                 <div style={{ marginTop: 'auto' }}>
-                  <span style={{ 
-                    backgroundColor: dept.statusBg, 
-                    color: dept.statusText, 
-                    padding: '4px 12px', 
+                  <span style={{
+                    backgroundColor: dept.statusBg,
+                    color: dept.statusText,
+                    padding: '4px 12px',
                     borderRadius: '4px',
                     fontSize: '13px',
                     fontWeight: 500
