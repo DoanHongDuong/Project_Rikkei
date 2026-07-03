@@ -127,6 +127,7 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
       onCancel={onCancel}
       footer={null}
       width={700}
+      className="task-detail-modal"
       closeIcon={null}
       title={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -264,7 +265,7 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
                       </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 16, position: 'sticky', bottom: 0, padding: '16px 24px 24px 24px', background: '#fff', borderTop: '1px solid #f0f0f0', zIndex: 10, margin: '16px -24px 0 -24px' }}>
                       <Avatar icon={<UserOutlined />} />
                       <div style={{ flex: 1, position: 'relative' }}>
                         {replyingTo && (

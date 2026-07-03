@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const socketService = require('./services/socketService');
 const cors = require('cors');
 require('dotenv').config();
 const { connectDB } = require('./config/database');
@@ -12,6 +14,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const roadmapRoutes = require('./routes/roadmapRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Inline route cho /api/users (dùng chung cho ADMIN + PM)
 const { verifyToken } = require('./middleware/authMiddleware');
@@ -41,6 +44,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api', roadmapRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Route dùng chung: ADMIN + PM có thể lấy danh sách user để assign thành viên dự án
 app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, res) => {
@@ -64,6 +68,9 @@ app.get('/', (req, res) => {
 
 // --- Khởi chạy Server (Chỉ giữ lại 1 block duy nhất ở cuối trang) ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+socketService.init(server);
+
+server.listen(PORT, () => {
     console.log(`Server đang chạy mượt mà tại cổng: http://localhost:${PORT}`);
 });

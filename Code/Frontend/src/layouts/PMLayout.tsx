@@ -4,6 +4,7 @@ import { BellFilled } from '@ant-design/icons';
 import { Dropdown, Space, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import AuthService from '../services/authService';
+import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
 import '../pages/Dashboard/PMStyles.css';
 
 interface PMLayoutProps {
@@ -42,7 +43,7 @@ export default function PMLayout({ children }: PMLayoutProps) {
             >
               Dashboard
             </NavLink>
-            {user?.role === 'MEMBER' && (
+            {(user?.role === 'MEMBER' || user?.role === 'PM') && (
               <NavLink 
                 to="/my-tasks" 
                 className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
@@ -82,6 +83,9 @@ export default function PMLayout({ children }: PMLayoutProps) {
       <main className="pm-dashboard-container">
         {children}
       </main>
+
+      {/* Popup thông báo khi có task mới */}
+      <TaskNotificationPopup />
     </div>
   );
 }

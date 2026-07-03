@@ -1,4 +1,5 @@
 import type { AuthUser } from '../types/auth';
+import SocketService from './socketService';
 
 const API_BASE_URL = import.meta.env.BACKEND_URL;
 const MILLISECONDS_PER_SECOND = 1000;
@@ -49,6 +50,7 @@ class AuthService {
   static logout(): void {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    SocketService.disconnect();
   }
 
   // Lấy token từ localStorage

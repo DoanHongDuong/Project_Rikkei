@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Row, Col, Card, Typography, Tabs, message, Spin, Empty, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import TaskService from '../../services/taskService';
+import AuthService from '../../services/authService';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -14,8 +15,9 @@ export default function MyTasksPage() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      // No project_id passed -> fetch all tasks assigned to current user
-      const data = await TaskService.getTasks();
+      const user = AuthService.getUser();
+      // Fetch all tasks assigned to current user
+      const data = await TaskService.getTasks({ assignee_id: user?.id });
       setTasks(data || []);
     } catch (error: any) {
       message.error(error.message || 'Lỗi tải công việc');
