@@ -4,6 +4,7 @@ const TaskHistory = require('../models/TaskHistory');
 const Project = require('../models/Project');
 const ProjectMember = require('../models/ProjectMember');
 const User = require('../models/User');
+const notificationService = require('./notificationService');
 
 const TASK_SAFE_ATTRIBUTES = [
     'id',
@@ -88,7 +89,7 @@ class TaskService {
         }
 
         this.ensureDateRange(taskData.start_date, taskData.due_date);
-        
+
         if (taskData.due_date && project.end_date && new Date(taskData.due_date) > new Date(project.end_date)) {
             throw this.createError(`Deadline của công việc không được vượt quá Deadline của dự án (${project.end_date}).`, 400);
         }
@@ -109,6 +110,24 @@ class TaskService {
         });
 
         await this.createHistory(task.id, currentUser.id, 'TASK_CREATED', null, null, null, 'Tạo task');
+
+        if (task.assignee_id && Number(task.assignee_id) !== Number(currentUser.id)) {
+            await notificationService.createNotification(
+                task.assignee_id,
+                'TASK_ASSIGNED',
+                task.title,
+                task.description || 'Không có mô tả',
+                {
+                    taskId: task.id,
+                    projectId: task.project_id,
+                    projectName: project.name,
+                    assignerName: currentUser.full_name,
+                    priority: task.priority,
+                    status: task.status,
+                    deadline: task.deadline
+                }
+            );
+        }
 
         return this.findTaskWithIncludes(task.id);
     }
@@ -137,6 +156,9 @@ class TaskService {
         });
 
         await this.createHistory(task.id, currentUser.id, 'TASK_UPDATED', null, null, null, 'Cập nhật task');
+
+        // Notify so that unread notifications about this task can be updated
+        notificationService.handleTaskUpdated(task, project).catch(console.error);
 
         return this.findTaskWithIncludes(task.id);
     }
@@ -179,6 +201,8 @@ class TaskService {
             'Cập nhật trạng thái task'
         );
 
+        notificationService.handleTaskUpdated(task, project).catch(console.error);
+
         return this.findTaskWithIncludes(task.id);
     }
 
@@ -209,6 +233,29 @@ class TaskService {
             'Gán người thực hiện task'
         );
 
+        if (oldAssigneeId && Number(oldAssigneeId) !== Number(assigneeId)) {
+            // Hủy thông báo cho người cũ
+            notificationService.handleTaskUnassigned(task.id, oldAssigneeId).catch(console.error);
+        }
+
+        if (assigneeId && Number(assigneeId) !== Number(oldAssigneeId) && Number(assigneeId) !== Number(currentUser.id)) {
+            await notificationService.createNotification(
+                assigneeId,
+                'TASK_ASSIGNED',
+                task.title,
+                task.description || 'Không có mô tả',
+                {
+                    taskId: task.id,
+                    projectId: task.project_id,
+                    projectName: project.name,
+                    assignerName: currentUser.full_name,
+                    priority: task.priority,
+                    status: task.status,
+                    deadline: task.deadline
+                }
+            );
+        }
+
         return this.findTaskWithIncludes(task.id);
     }
 
@@ -226,6 +273,8 @@ class TaskService {
         });
 
         await this.createHistory(task.id, currentUser.id, 'TASK_DELETED', 'is_deleted', 'false', 'true', 'Soft delete task');
+
+        notificationService.handleTaskDeleted(task.id).catch(console.error);
 
         return this.findTaskWithIncludes(task.id);
     }
