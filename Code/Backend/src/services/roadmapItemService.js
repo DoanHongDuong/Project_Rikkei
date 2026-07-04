@@ -3,6 +3,8 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const Roadmap = require('../models/Roadmap');
 const Project = require('../models/Project');
+const ProjectMember = require('../models/ProjectMember');
+const notificationService = require('./notificationService');
 
 const TASK_ATTRIBUTES = ['id', 'title', 'status', 'priority', 'deadline', 'assignee_id'];
 
@@ -91,7 +93,7 @@ const getItemsByRoadmap = async (roadmapId) => {
     return items;
 };
 
-const updateItem = async (itemId, data) => {
+const updateItem = async (itemId, data, currentUser) => {
     const item = await RoadmapItem.findByPk(itemId);
     if (!item) throw new Error('Item not found');
     
@@ -104,7 +106,35 @@ const updateItem = async (itemId, data) => {
         project.end_date
     );
     
-    return await item.update(data);
+    const updated = await item.update(data);
+
+    // Notify all active project members about roadmap item update
+    try {
+        const members = await ProjectMember.findAll({
+            where: { project_id: project.id, is_active: true },
+            attributes: ['user_id']
+        });
+        const actorId = currentUser ? currentUser.id : null;
+        for (const m of members) {
+            if (actorId && Number(m.user_id) === Number(actorId)) continue;
+            notificationService.createNotification(
+                m.user_id,
+                'ROADMAP_ITEM_UPDATED',
+                `Roadmap cập nhật trong dự án: ${project.name}`,
+                `Giai đoạn "${item.title}" vừa được cập nhật`,
+                {
+                    projectId: project.id,
+                    projectName: project.name,
+                    roadmapItemTitle: item.title,
+                    changedBy: currentUser ? currentUser.full_name : 'Hệ thống'
+                }
+            ).catch(console.error);
+        }
+    } catch (err) {
+        console.error('roadmapItemService notify error:', err);
+    }
+
+    return updated;
 };
 
 const deleteItem = async (itemId) => {

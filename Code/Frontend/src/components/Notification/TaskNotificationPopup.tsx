@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, List, Typography, Button, Space, message, Badge, Tag, Avatar, Dropdown, type MenuProps } from 'antd';
-import { BellOutlined, CheckCircleOutlined, UserOutlined, ProjectOutlined, MoreOutlined } from '@ant-design/icons';
-import NotificationService, { type Notification } from '../../services/notificationService';
-import socketService from '../../services/socketService';
+import { Modal, List, Typography, Button, Space, message, Tag, Avatar, Dropdown, Badge, type MenuProps } from 'antd';
+import { BellOutlined, UserOutlined, MoreOutlined } from '@ant-design/icons';
+import { useNotifications } from '../../hooks/useNotifications';
+import type { Notification } from '../../types/notification';
 import TaskService from '../../services/taskService';
 
 const { Text } = Typography;
@@ -39,95 +39,51 @@ const getStatusTag = (status?: string) => {
 
 const getTimeAgo = (dateString?: string) => {
     if (!dateString) return 'Vừa xong';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'Vừa gửi';
-    
+
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours} giờ trước`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays <= 7) return `${diffInDays} ngày trước`;
-    
+
     return date.toLocaleString('vi-VN');
 };
 
 const TaskNotificationPopup: React.FC = () => {
+    const { notifications, markAsRead } = useNotifications();
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [taskNotifications, setTaskNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [pendingReadIds, setPendingReadIds] = useState<number[]>([]);
 
+    // Show popup when new TASK_ASSIGNED unread notifications appear
     useEffect(() => {
-        const fetchNotifications = async () => {
-            try {
-                const unread = await NotificationService.getUnreadNotifications();
-                const taskAssignments = unread.filter(n => n.type === 'TASK_ASSIGNED');
-                
-                if (taskAssignments.length > 0) {
-                    setNotifications(taskAssignments);
-                    setIsModalVisible(true);
-                }
-            } catch (error) {
-                console.error('Failed to fetch notifications on load', error);
-            }
-        };
-
-        fetchNotifications();
-    }, []);
-
-    useEffect(() => {
-        socketService.connect();
-
-        const handleNewNotification = (notification: Notification) => {
-            if (notification.type === 'TASK_ASSIGNED') {
-                setNotifications(prev => [notification, ...prev]);
-                setIsModalVisible(true);
-            }
-        };
-
-        const handleNotificationUpdated = (updatedNotification: Notification) => {
-            setNotifications(prev => prev.map(n => n.id === updatedNotification.id ? updatedNotification : n));
-        };
-
-        const handleNotificationDeleted = (data: { id: number, taskId: string | number }) => {
-            setNotifications(prev => {
-                const newList = prev.filter(n => n.id !== data.id);
-                if (newList.length === 0 && prev.length > 0) {
-                    setIsModalVisible(false);
-                }
-                return newList;
-            });
-        };
-
-        const timer = setTimeout(() => {
-            socketService.on('new_notification', handleNewNotification);
-            socketService.on('notification_updated', handleNotificationUpdated);
-            socketService.on('notification_deleted', handleNotificationDeleted);
-        }, 500);
-
-        return () => {
-            clearTimeout(timer);
-            socketService.off('new_notification', handleNewNotification);
-            socketService.off('notification_updated', handleNotificationUpdated);
-            socketService.off('notification_deleted', handleNotificationDeleted);
-        };
-    }, []);
+        const unreadTaskAssigned = notifications.filter(n => n.type === 'TASK_ASSIGNED' && !n.is_read);
+        if (unreadTaskAssigned.length > 0) {
+            setTaskNotifications(unreadTaskAssigned);
+            setIsModalVisible(true);
+        } else if (isModalVisible && unreadTaskAssigned.length === 0) {
+            setIsModalVisible(false);
+        }
+    }, [notifications]);
 
     const handleMarkAsRead = async () => {
         setLoading(true);
         try {
-            const ids = notifications.map(n => n.id);
-            await NotificationService.markAsRead(ids);
+            const ids = taskNotifications.map(n => n.id);
+            await markAsRead(ids);
             message.success('Đã đánh dấu đọc tất cả thông báo công việc!');
             setIsModalVisible(false);
-            setNotifications([]);
+            setTaskNotifications([]);
         } catch (error) {
             message.error('Có lỗi xảy ra khi đánh dấu đọc thông báo.');
         } finally {
@@ -139,16 +95,16 @@ const TaskNotificationPopup: React.FC = () => {
         try {
             await TaskService.updateTaskStatus(taskId, 'IN_PROGRESS');
             message.success('Đã chuyển trạng thái công việc sang In Progress!');
-            
+
             // Cập nhật giao diện cục bộ thành In Progress
-            setNotifications(prev => 
+            setTaskNotifications(prev =>
                 prev.map(n => {
                     if (n.id === notificationId && n.payload) {
                         try {
                             const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : { ...n.payload };
                             p.status = 'IN_PROGRESS';
                             return { ...n, payload: typeof n.payload === 'string' ? JSON.stringify(p) : p };
-                        } catch(e) {}
+                        } catch (e) { }
                     }
                     return n;
                 })
@@ -156,8 +112,9 @@ const TaskNotificationPopup: React.FC = () => {
 
             // Đưa vào mảng chờ để tự động đánh dấu đã đọc khi đóng popup
             setPendingReadIds(prev => [...prev, notificationId]);
-        } catch (error: any) {
-            message.error(error.message || 'Lỗi khi cập nhật trạng thái');
+        } catch (error: unknown) {
+            const err = error as { message?: string };
+            message.error(err.message || 'Lỗi khi cập nhật trạng thái');
         }
     };
 
@@ -165,10 +122,10 @@ const TaskNotificationPopup: React.FC = () => {
         setIsModalVisible(false);
         if (pendingReadIds.length > 0) {
             try {
-                await NotificationService.markAsRead(pendingReadIds);
-                setNotifications(prev => prev.filter(n => !pendingReadIds.includes(n.id)));
+                await markAsRead(pendingReadIds);
+                setTaskNotifications(prev => prev.filter(n => !pendingReadIds.includes(n.id)));
                 setPendingReadIds([]);
-            } catch (error) {}
+            } catch (error) { }
         }
     };
 
@@ -229,21 +186,21 @@ const TaskNotificationPopup: React.FC = () => {
                     border-color: #cbd5e1;
                 }
             `}</style>
-            
+
             <div style={{ marginTop: 16 }}>
                 <Text type="secondary" style={{ marginBottom: 16, display: 'block' }}>
-                    Bạn vừa được giao {notifications.length} công việc mới. Vui lòng kiểm tra:
+                    Bạn vừa được giao {taskNotifications.length} công việc mới. Vui lòng kiểm tra:
                 </Text>
-                
+
                 <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
                     {Object.entries(
-                        notifications.reduce((groups, item) => {
+                        taskNotifications.reduce((groups, item) => {
                             let pName = 'Dự án khác';
                             if (item.payload) {
                                 try {
                                     const p = typeof item.payload === 'string' ? JSON.parse(item.payload) : item.payload;
                                     if (p.projectName) pName = p.projectName;
-                                } catch (e) {}
+                                } catch (e) { }
                             }
                             if (!groups[pName]) groups[pName] = [];
                             groups[pName].push(item);
@@ -256,7 +213,7 @@ const TaskNotificationPopup: React.FC = () => {
                                     {projectName}
                                 </Text>
                             </div>
-                            
+
                             <List
                                 dataSource={projectTasks}
                                 renderItem={(item) => {
@@ -264,7 +221,7 @@ const TaskNotificationPopup: React.FC = () => {
                                     if (item.payload) {
                                         try {
                                             payloadObj = typeof item.payload === 'string' ? JSON.parse(item.payload) : item.payload;
-                                        } catch (e) {}
+                                        } catch (e) { }
                                     }
 
                                     const menuItems: MenuProps['items'] = [
@@ -299,7 +256,7 @@ const TaskNotificationPopup: React.FC = () => {
                                                         </Dropdown>
                                                     </Space>
                                                 </div>
-                                                
+
                                                 <div style={{ padding: '12px', backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #f0f0f0' }}>
                                                     <Text strong style={{ fontSize: '16px', color: '#1f2937', display: 'block', marginBottom: '8px' }}>
                                                         {item.title}

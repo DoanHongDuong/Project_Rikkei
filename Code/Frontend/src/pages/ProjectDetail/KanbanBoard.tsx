@@ -20,6 +20,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, Avatar, Typography, Badge, Tag, Button, message, Skeleton, Select } from 'antd';
 import { UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { useLocation } from 'react-router-dom';
 import TaskFormModal from './TaskFormModal';
 import TaskDetailModal from './TaskDetailModal';
 import TaskService from '../../services/taskService';
@@ -42,9 +43,9 @@ interface Task {
 
 function SortableTaskItem({ task, onClick, isHighlighted }: { task: Task, onClick: (task: Task) => void, isHighlighted?: boolean }) {
   const {
+    setNodeRef,
     attributes,
     listeners,
-    setNodeRef,
     transform,
     transition,
     isDragging
@@ -59,11 +60,12 @@ function SortableTaskItem({ task, onClick, isHighlighted }: { task: Task, onClic
   };
 
   const cardStyle = isHighlighted
-    ? { borderRadius: '8px', border: '2px solid #1677ff', boxShadow: '0 0 8px rgba(22,119,255,0.5)' }
-    : { borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
+    ? { borderRadius: '8px', border: '2px solid #1677ff', boxShadow: '0 0 8px rgba(22,119,255,0.5)', transition: 'all 0.3s', backgroundColor: '#e6f4ff' }
+    : { borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'all 0.3s' };
 
   return (
     <div
+      id={`task-card-${task.id}`}
       ref={setNodeRef}
       style={style}
       {...attributes}
@@ -136,10 +138,11 @@ interface KanbanBoardProps {
   onTasksChanged?: () => void;
   isMember?: boolean;
   highlightTaskId?: string | null;
+  highlightCommentId?: string | null;
   projectEndDate?: string;
 }
 
-export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId, projectEndDate }: KanbanBoardProps) {
+export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId, highlightCommentId, projectEndDate }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,6 +198,25 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
     loadTasks();
     loadMilestones();
   }, [projectId]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (highlightTaskId) {
+      if (highlightCommentId) {
+        setDetailTaskId(highlightTaskId);
+        setIsDetailModalVisible(true);
+      } else {
+        setIsDetailModalVisible(false);
+        setTimeout(() => {
+          const el = document.getElementById(`task-card-${highlightTaskId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 500);
+      }
+    }
+  }, [highlightTaskId, highlightCommentId, location.search, tasks]);
 
   const handleAddTask = (status: string) => {
     setEditingTask(null);
@@ -386,9 +408,9 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
         onDragEnd={handleDragEnd}
       >
         <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px' }}>
-          <Column title="To Do" status="TODO" tasks={filteredTasks.filter(t => t.status === 'TODO')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={isMember} highlightTaskId={highlightTaskId} />
-          <Column title="In Progress" status="IN_PROGRESS" tasks={filteredTasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
-          <Column title="Done" status="DONE" tasks={filteredTasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={highlightTaskId} />
+          <Column title="To Do" status="TODO" tasks={filteredTasks.filter(t => t.status === 'TODO')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={isMember} highlightTaskId={!highlightCommentId ? highlightTaskId : undefined} />
+          <Column title="In Progress" status="IN_PROGRESS" tasks={filteredTasks.filter(t => t.status === 'IN_PROGRESS')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={!highlightCommentId ? highlightTaskId : undefined} />
+          <Column title="Done" status="DONE" tasks={filteredTasks.filter(t => t.status === 'DONE')} onAddTask={handleAddTask} onTaskClick={handleTaskClick} hideAddButton={true} highlightTaskId={!highlightCommentId ? highlightTaskId : undefined} />
         </div>
 
       <DragOverlay>
@@ -436,6 +458,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
           loadTasks();
         }}
         isMember={isMember}
+        highlightCommentId={highlightCommentId}
       />
     </DndContext>
     </>

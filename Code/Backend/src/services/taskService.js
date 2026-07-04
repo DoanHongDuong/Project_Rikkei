@@ -150,6 +150,9 @@ class TaskService {
             throw this.createError(`Deadline của công việc không được vượt quá Deadline của dự án (${project.end_date}).`, 400);
         }
 
+        const oldDeadline = String(task.deadline);
+        const oldPriority = task.priority;
+
         await task.update({
             ...safeUpdateData,
             updated_by: currentUser.id
@@ -157,10 +160,34 @@ class TaskService {
 
         await this.createHistory(task.id, currentUser.id, 'TASK_UPDATED', null, null, null, 'Cập nhật task');
 
-        // Notify so that unread notifications about this task can be updated
+        // Notify so that unread TASK_ASSIGNED notifications about this task can be updated
         notificationService.handleTaskUpdated(task, project).catch(console.error);
 
+        // Notify assignee if deadline or priority changed
+        const deadlineChanged = safeUpdateData.deadline && String(safeUpdateData.deadline) !== oldDeadline;
+        const priorityChanged = safeUpdateData.priority && safeUpdateData.priority !== oldPriority;
+        if (task.assignee_id && Number(task.assignee_id) !== Number(currentUser.id) && (deadlineChanged || priorityChanged)) {
+            const changes = [];
+            if (deadlineChanged) changes.push(`hạn chót mới: ${new Date(safeUpdateData.deadline).toLocaleDateString('vi-VN')}`);
+            if (priorityChanged) changes.push(`ưu tiên: ${safeUpdateData.priority}`);
+            notificationService.createNotification(
+                task.assignee_id,
+                'TASK_UPDATED',
+                `Công việc đã được cập nhật: ${task.title}`,
+                `${currentUser.full_name} đã thay đổi ${changes.join(', ')}`,
+                {
+                    taskId: task.id,
+                    projectId: task.project_id,
+                    projectName: project.name,
+                    updatedBy: currentUser.full_name,
+                    priority: safeUpdateData.priority || task.priority,
+                    deadline: safeUpdateData.deadline || task.deadline
+                }
+            ).catch(console.error);
+        }
+
         return this.findTaskWithIncludes(task.id);
+
     }
 
     async updateTaskStatus(id, nextStatus, currentUser) {
@@ -234,16 +261,27 @@ class TaskService {
         );
 
         if (oldAssigneeId && Number(oldAssigneeId) !== Number(assigneeId)) {
-            // Hủy thông báo cho người cũ
-            notificationService.handleTaskUnassigned(task.id, oldAssigneeId).catch(console.error);
+            // Thông báo cho người cũ rằng họ không còn được giao task này nữa
+            await notificationService.createNotification(
+                oldAssigneeId,
+                'TASK_UPDATED',
+                `Công việc của bạn đã được giao cho người khác: ${task.title}`,
+                `${currentUser.full_name} đã thay đổi người thực hiện công việc này.`,
+                {
+                    taskId: task.id,
+                    projectId: task.project_id,
+                    projectName: project.name,
+                    updatedBy: currentUser.full_name
+                }
+            );
         }
 
         if (assigneeId && Number(assigneeId) !== Number(oldAssigneeId) && Number(assigneeId) !== Number(currentUser.id)) {
-            await notificationService.createNotification(
+            notificationService.createNotification(
                 assigneeId,
                 'TASK_ASSIGNED',
-                task.title,
-                task.description || 'Không có mô tả',
+                `Bạn được giao công việc mới: ${task.title}`,
+                `${currentUser.full_name} đã giao công việc này cho bạn.`,
                 {
                     taskId: task.id,
                     projectId: task.project_id,
@@ -253,7 +291,7 @@ class TaskService {
                     status: task.status,
                     deadline: task.deadline
                 }
-            );
+            ).catch(console.error);
         }
 
         return this.findTaskWithIncludes(task.id);
@@ -274,7 +312,6 @@ class TaskService {
 
         await this.createHistory(task.id, currentUser.id, 'TASK_DELETED', 'is_deleted', 'false', 'true', 'Soft delete task');
 
-        notificationService.handleTaskDeleted(task.id).catch(console.error);
 
         return this.findTaskWithIncludes(task.id);
     }

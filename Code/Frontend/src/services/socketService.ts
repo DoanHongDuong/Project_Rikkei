@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import AuthService from './authService';
 
 class SocketService {
     private socket: Socket | null = null;
@@ -7,10 +6,10 @@ class SocketService {
     public connect() {
         if (this.socket) return;
 
-        const token = AuthService.getToken();
+        const token = localStorage.getItem('authToken');
         if (!token) return;
 
-        this.socket = io(import.meta.env.BACKEND_URL || 'http://localhost:5000', {
+        this.socket = io(import.meta.env.BACKEND_URL, {
             auth: { token },
             reconnection: true,
             reconnectionAttempts: 5,

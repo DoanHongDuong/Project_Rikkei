@@ -22,6 +22,7 @@ import PMUsersPage from '../pages/Users/PMUsersPage';
 import DepartmentsPage from '../pages/Departments';
 import PMDepartmentsPage from '../pages/Departments/PMDepartmentsPage';
 import AuthService from '../services/authService';
+import NotificationsPage from '../pages/Notifications';
 
 import AdminDashboardPage from '../pages/Dashboard/AdminDashboardPage';
 
@@ -180,6 +181,16 @@ export default function AppRoutes() {
               <EditUser />
             </ProtectedRoute>
           } 
+        />
+
+        {/* Trang thông báo */}
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
         />
 
         {/* Bẫy tất cả các URL lạ không tồn tại về trang lỗi 403 */}

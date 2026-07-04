@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Typography, message, Skeleton } from 'antd';
-import { UserOutlined, ProjectOutlined, CheckCircleOutlined, CheckSquareOutlined, DesktopOutlined } from '@ant-design/icons';
+import { UserOutlined, ProjectOutlined, CheckCircleOutlined, CheckSquareOutlined } from '@ant-design/icons';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import AuthService from '../../services/authService';
 import DashboardService from '../../services/dashboardService';
@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const userData = AuthService.getUser();
     setUser(userData);
-    
+
     const fetchDashboardData = async () => {
       try {
         const response = await DashboardService.getAdminDashboard();
@@ -30,7 +30,7 @@ export default function AdminDashboardPage() {
         setLoading(false);
       }
     };
-    
+
     fetchDashboardData();
   }, []);
 
@@ -50,40 +50,40 @@ export default function AdminDashboardPage() {
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
+            <Statistic
               title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Total Users</span>}
-              value={totalUsers} 
-              prefix={<UserOutlined style={{ color: '#2563EB' }} />} 
+              value={totalUsers}
+              prefix={<UserOutlined style={{ color: '#2563EB' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
+            <Statistic
               title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Total Projects</span>}
-              value={totalProjects} 
-              prefix={<ProjectOutlined style={{ color: '#8b5cf6' }} />} 
+              value={totalProjects}
+              prefix={<ProjectOutlined style={{ color: '#8b5cf6' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
+            <Statistic
               title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Total Tasks</span>}
-              value={totalTasks} 
-              prefix={<CheckSquareOutlined style={{ color: '#F59E0B' }} />} 
+              value={totalTasks}
+              prefix={<CheckSquareOutlined style={{ color: '#F59E0B' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <Statistic 
+            <Statistic
               title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Active Projects</span>}
-              value={activeProjects} 
-              prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />} 
+              value={activeProjects}
+              prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
             />
           </Card>
@@ -92,9 +92,9 @@ export default function AdminDashboardPage() {
 
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
-          <Card 
-            title="Project Status Distribution" 
-            bordered={false} 
+          <Card
+            title="Project Status Distribution"
+            bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
             {projectStatusDistribution && projectStatusDistribution.length > 0 ? (
@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
                     fill="#8884d8"
                     dataKey="count"
                     nameKey="status"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   >
                     {projectStatusDistribution.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -124,12 +124,12 @@ export default function AdminDashboardPage() {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card 
-            title="Task Status Distribution" 
-            bordered={false} 
+          <Card
+            title="Task Status Distribution"
+            bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
-             {taskStatusDistribution && taskStatusDistribution.length > 0 ? (
+            {taskStatusDistribution && taskStatusDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={taskStatusDistribution}

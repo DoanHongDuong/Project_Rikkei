@@ -1,6 +1,7 @@
 const Comment = require('../models/Comment');
 const User = require('../models/User');
 const taskService = require('./taskService');
+const notificationService = require('./notificationService');
 
 class CommentService {
     async create(taskId, currentUser, content, parentCommentId = null) {
@@ -15,6 +16,76 @@ class CommentService {
         });
 
         await taskService.createHistory(taskId, currentUser.id, 'COMMENT_ADDED', null, null, null, 'Thêm bình luận mới');
+
+        // 1. Khởi tạo danh sách người đã nhận thông báo để tránh gửi trùng
+        const notifiedUsers = new Set();
+        notifiedUsers.add(Number(currentUser.id)); // Không gửi cho chính người comment
+
+        // 2. Thông báo "Phản hồi bình luận" (COMMENT_REPLY) cho người comment gốc nếu là reply
+        if (parentCommentId) {
+            const parentComment = await Comment.findByPk(parentCommentId);
+            if (parentComment && Number(parentComment.user_id) !== Number(currentUser.id)) {
+                notifiedUsers.add(Number(parentComment.user_id));
+                notificationService.createNotification(
+                    parentComment.user_id,
+                    'COMMENT_REPLY',
+                    `${currentUser.full_name} đã phản hồi bình luận của bạn`,
+                    content.substring(0, 100),
+                    {
+                        taskId: task.id,
+                        projectId: task.project_id,
+                        commenterName: currentUser.full_name,
+                        taskTitle: task.title,
+                        commentId: comment.id
+                    }
+                ).catch(console.error);
+            }
+        }
+
+        // 3. Thông báo cho người được giao việc (nếu có)
+        if (task.assignee_id && !notifiedUsers.has(Number(task.assignee_id))) {
+            notifiedUsers.add(Number(task.assignee_id));
+            notificationService.createNotification(
+                task.assignee_id,
+                'TASK_COMMENT',
+                `Bình luận mới trong: ${task.title}`,
+                `${currentUser.full_name} đã bình luận: ${content.substring(0, 100)}`,
+                {
+                    taskId: task.id,
+                    projectId: task.project_id,
+                    commenterName: currentUser.full_name,
+                    taskTitle: task.title,
+                    commentId: comment.id
+                }
+            ).catch(console.error);
+        }
+
+        // 4. Thông báo cho tất cả những người khác đã từng bình luận trong task này
+        const otherComments = await Comment.findAll({
+            where: { task_id: taskId, is_deleted: false },
+            attributes: ['user_id'],
+            group: ['user_id']
+        });
+
+        for (const c of otherComments) {
+            const uid = Number(c.user_id);
+            if (!notifiedUsers.has(uid)) {
+                notifiedUsers.add(uid);
+                notificationService.createNotification(
+                    uid,
+                    'TASK_COMMENT',
+                    `Bình luận mới trong: ${task.title}`,
+                    `${currentUser.full_name} đã bình luận: ${content.substring(0, 100)}`,
+                    {
+                        taskId: task.id,
+                        projectId: task.project_id,
+                        commenterName: currentUser.full_name,
+                        taskTitle: task.title,
+                        commentId: comment.id
+                    }
+                ).catch(console.error);
+            }
+        }
 
         return await this.getById(comment.id);
     }

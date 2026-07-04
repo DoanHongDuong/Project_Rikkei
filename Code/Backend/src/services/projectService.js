@@ -4,6 +4,7 @@ const Project = require('../models/Project');
 const ProjectMember = require('../models/ProjectMember');
 const User = require('../models/User');
 const Task = require('../models/Task');
+const notificationService = require('./notificationService');
 
 const PROJECT_SAFE_ATTRIBUTES = [
     'id',
@@ -262,6 +263,22 @@ class ProjectService {
         return this.getProjectById(project.id, currentUser);
     }
 
+    // Helper: broadcast notification to all active project members (except actor)
+    async notifyAllProjectMembers(projectId, actorId, type, title, content, payload) {
+        try {
+            const members = await ProjectMember.findAll({
+                where: { project_id: projectId, is_active: true },
+                attributes: ['user_id']
+            });
+            for (const m of members) {
+                if (Number(m.user_id) === Number(actorId)) continue;
+                notificationService.createNotification(m.user_id, type, title, content, payload).catch(console.error);
+            }
+        } catch (error) {
+            console.error('notifyAllProjectMembers error:', error);
+        }
+    }
+
     async updateProject(id, updateData, currentUser) {
         const project = await Project.findByPk(id);
 
@@ -299,6 +316,16 @@ class ProjectService {
             }, true);
         }
 
+        // Notify all members about project update
+        this.notifyAllProjectMembers(
+            project.id,
+            currentUser.id,
+            'PROJECT_UPDATED',
+            `Dự án được cập nhật: ${project.name}`,
+            `${currentUser.full_name} vừa cập nhật thông tin dự án`,
+            { projectId: project.id, projectName: project.name, updatedBy: currentUser.full_name }
+        );
+
         return this.getProjectById(project.id, currentUser);
     }
 
@@ -311,7 +338,20 @@ class ProjectService {
     }
 
     async archiveProject(id, currentUser) {
-        return this.updateProjectStatus(id, 'ARCHIVED', currentUser);
+        const project = await Project.findByPk(id);
+        const result = await this.updateProjectStatus(id, 'ARCHIVED', currentUser);
+        // Notify all members about archive
+        if (project) {
+            this.notifyAllProjectMembers(
+                id,
+                currentUser.id,
+                'PROJECT_ARCHIVED',
+                `Dự án đã bị đóng: ${project.name}`,
+                `${currentUser.full_name} đã đóng dự án này`,
+                { projectId: id, projectName: project.name, archivedBy: currentUser.full_name }
+            );
+        }
+        return result;
     }
 
     async getProjectMembers(projectId, currentUser) {
@@ -369,6 +409,15 @@ class ProjectService {
             added_by: currentUser.id
         });
 
+        // Notify the added user
+        notificationService.createNotification(
+            memberData.user_id,
+            'MEMBER_ADDED',
+            `Bạn được thêm vào dự án: ${project.name}`,
+            `${currentUser.full_name} đã thêm bạn vào dự án với vai trò ${role}`,
+            { projectId, projectName: project.name, addedBy: currentUser.full_name, role }
+        ).catch(console.error);
+
         return ProjectMember.findByPk(member.id, {
             include: [
                 {
@@ -409,6 +458,15 @@ class ProjectService {
             is_active: false,
             left_at: new Date()
         });
+
+        // Notify the removed user
+        notificationService.createNotification(
+            userId,
+            'MEMBER_REMOVED',
+            `Bạn đã bị xóa khỏi dự án: ${project.name}`,
+            `${currentUser.full_name} đã xóa bạn khỏi dự án`,
+            { projectId, projectName: project.name, removedBy: currentUser.full_name }
+        ).catch(console.error);
 
         return member;
     }

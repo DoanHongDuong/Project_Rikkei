@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Badge, Breadcrumb, Space } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Breadcrumb, Space } from 'antd';
 import {
   AppstoreOutlined,
   ProjectOutlined,
@@ -8,12 +8,13 @@ import {
   CalendarOutlined,
   BarChartOutlined,
   SettingOutlined,
-  BellFilled,
   CheckSquareOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AuthService from '../services/authService';
 import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
+import NotificationDropdown from '../components/Notification/NotificationDropdown';
+import { NotificationProvider } from '../context/NotificationContext';
 
 const { Header, Sider, Content } = Layout;
 
@@ -68,81 +69,81 @@ export default function MainLayout({ children }: MainLayoutProps) {
   });
 
   return (
-    <Layout style={{ minHeight: '100vh' }} hasSider>
-      {/* --- Thanh Sidebar Menu Trái --- */}
-      <Sider
-        width={240}
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          backgroundColor: '#1E3A5F'
-        }}
-      >
-        {/* Khối bọc Logo hệ thống */}
-        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #162D4A' }}>
-          <h2 style={{ margin: 0, color: '#fff', fontWeight: 700 }}>TMS</h2>
-        </div>
-
-        {/* Cây Menu Ant Design định tuyến (Đã dọn dẹp phần HTML lỗi đè ở đây) */}
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={handleMenuClick}
-          style={{ backgroundColor: '#1E3A5F', borderRight: 0, paddingTop: 16 }}
-        />
-      </Sider>
-
-      {/* --- Khu vực hiển thị Nội dung Phải --- */}
-      <Layout style={{ marginLeft: 240 }}>
-        {/* Header Topbar */}
-        <Header
+    <NotificationProvider>
+      <Layout style={{ minHeight: '100vh' }} hasSider>
+        {/* --- Thanh Sidebar Menu Trái --- */}
+        <Sider
+          width={240}
           style={{
-            position: 'sticky',
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed',
+            left: 0,
             top: 0,
-            zIndex: 1,
-            width: '100%',
-            backgroundColor: '#FFFFFF',
-            padding: '0 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid #f0f0f0'
+            bottom: 0,
+            backgroundColor: '#1E3A5F'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            <Breadcrumb items={breadcrumbItems} style={{ marginRight: 32 }} />
+          {/* Khối bọc Logo hệ thống */}
+          <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #162D4A' }}>
+            <h2 style={{ margin: 0, color: '#fff', fontWeight: 700 }}>TMS</h2>
           </div>
-          
-          <Space size="large" align="center">
-            {/* Chuông thông báo */}
-            <Badge count={5} size="small">
-              <BellFilled style={{ fontSize: 24, cursor: 'pointer', color: '#6B7280' }} />
-            </Badge>
 
-            {/* Dropdown người dùng (Gốc của câu hỏi đầu tiên bạn hỏi tôi) */}
-            <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />
-                <span style={{ fontWeight: 500 }}>{user?.full_name || 'User'} ({userRole})</span>
-              </Space>
-            </Dropdown>
-          </Space>
-        </Header>
+          {/* Cây Menu Ant Design định tuyến (Đã dọn dẹp phần HTML lỗi đè ở đây) */}
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={handleMenuClick}
+            style={{ backgroundColor: '#1E3A5F', borderRight: 0, paddingTop: 16 }}
+          />
+        </Sider>
 
-        {/* Vùng Render View Router Con */}
-        <Content style={{ margin: '24px 24px', overflow: 'initial' }}>
-          {children}
-        </Content>
+        {/* --- Khu vực hiển thị Nội dung Phải --- */}
+        <Layout style={{ marginLeft: 240 }}>
+          {/* Header Topbar */}
+          <Header
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 1,
+              width: '100%',
+              backgroundColor: '#FFFFFF',
+              padding: '0 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid #f0f0f0'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <Breadcrumb items={breadcrumbItems} style={{ marginRight: 32 }} />
+            </div>
+
+            <Space size="large" align="center">
+              {/* Notification dropdown */}
+              <NotificationDropdown />
+
+              {/* Dropdown người dùng (Gốc của câu hỏi đầu tiên bạn hỏi tôi) */}
+              <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
+                <Space style={{ cursor: 'pointer' }}>
+                  <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />
+                  <span style={{ fontWeight: 500 }}>{user?.full_name || 'User'} ({userRole})</span>
+                </Space>
+              </Dropdown>
+            </Space>
+          </Header>
+
+          {/* Vùng Render View Router Con */}
+          <Content style={{ margin: '24px 24px', overflow: 'initial' }}>
+            {children}
+          </Content>
+        </Layout>
+
+        {/* Popup thông báo khi có task mới */}
+        <TaskNotificationPopup />
       </Layout>
-
-      {/* Popup thông báo khi có task mới */}
-      <TaskNotificationPopup />
-    </Layout>
+    </NotificationProvider>
   );
-}
+}

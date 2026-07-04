@@ -46,7 +46,7 @@ const updateItem = async (req, res) => {
             }
         }
 
-        const item = await roadmapItemService.updateItem(id, data);
+        const item = await roadmapItemService.updateItem(id, data, req.user);
         res.status(200).json({ success: true, data: item });
     } catch (error) {
         if (error.message === 'Item not found') {

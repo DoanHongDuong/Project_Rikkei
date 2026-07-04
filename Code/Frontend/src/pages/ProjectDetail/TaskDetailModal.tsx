@@ -16,15 +16,17 @@ interface TaskDetailModalProps {
   onEditClick: () => void;
   onDeleteSuccess?: () => void;
   isMember?: boolean;
+  highlightCommentId?: string | null;
 }
 
-export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess, isMember }: TaskDetailModalProps) {
+export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess, isMember, highlightCommentId }: TaskDetailModalProps) {
   const [newComment, setNewComment] = useState('');
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<any>(null);
+  const [highlightedComment, setHighlightedComment] = useState<string | number | null>(null);
 
   const currentUser = AuthService.getUser();
 
@@ -33,6 +35,38 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
       loadTask();
     }
   }, [open, taskId]);
+
+  const highlightComment = (commentId: string | number) => {
+    setTimeout(() => {
+      const el = document.getElementById(`comment-${commentId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedComment(commentId);
+        setTimeout(() => {
+          setHighlightedComment(null);
+        }, 2000);
+      }
+    }, 600);
+  };
+
+  useEffect(() => {
+    if (!loading && comments.length > 0 && highlightCommentId) {
+      highlightComment(highlightCommentId);
+    }
+  }, [loading, comments, highlightCommentId]);
+
+  useEffect(() => {
+    const handleReHighlight = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        highlightComment(customEvent.detail);
+      }
+    };
+    window.addEventListener('reHighlightComment', handleReHighlight);
+    return () => {
+      window.removeEventListener('reHighlightComment', handleReHighlight);
+    };
+  }, []);
 
   const loadTask = async () => {
     try {
@@ -224,7 +258,7 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         {comments.filter(c => !c.parent_comment_id).map(comment => (
-                          <div key={comment.id}>
+                          <div key={comment.id} id={`comment-${comment.id}`} style={{ padding: 8, borderRadius: 8, backgroundColor: highlightedComment == comment.id ? '#fffbe6' : 'transparent', transition: 'background-color 1s ease-out' }}>
                             <div style={{ display: 'flex', gap: 12 }}>
                               <Avatar icon={<UserOutlined />} />
                               <div style={{ flex: 1 }}>
@@ -244,7 +278,7 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
                               </div>
                             </div>
                             {comments.filter(r => r.parent_comment_id === comment.id).map(reply => (
-                              <div key={reply.id} style={{ display: 'flex', gap: 12, marginLeft: 44, marginTop: 12 }}>
+                              <div key={reply.id} id={`comment-${reply.id}`} style={{ display: 'flex', gap: 12, marginLeft: 44, marginTop: 12, padding: 8, borderRadius: 8, backgroundColor: highlightedComment == reply.id ? '#fffbe6' : 'transparent', transition: 'background-color 1s ease-out' }}>
                                 <Avatar icon={<UserOutlined />} size="small" />
                                 <div style={{ flex: 1 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
