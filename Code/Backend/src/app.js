@@ -61,6 +61,21 @@ app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, re
     }
 });
 
+// Route lấy danh sách user để assign (loại bỏ ADMIN)
+app.get('/api/available-users', verifyToken, authorizeRoles('ADMIN', 'PM', 'MEMBER'), async (req, res) => {
+    try {
+        const filters = { ...req.query, limit: 100, status: 'ACTIVE', exclude_role: 'ADMIN' };
+        if (req.user.role === 'PM') {
+            filters.department_id = req.user.department_id;
+        }
+        const { users, pagination } = await userService.getUsers(filters);
+        res.status(200).json({ success: true, message: 'OK', data: { users, pagination } });
+    } catch (error) {
+        console.error('GET /api/available-users error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server.' });
+    }
+});
+
 // Route kiểm tra mặc định khi vào trang chủ server
 app.get('/', (req, res) => {
     res.json({ message: "Welcome to TMS Project Backend Server!" });

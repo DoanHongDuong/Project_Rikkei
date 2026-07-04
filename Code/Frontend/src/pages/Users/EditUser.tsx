@@ -19,6 +19,14 @@ export default function EditUser() {
   const currentUser = AuthService.getUser();
   const isAdmin = currentUser?.role === 'ADMIN';
 
+  const role = Form.useWatch('role', form);
+
+  useEffect(() => {
+    if (role === 'ADMIN') {
+      form.setFieldsValue({ department_id: undefined });
+    }
+  }, [role, form]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -163,7 +171,7 @@ export default function EditUser() {
             >
               <Select
                 size="large"
-                disabled={!isAdmin}
+                disabled={!isAdmin || role === 'ADMIN'}
                 allowClear
                 options={departments.map(d => ({
                   value: d.id,
