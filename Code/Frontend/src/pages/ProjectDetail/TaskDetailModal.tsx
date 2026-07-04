@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import TaskService from '../../services/taskService';
 import CommentService from '../../services/commentService';
 import AuthService from '../../services/authService';
+import ExtensionService from '../../services/extensionService';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -26,6 +27,19 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
   const [submitting, setSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<any>(null);
 
+  // Extension Request States
+  const [isExtensionModalVisible, setIsExtensionModalVisible] = useState(false);
+  const [requestedDeadline, setRequestedDeadline] = useState('');
+  const [extensionReason, setExtensionReason] = useState('');
+  const [submittingExtension, setSubmittingExtension] = useState(false);
+  const [pendingRequest, setPendingRequest] = useState<any>(null);
+
+  // Extension Review States (PM/ADMIN)
+  const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
+  const [reviewAction, setReviewAction] = useState<'APPROVED' | 'REJECTED' | null>(null);
+  const [reviewNote, setReviewNote] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   const currentUser = AuthService.getUser();
 
   useEffect(() => {
@@ -43,10 +57,99 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
       ]);
       setTask(data);
       setComments(commentsData);
+
+      // Load pending extension request for this task
+      const user = AuthService.getUser();
+      if (user) {
+        if (user.role === 'MEMBER') {
+          const myRequests = await ExtensionService.getMyRequests();
+          const pending = myRequests.find((r: any) => Number(r.task_id) === Number(taskId) && r.status === 'PENDING');
+          setPendingRequest(pending || null);
+        } else if (user.role === 'PM' || user.role === 'ADMIN') {
+          const pendingRequests = await ExtensionService.getPendingRequests();
+          const pending = pendingRequests.find((r: any) => Number(r.task_id) === Number(taskId));
+          setPendingRequest(pending || null);
+        }
+      } else {
+        setPendingRequest(null);
+      }
     } catch (error: any) {
       console.error('Lỗi tải task:', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRequestExtension = async () => {
+    if (!requestedDeadline) {
+      message.error('Vui lòng chọn deadline mới');
+      return;
+    }
+    if (!extensionReason.trim()) {
+      message.error('Vui lòng nhập lý do gia hạn');
+      return;
+    }
+
+    if (dayjs(requestedDeadline).isBefore(dayjs(task.deadline)) || dayjs(requestedDeadline).isSame(dayjs(task.deadline))) {
+      message.error('Deadline mới phải sau deadline hiện tại');
+      return;
+    }
+
+    if (task.project) {
+      if (task.project.start_date && dayjs(requestedDeadline).isBefore(dayjs(task.project.start_date))) {
+        message.error(`Deadline mới không được trước ngày bắt đầu của dự án (${dayjs(task.project.start_date).format('DD/MM/YYYY')})`);
+        return;
+      }
+      if (task.project.end_date && dayjs(requestedDeadline).isAfter(dayjs(task.project.end_date))) {
+        message.error(`Deadline mới không được vượt quá ngày kết thúc của dự án (${dayjs(task.project.end_date).format('DD/MM/YYYY')})`);
+        return;
+      }
+    }
+
+    try {
+      setSubmittingExtension(true);
+      await ExtensionService.createRequest({
+        taskId: task.id,
+        requestedDeadline,
+        reason: extensionReason
+      });
+      message.success('Đã gửi yêu cầu gia hạn deadline thành công');
+      setIsExtensionModalVisible(false);
+      setRequestedDeadline('');
+      setExtensionReason('');
+      loadTask();
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi gửi yêu cầu gia hạn');
+    } finally {
+      setSubmittingExtension(false);
+    }
+  };
+
+  const handleOpenReviewModal = (action: 'APPROVED' | 'REJECTED') => {
+    setReviewAction(action);
+    setIsReviewModalVisible(true);
+  };
+
+  const handleConfirmReview = async () => {
+    if (!pendingRequest) return;
+    try {
+      setSubmittingReview(true);
+      if (reviewAction === 'APPROVED') {
+        await ExtensionService.approveRequest(pendingRequest.id, reviewNote);
+        message.success('Đã phê duyệt yêu cầu gia hạn');
+      } else {
+        await ExtensionService.rejectRequest(pendingRequest.id, reviewNote);
+        message.success('Đã từ chối yêu cầu gia hạn');
+      }
+      setIsReviewModalVisible(false);
+      setReviewNote('');
+      setReviewAction(null);
+      setPendingRequest(null);
+      loadTask();
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi khi xử lý yêu cầu');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -139,6 +242,11 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
             Trở về <span style={{ marginLeft: 8 }}>Chi tiết công việc</span>
           </Button>
           <Space>
+            {isMember && task && currentUser && Number(task.assignee_id) === Number(currentUser.id) && !pendingRequest && (
+              <Button type="primary" onClick={() => setIsExtensionModalVisible(true)}>
+                Yêu cầu gia hạn
+              </Button>
+            )}
             {!isMember && <Button icon={<EditOutlined />} onClick={onEditClick}>Sửa task</Button>}
             {!isMember && (
               <Button 
@@ -194,8 +302,37 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
                       {task.description || 'Không có mô tả'}
                     </Paragraph>
 
-                    <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Hạn chót</Title>
-                    <Text>{task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Chưa đặt'}</Text>
+                     <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Hạn chót</Title>
+                    <Text style={{ display: 'block', marginBottom: 8 }}>{task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Chưa đặt'}</Text>
+
+                    {pendingRequest && (
+                      <div style={{ marginTop: 16, padding: 16, border: '1px solid #ffe58f', backgroundColor: '#fffbe6', borderRadius: 8 }}>
+                        <Title level={5} style={{ margin: 0, color: '#d46b08', fontSize: 14 }}>
+                          Yêu cầu gia hạn đang chờ duyệt
+                        </Title>
+                        <div style={{ marginTop: 8 }}>
+                          <div><Text strong>Hạn chót mới:</Text> <Text>{dayjs(pendingRequest.requested_deadline).format('DD/MM/YYYY')}</Text></div>
+                          <div style={{ marginTop: 4 }}><Text strong>Lý do:</Text> <Text>{pendingRequest.reason}</Text></div>
+                          {pendingRequest.requester && (
+                            <div style={{ marginTop: 4 }}>
+                              <Text strong>Người yêu cầu:</Text> <Text>{pendingRequest.requester.full_name || pendingRequest.requester.email}</Text>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Nút Phê duyệt / Từ chối dành cho PM/ADMIN */}
+                        {(currentUser?.role === 'PM' || currentUser?.role === 'ADMIN') && (
+                          <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                            <Button type="primary" size="small" onClick={() => handleOpenReviewModal('APPROVED')}>
+                              Phê duyệt
+                            </Button>
+                            <Button danger size="small" onClick={() => handleOpenReviewModal('REJECTED')}>
+                              Từ chối
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <Title level={5} style={{ marginTop: 24, marginBottom: 8 }}>Người thực hiện</Title>
                     {task.assignee ? (
@@ -324,6 +461,80 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
           <Text type="secondary">Không tìm thấy thông tin task.</Text>
         )}
       </div>
+
+      {/* Modal yêu cầu gia hạn deadline */}
+      {task && (
+        <Modal
+          title="Yêu cầu gia hạn deadline"
+          open={isExtensionModalVisible}
+          onCancel={() => {
+            setIsExtensionModalVisible(false);
+            setRequestedDeadline('');
+            setExtensionReason('');
+          }}
+          onOk={handleRequestExtension}
+          okText="Gửi yêu cầu"
+          cancelText="Hủy"
+          confirmLoading={submittingExtension}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
+            <div>
+              <Text type="secondary">Deadline hiện tại:</Text>
+              <Input
+                value={task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Chưa đặt'}
+                readOnly
+                disabled
+                style={{ marginTop: 8 }}
+              />
+            </div>
+            <div>
+              <Text type="secondary">Deadline mới mong muốn:</Text>
+              <Input
+                type="date"
+                value={requestedDeadline}
+                onChange={(e) => setRequestedDeadline(e.target.value)}
+                style={{ marginTop: 8 }}
+              />
+            </div>
+            <div>
+              <Text type="secondary">Lý do gia hạn:</Text>
+              <TextArea
+                rows={4}
+                placeholder="Nhập lý do chi tiết cần gia hạn..."
+                value={extensionReason}
+                onChange={(e) => setExtensionReason(e.target.value)}
+                style={{ marginTop: 8 }}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal duyệt yêu cầu gia hạn dành cho PM / Admin */}
+      <Modal
+        title={reviewAction === 'APPROVED' ? 'Phê duyệt yêu cầu gia hạn' : 'Từ chối yêu cầu gia hạn'}
+        open={isReviewModalVisible}
+        onCancel={() => {
+          setIsReviewModalVisible(false);
+          setReviewNote('');
+          setReviewAction(null);
+        }}
+        onOk={handleConfirmReview}
+        okText={reviewAction === 'APPROVED' ? 'Phê duyệt' : 'Từ chối'}
+        okType={reviewAction === 'APPROVED' ? 'primary' : 'danger'}
+        confirmLoading={submittingReview}
+      >
+        <div style={{ marginTop: 16 }}>
+          <Text type="secondary">Phản hồi của người duyệt (tùy chọn):</Text>
+          <TextArea
+            rows={4}
+            placeholder="Nhập phản hồi hoặc lý do..."
+            value={reviewNote}
+            onChange={(e) => setReviewNote(e.target.value)}
+            style={{ marginTop: 8 }}
+          />
+        </div>
+      </Modal>
     </Modal>
   );
 }

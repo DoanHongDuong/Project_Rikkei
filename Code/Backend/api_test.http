@@ -224,3 +224,51 @@ Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
 ### TASK H: XÓA MỀM TASK
 DELETE http://localhost:5000/api/tasks/1
 Authorization: Bearer <ADMIN_OR_MANAGER_PM_JWT_TOKEN>
+
+###
+
+### DEADLINE EXTENSION A: MEMBER GỬI YÊU CẦU GIA HẠN
+POST http://localhost:5000/api/extensions
+Content-Type: application/json
+Authorization: Bearer <MEMBER_JWT_TOKEN>
+
+{
+    "taskId": 1,
+    "requestedDeadline": "2026-07-20",
+    "reason": "Cần thêm thời gian tối ưu hóa API và viết Unit Test"
+}
+
+###
+
+### DEADLINE EXTENSION B: MEMBER XEM DANH SÁCH YÊU CẦU CỦA BẢN THÂN
+GET http://localhost:5000/api/extensions/my
+Authorization: Bearer <MEMBER_JWT_TOKEN>
+
+###
+
+### DEADLINE EXTENSION C: PM/ADMIN XEM DANH SÁCH YÊU CẦU ĐANG CHỜ DUYỆT
+GET http://localhost:5000/api/extensions/pending
+Authorization: Bearer <PM_OR_ADMIN_JWT_TOKEN>
+
+###
+
+### DEADLINE EXTENSION D: PM/ADMIN PHÊ DUYỆT YÊU CẦU GIA HẠN
+PUT http://localhost:5000/api/extensions/1/approve
+Content-Type: application/json
+Authorization: Bearer <PM_OR_ADMIN_JWT_TOKEN>
+
+{
+    "reviewNote": "Đồng ý gia hạn thêm 5 ngày để hoàn thiện sản phẩm chất lượng tốt nhất."
+}
+
+###
+
+### DEADLINE EXTENSION E: PM/ADMIN TỪ CHỐI YÊU CẦU GIA HẠN
+PUT http://localhost:5000/api/extensions/1/reject
+Content-Type: application/json
+Authorization: Bearer <PM_OR_ADMIN_JWT_TOKEN>
+
+{
+    "reviewNote": "Không thể gia hạn vì dự án cần bàn giao đúng tiến độ cho khách hàng."
+}
+
