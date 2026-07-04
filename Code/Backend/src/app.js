@@ -68,6 +68,14 @@ app.get('/api/available-users', verifyToken, authorizeRoles('ADMIN', 'PM', 'MEMB
         if (req.user.role === 'PM') {
             filters.department_id = req.user.department_id;
         }
+        if (req.query.exclude_project_id) {
+            const ProjectMember = require('./models/ProjectMember');
+            const projectMembers = await ProjectMember.findAll({
+                where: { project_id: req.query.exclude_project_id, is_active: true },
+                attributes: ['user_id']
+            });
+            filters.exclude_user_ids = projectMembers.map(m => m.user_id);
+        }
         const { users, pagination } = await userService.getUsers(filters);
         res.status(200).json({ success: true, message: 'OK', data: { users, pagination } });
     } catch (error) {

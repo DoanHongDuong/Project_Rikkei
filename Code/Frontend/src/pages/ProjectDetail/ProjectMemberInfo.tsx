@@ -125,6 +125,9 @@ export default function ProjectMemberInfo() {
             <Title level={5}>Thông tin</Title>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div><Text type="secondary">Vai trò hệ thống:</Text> <Tag>{user.role}</Tag></div>
+              <div>
+                <Text type="secondary">Phòng ban:</Text> <Text>{user.Department ? user.Department.name : 'N/A'}</Text>
+              </div>
               <div><Text type="secondary">Ngày tham gia:</Text> <Text>{member.joined_at ? dayjs(member.joined_at).format('DD/MM/YYYY') : 'N/A'}</Text></div>
               {member.left_at && (
                 <div><Text type="secondary">Ngày rời:</Text> <Text>{dayjs(member.left_at).format('DD/MM/YYYY')}</Text></div>
