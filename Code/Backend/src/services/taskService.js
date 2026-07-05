@@ -382,7 +382,7 @@ class TaskService {
             {
                 model: Project,
                 as: 'project',
-                attributes: ['id', 'name', 'status', 'manager_id']
+                attributes: ['id', 'name', 'status', 'manager_id', 'start_date', 'end_date']
             },
             {
                 model: User,

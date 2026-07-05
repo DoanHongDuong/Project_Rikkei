@@ -1,6 +1,6 @@
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/database");
-const User = require("./User");
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+const User = require('./User');
 
 const Notification = sequelize.define('Notification', {
     id: {
@@ -40,15 +40,20 @@ const Notification = sequelize.define('Notification', {
     read_at: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 }, {
-    tableName: "notifications",
-    timestamps: true,
-    createdAt: "created_at",
-    updatedAt: false // Schema doesn't have updated_at for notifications
+    tableName: 'notifications',
+    timestamps: false
 });
 
+// Associations
 User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
 Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 module.exports = Notification;
+

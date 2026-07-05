@@ -14,6 +14,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const roadmapRoutes = require('./routes/roadmapRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const extensionRoutes = require('./routes/extensionRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
 // Inline route cho /api/users (dùng chung cho ADMIN + PM)
@@ -44,7 +45,6 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api', roadmapRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', commentRoutes);
-app.use('/api/notifications', notificationRoutes);
 
 // Route dùng chung: ADMIN + PM có thể lấy danh sách user để assign thành viên dự án
 app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, res) => {
