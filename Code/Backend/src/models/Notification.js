@@ -58,7 +58,3 @@ User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
 Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 module.exports = Notification;
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/merge-task-history
