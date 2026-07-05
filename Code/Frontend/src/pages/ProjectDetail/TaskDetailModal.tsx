@@ -83,21 +83,37 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
     };
   }, []);
 
+  const highlightExtensionFrame = () => {
+    setTimeout(() => {
+      const el = document.getElementById('extension-request-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.transition = 'background-color 1s ease-out';
+        el.style.backgroundColor = '#ffd591';
+        setTimeout(() => {
+          el.style.backgroundColor = '#fffbe6';
+        }, 2000);
+      }
+    }, 600);
+  };
+
   useEffect(() => {
     if (!loading && pendingRequest && highlightExtension) {
-      setTimeout(() => {
-        const el = document.getElementById('extension-request-section');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.style.transition = 'background-color 1s ease-out';
-          el.style.backgroundColor = '#ffd591';
-          setTimeout(() => {
-            el.style.backgroundColor = '#fffbe6';
-          }, 2000);
-        }
-      }, 600);
+      highlightExtensionFrame();
     }
   }, [loading, pendingRequest, highlightExtension]);
+
+  useEffect(() => {
+    const handleReHighlightExt = () => {
+      if (pendingRequest) {
+        highlightExtensionFrame();
+      }
+    };
+    window.addEventListener('reHighlightExtension', handleReHighlightExt);
+    return () => {
+      window.removeEventListener('reHighlightExtension', handleReHighlightExt);
+    };
+  }, [pendingRequest]);
 
   const loadTask = async () => {
     try {

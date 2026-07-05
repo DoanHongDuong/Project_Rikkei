@@ -73,6 +73,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
                     if (p && commentId) {
                         window.dispatchEvent(new CustomEvent('reHighlightComment', { detail: commentId }));
                     }
+                    const taskId = p.taskId || p.task_id;
+                    if (n.type.includes('EXTENSION') && taskId) {
+                        window.dispatchEvent(new CustomEvent('reHighlightExtension', { detail: taskId }));
+                    }
                 } catch (e) { }
             }
             onNavigate(path);
@@ -216,7 +220,9 @@ const DropdownContent: React.FC<DropdownContentProps> = ({ onClose }) => {
     const handleNavigate = (path: string | null) => {
         if (path) {
             navigate(path);
-            onClose();
+            setTimeout(() => {
+                onClose();
+            }, 100);
         }
     };
 
