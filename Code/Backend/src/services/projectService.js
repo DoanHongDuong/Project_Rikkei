@@ -371,7 +371,13 @@ class ProjectService {
                 {
                     model: User,
                     as: 'user',
-                    attributes: USER_SAFE_ATTRIBUTES
+                    attributes: USER_SAFE_ATTRIBUTES,
+                    include: [
+                        {
+                            model: require('../models/Department'),
+                            attributes: ['id', 'name']
+                        }
+                    ]
                 }
             ],
             order: [['is_active', 'DESC'], ['id', 'DESC']]
@@ -387,12 +393,6 @@ class ProjectService {
 
         this.ensureCanManageProject(project, currentUser);
 
-        const role = memberData.role || 'MEMBER';
-
-        if (!PROJECT_MEMBER_ROLES.includes(role)) {
-            throw this.createError('Role thành viên project không hợp lệ.', 400);
-        }
-
         const user = await User.findByPk(memberData.user_id);
 
         if (!user) {
@@ -401,6 +401,19 @@ class ProjectService {
 
         if (user.status === 'DISABLED') {
             throw this.createError('Không thể thêm user đã bị vô hiệu hóa vào project.', 400);
+        }
+
+        if (currentUser.role === 'PM' && user.department_id !== currentUser.department_id) {
+            throw this.createError('PM chỉ có thể thêm thành viên cùng phòng ban.', 403);
+        }
+
+        let role = memberData.role || 'MEMBER';
+        if (user.role === 'PM') {
+            role = 'LEAD';
+        }
+
+        if (!PROJECT_MEMBER_ROLES.includes(role)) {
+            throw this.createError('Role thành viên project không hợp lệ.', 400);
         }
 
         const member = await this.addOrReactivateProjectMember(projectId, {
