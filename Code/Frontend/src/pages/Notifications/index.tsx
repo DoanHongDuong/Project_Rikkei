@@ -23,12 +23,27 @@ const { Title, Text } = Typography;
 const getNavigationPath = (n: Notification): string | null => {
     if (!n.payload) return null;
     const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-    if (n.type === 'ROADMAP_ITEM_UPDATED' && p.projectId) return `/projects/${p.projectId}?tab=4`;
-    if (p.taskId && p.projectId) {
-        if (p.commentId) return `/projects/${p.projectId}?tab=2&highlightTask=${p.taskId}&highlightComment=${p.commentId}`;
-        return `/projects/${p.projectId}?tab=2&highlightTask=${p.taskId}`;
+    const projectId = p.projectId || p.project_id;
+    const taskId = p.taskId || p.task_id;
+    const commentId = p.commentId || p.comment_id;
+
+    if (n.type === 'ROADMAP_ITEM_UPDATED' && projectId) return `/projects/${projectId}?tab=4`;
+
+    // Thông báo gia hạn deadline: điều hướng và mở khung phê duyệt
+    if (
+        (n.type === 'DEADLINE_EXTENSION_REQUESTED' ||
+            n.type === 'DEADLINE_EXTENSION_APPROVED' ||
+            n.type === 'DEADLINE_EXTENSION_REJECTED') &&
+        taskId && projectId
+    ) {
+        return `/projects/${projectId}?tab=2&highlightTask=${taskId}&highlightExtension=true`;
     }
-    if (p.projectId) return `/projects/${p.projectId}`;
+
+    if (taskId && projectId) {
+        if (commentId) return `/projects/${projectId}?tab=2&highlightTask=${taskId}&highlightComment=${commentId}`;
+        return `/projects/${projectId}?tab=2&highlightTask=${taskId}`;
+    }
+    if (projectId) return `/projects/${projectId}`;
     return null;
 };
 
@@ -50,6 +65,10 @@ const getIcon = (type: NotificationType) => {
             return <TeamOutlined style={{ ...s, color: '#722ed1' }} />;
         case 'ROADMAP_ITEM_UPDATED':
             return <PartitionOutlined style={{ ...s, color: '#13c2c2' }} />;
+        case 'DEADLINE_EXTENSION_REQUESTED':
+        case 'DEADLINE_EXTENSION_APPROVED':
+        case 'DEADLINE_EXTENSION_REJECTED':
+            return <ProjectOutlined style={{ ...s, color: '#fa8c16' }} />;
         default:
             return <BellOutlined style={{ ...s, color: '#8c8c8c' }} />;
     }
@@ -66,8 +85,9 @@ const getTypeLabel = (type: NotificationType): { text: string; color: string } =
         MEMBER_ADDED: { text: 'Thành viên', color: 'purple' },
         MEMBER_REMOVED: { text: 'Rời dự án', color: 'magenta' },
         ROADMAP_ITEM_UPDATED: { text: 'Roadmap', color: 'cyan' },
-        EXTENSION_APPROVED: { text: 'Duyệt gia hạn', color: 'lime' },
-        EXTENSION_REJECTED: { text: 'Từ chối gia hạn', color: 'red' },
+        DEADLINE_EXTENSION_REQUESTED: { text: 'Xin gia hạn', color: 'orange' },
+        DEADLINE_EXTENSION_APPROVED: { text: 'Duyệt gia hạn', color: 'lime' },
+        DEADLINE_EXTENSION_REJECTED: { text: 'Từ chối gia hạn', color: 'red' },
     };
     return map[type] || { text: type, color: 'default' };
 };
@@ -106,21 +126,23 @@ interface NotifRowProps {
 const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) => {
     const label = getTypeLabel(n.type);
     const unread = !n.is_read;
+    const path = getNavigationPath(n);
+    const isClickable = !!path;
 
     return (
         <div
             onClick={() => {
                 if (unread) onRead(n.id);
-                const path = getNavigationPath(n);
                 if (path) {
                     const currentUrl = window.location.pathname + window.location.search;
                     if (currentUrl === path) {
                         try {
                             const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-                            if (p && p.commentId) {
-                                window.dispatchEvent(new CustomEvent('reHighlightComment', { detail: p.commentId }));
+                            const commentId = p.commentId || p.comment_id;
+                            if (p && commentId) {
+                                window.dispatchEvent(new CustomEvent('reHighlightComment', { detail: commentId }));
                             }
-                        } catch (e) {}
+                        } catch (e) { }
                     }
                     onNavigate(path);
                 }
@@ -131,7 +153,7 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
                 padding: '14px 16px',
                 borderRadius: 10,
                 backgroundColor: unread ? '#e7f3ff' : '#fff',
-                cursor: unread ? 'pointer' : 'default',
+                cursor: isClickable ? 'pointer' : 'default',
                 transition: 'background 0.2s',
                 marginBottom: 4,
                 border: '1px solid',
@@ -139,8 +161,8 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
                 position: 'relative',
                 alignItems: 'center',
             }}
-            onMouseEnter={e => { if (unread) (e.currentTarget as HTMLDivElement).style.backgroundColor = '#d0e8ff'; }}
-            onMouseLeave={e => { if (unread) (e.currentTarget as HTMLDivElement).style.backgroundColor = '#e7f3ff'; }}
+            onMouseEnter={e => { if (isClickable) (e.currentTarget as HTMLDivElement).style.backgroundColor = unread ? '#d0e8ff' : '#f5f5f5'; }}
+            onMouseLeave={e => { if (isClickable) (e.currentTarget as HTMLDivElement).style.backgroundColor = unread ? '#e7f3ff' : '#fff'; }}
         >
             {/* Icon */}
             <Avatar
@@ -159,7 +181,7 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
                                 try {
                                     const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
                                     if (p?.projectName) pName = p.projectName;
-                                } catch (e) {}
+                                } catch (e) { }
                                 return `Dự án: ${pName}`;
                             })()
                         ) : n.title}
@@ -204,10 +226,10 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
                     }}
                     trigger={['click']}
                 >
-                    <Button 
-                        type="text" 
-                        icon={<MoreOutlined style={{ fontSize: 18, color: '#8c8c8c' }} />} 
-                        onClick={e => e.stopPropagation()} 
+                    <Button
+                        type="text"
+                        icon={<MoreOutlined style={{ fontSize: 18, color: '#8c8c8c' }} />}
+                        onClick={e => e.stopPropagation()}
                         style={{ padding: 4 }}
                     />
                 </Dropdown>
@@ -319,11 +341,11 @@ const NotificationsPage: React.FC = () => {
                                 </Text>
                             </Divider>
                             {items.map(n => (
-                                <NotifRow 
-                                    key={n.id} 
-                                    n={n} 
-                                    onRead={handleRead} 
-                                    onDelete={handleDelete} 
+                                <NotifRow
+                                    key={n.id}
+                                    n={n}
+                                    onRead={handleRead}
+                                    onDelete={handleDelete}
                                     onNavigate={(path) => navigate(path)}
                                 />
                             ))}

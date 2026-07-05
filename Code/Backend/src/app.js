@@ -45,6 +45,8 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api', roadmapRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', commentRoutes);
+app.use('/api/extensions', extensionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Route dùng chung: ADMIN + PM có thể lấy danh sách user để assign thành viên dự án
 app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, res) => {

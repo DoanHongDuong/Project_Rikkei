@@ -38,6 +38,10 @@ const getNotificationIcon = (type: NotificationType): ReactNode => {
             return <TeamOutlined style={{ ...iconStyle, color: '#722ed1' }} />;
         case 'ROADMAP_ITEM_UPDATED':
             return <PartitionOutlined style={{ ...iconStyle, color: '#13c2c2' }} />;
+        case 'DEADLINE_EXTENSION_REQUESTED':
+        case 'DEADLINE_EXTENSION_APPROVED':
+        case 'DEADLINE_EXTENSION_REJECTED':
+            return <ProjectOutlined style={{ ...iconStyle, color: '#fa8c16' }} />;
         default:
             return <BellFilled style={{ ...iconStyle, color: '#8c8c8c' }} />;
     }
@@ -57,12 +61,22 @@ const getTimeAgo = (dateString: string): string => {
 const getNavigationPath = (n: Notification): string | null => {
     if (!n.payload) return null;
     const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-    if (n.type === 'ROADMAP_ITEM_UPDATED' && p.projectId) return `/projects/${p.projectId}?tab=4`;
-    if (p.taskId && p.projectId) {
-        if (p.commentId) return `/projects/${p.projectId}?tab=2&highlightTask=${p.taskId}&highlightComment=${p.commentId}`;
-        return `/projects/${p.projectId}?tab=2&highlightTask=${p.taskId}`;
+    const projectId = p.projectId || p.project_id;
+    const taskId = p.taskId || p.task_id;
+    const commentId = p.commentId || p.comment_id;
+
+    if (n.type === 'ROADMAP_ITEM_UPDATED' && projectId) return `/projects/${projectId}?tab=4`;
+
+    // Deadline extension types: mở task detail và scroll tới khung phê duyệt
+    if ((n.type === 'DEADLINE_EXTENSION_REQUESTED' || n.type === 'DEADLINE_EXTENSION_APPROVED' || n.type === 'DEADLINE_EXTENSION_REJECTED') && taskId && projectId) {
+        return `/projects/${projectId}?tab=2&highlightTask=${taskId}&highlightExtension=true`;
     }
-    if (p.projectId) return `/projects/${p.projectId}`;
+
+    if (taskId && projectId) {
+        if (commentId) return `/projects/${projectId}?tab=2&highlightTask=${taskId}&highlightComment=${commentId}`;
+        return `/projects/${projectId}?tab=2&highlightTask=${taskId}`;
+    }
+    if (projectId) return `/projects/${projectId}`;
     return null;
 };
 
@@ -85,11 +99,11 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
         if (path) {
             const currentUrl = window.location.pathname + window.location.search;
             if (currentUrl === path) {
-                // If already on the same path, just trigger the highlight event
                 try {
                     const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-                    if (p && p.commentId) {
-                        window.dispatchEvent(new CustomEvent('reHighlightComment', { detail: p.commentId }));
+                    const commentId = p.commentId || p.comment_id;
+                    if (p && commentId) {
+                        window.dispatchEvent(new CustomEvent('reHighlightComment', { detail: commentId }));
                     }
                 } catch (e) { }
             }

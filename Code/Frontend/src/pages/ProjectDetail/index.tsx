@@ -22,6 +22,7 @@ export default function ProjectDetail() {
   const tabFromQuery = queryParams.get('tab') || '1';
   const highlightTaskId = queryParams.get('highlightTask');
   const highlightCommentId = queryParams.get('highlightComment');
+  const highlightExtension = queryParams.get('highlightExtension') === 'true';
 
   const [activeTab, setActiveTab] = useState(tabFromQuery);
 
@@ -221,7 +222,7 @@ export default function ProjectDetail() {
       key: '2',
       label: 'Tasks',
       icon: <UnorderedListOutlined />,
-      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} isMember={isMember} highlightTaskId={highlightTaskId} highlightCommentId={highlightCommentId} projectEndDate={project.end_date} />,
+      children: <KanbanBoard projectId={id} projectMembers={members} onTasksChanged={refreshProjectProgress} isMember={isMember} highlightTaskId={highlightTaskId} highlightCommentId={highlightCommentId} highlightExtension={highlightExtension} projectEndDate={project.end_date} />,
     },
     {
       key: '3',

@@ -139,10 +139,11 @@ interface KanbanBoardProps {
   isMember?: boolean;
   highlightTaskId?: string | null;
   highlightCommentId?: string | null;
+  highlightExtension?: boolean;
   projectEndDate?: string;
 }
 
-export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId, highlightCommentId, projectEndDate }: KanbanBoardProps) {
+export default function KanbanBoard({ projectId, projectMembers, onTasksChanged, isMember, highlightTaskId, highlightCommentId, highlightExtension, projectEndDate }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,7 +204,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
 
   useEffect(() => {
     if (highlightTaskId) {
-      if (highlightCommentId) {
+      if (highlightCommentId || highlightExtension) {
         setDetailTaskId(highlightTaskId);
         setIsDetailModalVisible(true);
       } else {
@@ -216,7 +217,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
         }, 500);
       }
     }
-  }, [highlightTaskId, highlightCommentId, location.search, tasks]);
+  }, [highlightTaskId, highlightCommentId, highlightExtension, location.search, tasks]);
 
   const handleAddTask = (status: string) => {
     setEditingTask(null);
@@ -459,6 +460,7 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
         }}
         isMember={isMember}
         highlightCommentId={highlightCommentId}
+        highlightExtension={highlightExtension}
       />
     </DndContext>
     </>

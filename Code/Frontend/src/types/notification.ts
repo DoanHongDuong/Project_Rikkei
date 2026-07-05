@@ -7,13 +7,16 @@ export type NotificationType =
     | 'MEMBER_ADDED'
     | 'MEMBER_REMOVED'
     | 'ROADMAP_ITEM_UPDATED'
-    | 'EXTENSION_APPROVED'
-    | 'EXTENSION_REJECTED'
-    | 'COMMENT_REPLY';
+    | 'COMMENT_REPLY'
+    | 'DEADLINE_EXTENSION_REQUESTED'
+    | 'DEADLINE_EXTENSION_APPROVED'
+    | 'DEADLINE_EXTENSION_REJECTED';
 
 export interface NotificationPayload {
+    // camelCase (legacy)
     taskId?: number | string;
     projectId?: number | string;
+    commentId?: number | string;
     projectName?: string;
     assignerName?: string;
     commenterName?: string;
@@ -28,6 +31,11 @@ export interface NotificationPayload {
     priority?: string;
     status?: string;
     deadline?: string;
+    // snake_case (from backend extension service)
+    task_id?: number | string;
+    project_id?: number | string;
+    comment_id?: number | string;
+    request_id?: number | string;
 }
 
 export interface Notification {
@@ -36,7 +44,7 @@ export interface Notification {
     type: NotificationType;
     title: string;
     content: string;
-    payload: NotificationPayload | null;
+    payload: NotificationPayload | string | null;
     is_read: boolean;
     read_at: string | null;
     created_at: string;

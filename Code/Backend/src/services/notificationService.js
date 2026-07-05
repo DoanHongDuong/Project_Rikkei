@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const Notification = require('../models/Notification');
 const socketService = require('./socketService');
+const Task = require('../models/Task');
 
 class NotificationService {
     async createNotification(userId, type, title, content, payload = null) {
@@ -34,8 +35,11 @@ class NotificationService {
                 limit,
                 offset
             });
+
+            const enriched = await this._enrichExtensionPayloads(rows);
+
             return {
-                notifications: rows,
+                notifications: enriched,
                 pagination: {
                     page,
                     limit,
@@ -58,11 +62,49 @@ class NotificationService {
                 },
                 order: [['created_at', 'DESC']]
             });
-            return notifications;
+            return await this._enrichExtensionPayloads(notifications);
         } catch (error) {
             console.error('Lỗi khi lấy notifications chưa đọc:', error);
             throw this.createError('Không thể lấy danh sách thông báo', 500);
         }
+    }
+
+    // Enrich DEADLINE_EXTENSION notifications that are missing project_id
+    async _enrichExtensionPayloads(notifications) {
+        const extensionTypes = ['DEADLINE_EXTENSION_REQUESTED', 'DEADLINE_EXTENSION_APPROVED', 'DEADLINE_EXTENSION_REJECTED'];
+        const result = [];
+
+        for (const n of notifications) {
+            const plain = n.get({ plain: true });
+            let payload = plain.payload;
+            if (typeof payload === 'string') {
+                try { payload = JSON.parse(payload); } catch (e) { payload = null; }
+            }
+
+            if (extensionTypes.includes(plain.type) && payload) {
+                const taskId = payload.task_id || payload.taskId;
+                const projectId = payload.project_id || payload.projectId;
+
+                // If project_id is missing, look it up from the Task table
+                if (taskId && !projectId) {
+                    try {
+                        const task = await Task.findByPk(taskId, { attributes: ['id', 'project_id'] });
+                        if (task) {
+                            payload = { ...payload, project_id: task.project_id };
+                            plain.payload = payload;
+                        }
+                    } catch (e) {
+                        // ignore lookup failure
+                    }
+                } else {
+                    plain.payload = payload;
+                }
+            }
+
+            result.push(plain);
+        }
+
+        return result;
     }
 
     async markAsRead(notificationIds, userId) {

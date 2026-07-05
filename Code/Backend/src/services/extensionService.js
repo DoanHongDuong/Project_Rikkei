@@ -106,6 +106,7 @@ class ExtensionService {
                     content: `Thành viên đã gửi yêu cầu gia hạn deadline cho công việc "${task.title}".`,
                     payload: {
                         task_id: task.id,
+                        project_id: task.project_id,
                         request_id: request.id
                     }
                 }, { transaction });
@@ -192,6 +193,7 @@ class ExtensionService {
                 content: `Yêu cầu gia hạn deadline cho công việc "${task.title}" của bạn đã được phê duyệt sang ngày ${request.requested_deadline}.`,
                 payload: {
                     task_id: task.id,
+                    project_id: task.project_id,
                     request_id: request.id
                 }
             }, { transaction });
@@ -270,6 +272,7 @@ class ExtensionService {
                 content: `Yêu cầu gia hạn deadline cho công việc "${request.task.title}" của bạn đã bị từ chối. Phản hồi PM: ${reviewNote || 'Không có'}`,
                 payload: {
                     task_id: request.task_id,
+                    project_id: request.task.project_id,
                     request_id: request.id
                 }
             }, { transaction });

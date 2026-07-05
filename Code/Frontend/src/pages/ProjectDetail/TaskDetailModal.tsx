@@ -18,9 +18,10 @@ interface TaskDetailModalProps {
   onDeleteSuccess?: () => void;
   isMember?: boolean;
   highlightCommentId?: string | null;
+  highlightExtension?: boolean;
 }
 
-export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess, isMember, highlightCommentId }: TaskDetailModalProps) {
+export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, onDeleteSuccess, isMember, highlightCommentId, highlightExtension }: TaskDetailModalProps) {
   const [newComment, setNewComment] = useState('');
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -81,6 +82,22 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
       window.removeEventListener('reHighlightComment', handleReHighlight);
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading && pendingRequest && highlightExtension) {
+      setTimeout(() => {
+        const el = document.getElementById('extension-request-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.style.transition = 'background-color 1s ease-out';
+          el.style.backgroundColor = '#ffd591';
+          setTimeout(() => {
+            el.style.backgroundColor = '#fffbe6';
+          }, 2000);
+        }
+      }, 600);
+    }
+  }, [loading, pendingRequest, highlightExtension]);
 
   const loadTask = async () => {
     try {
@@ -341,7 +358,7 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
                     <Text style={{ display: 'block', marginBottom: 8 }}>{task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Chưa đặt'}</Text>
 
                     {pendingRequest && (
-                      <div style={{ marginTop: 16, padding: 16, border: '1px solid #ffe58f', backgroundColor: '#fffbe6', borderRadius: 8 }}>
+                      <div id="extension-request-section" style={{ marginTop: 16, padding: 16, border: '1px solid #ffe58f', backgroundColor: '#fffbe6', borderRadius: 8 }}>
                         <Title level={5} style={{ margin: 0, color: '#d46b08', fontSize: 14 }}>
                           Yêu cầu gia hạn đang chờ duyệt
                         </Title>
