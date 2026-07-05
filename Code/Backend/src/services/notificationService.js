@@ -85,20 +85,19 @@ class NotificationService {
                 const taskId = payload.task_id || payload.taskId;
                 const projectId = payload.project_id || payload.projectId;
 
-                // If project_id is missing, look it up from the Task table
+                // Chuẩn hóa về camelCase (taskId/projectId) để khớp với getNavigationPath() ở FE,
+                // đồng thời tự bù project_id cho các bản ghi cũ (nếu payload lúc tạo thiếu nó).
                 if (taskId && !projectId) {
                     try {
                         const task = await Task.findByPk(taskId, { attributes: ['id', 'project_id'] });
-                        if (task) {
-                            payload = { ...payload, project_id: task.project_id };
-                            plain.payload = payload;
-                        }
+                        payload = { ...payload, taskId, projectId: task ? task.project_id : undefined };
                     } catch (e) {
-                        // ignore lookup failure
+                        payload = { ...payload, taskId };
                     }
                 } else {
-                    plain.payload = payload;
+                    payload = { ...payload, taskId, projectId };
                 }
+                plain.payload = payload;
             }
 
             result.push(plain);

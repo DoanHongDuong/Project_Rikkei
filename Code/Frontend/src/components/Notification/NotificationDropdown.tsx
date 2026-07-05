@@ -14,6 +14,7 @@ import {
 import { Dropdown } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useNotifications';
+import { getNavigationPath, getTimeAgo } from '../../utils/notificationHelpers';
 import type { Notification, NotificationType } from '../../types/notification';
 
 const { Text } = Typography;
@@ -45,39 +46,6 @@ const getNotificationIcon = (type: NotificationType): ReactNode => {
         default:
             return <BellFilled style={{ ...iconStyle, color: '#8c8c8c' }} />;
     }
-};
-
-const getTimeAgo = (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (diff < 60) return 'Vừa xong';
-    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
-};
-
-const getNavigationPath = (n: Notification): string | null => {
-    if (!n.payload) return null;
-    const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-    const projectId = p.projectId || p.project_id;
-    const taskId = p.taskId || p.task_id;
-    const commentId = p.commentId || p.comment_id;
-
-    if (n.type === 'ROADMAP_ITEM_UPDATED' && projectId) return `/projects/${projectId}?tab=4`;
-
-    // Deadline extension types: mở task detail và scroll tới khung phê duyệt
-    if ((n.type === 'DEADLINE_EXTENSION_REQUESTED' || n.type === 'DEADLINE_EXTENSION_APPROVED' || n.type === 'DEADLINE_EXTENSION_REJECTED') && taskId && projectId) {
-        return `/projects/${projectId}?tab=2&highlightTask=${taskId}&highlightExtension=true`;
-    }
-
-    if (taskId && projectId) {
-        if (commentId) return `/projects/${projectId}?tab=2&highlightTask=${taskId}&highlightComment=${commentId}`;
-        return `/projects/${projectId}?tab=2&highlightTask=${taskId}`;
-    }
-    if (projectId) return `/projects/${projectId}`;
-    return null;
 };
 
 // ─── Notification Item ─────────────────────────────────────────────────────────
