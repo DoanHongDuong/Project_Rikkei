@@ -24,7 +24,7 @@ class UserService {
     }
 
     // Xây dựng điều kiện lọc cho Sequelize
-    buildUserWhere({ search, role, status, department_id }) {
+    buildUserWhere({ search, role, exclude_role, status, department_id, exclude_user_ids }) {
         const where = {};
 
         if (search) {
@@ -35,7 +35,9 @@ class UserService {
             ];
         }
 
-        if (role) {
+        if (exclude_role) {
+            where.role = { [Op.ne]: exclude_role };
+        } else if (role) {
             where.role = role;
         }
 
@@ -45,6 +47,10 @@ class UserService {
 
         if (department_id) {
             where.department_id = department_id;
+        }
+
+        if (exclude_user_ids && exclude_user_ids.length > 0) {
+            where.id = { [Op.notIn]: exclude_user_ids };
         }
 
         return where;

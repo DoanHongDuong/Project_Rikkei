@@ -268,7 +268,16 @@ export default function AdminUsersPage() {
 
           <label>
             Role
-            <select value={form.role} onChange={(event) => updateForm('role', event.target.value)}>
+            <select 
+              value={form.role} 
+              onChange={(event) => {
+                const newRole = event.target.value;
+                updateForm('role', newRole);
+                if (newRole === 'ADMIN') {
+                  updateForm('department_id', '');
+                }
+              }}
+            >
               <option value="ADMIN">ADMIN</option>
               <option value="PM">PM</option>
               <option value="MEMBER">MEMBER</option>
@@ -283,6 +292,7 @@ export default function AdminUsersPage() {
               placeholder="VD: 1"
               type="number"
               min="1"
+              disabled={form.role === 'ADMIN'}
             />
           </label>
 

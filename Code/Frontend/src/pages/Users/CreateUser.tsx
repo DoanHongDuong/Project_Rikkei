@@ -12,6 +12,14 @@ export default function CreateUser() {
   const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const role = Form.useWatch('role', form);
+
+  useEffect(() => {
+    if (role === 'ADMIN') {
+      form.setFieldsValue({ department_id: undefined });
+    }
+  }, [role, form]);
+
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -32,7 +40,7 @@ export default function CreateUser() {
       await UserService.createUser({
         full_name: values.name,
         email: values.email,
-        password: values.password,
+        password: values.password || '123456',
         role: values.role,
         department_id: values.department_id,
       });
@@ -116,6 +124,7 @@ export default function CreateUser() {
                 placeholder="Chọn phòng ban (Tùy chọn)" 
                 size="large"
                 allowClear
+                disabled={role === 'ADMIN'}
                 options={departments.map(d => ({
                   value: d.id,
                   label: d.name

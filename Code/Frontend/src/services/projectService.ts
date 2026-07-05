@@ -96,6 +96,20 @@ class ProjectService {
     const data = await response.json();
     return data.data;
   }
+
+  static async updateProject(id: number | string, projectData: any) {
+    const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(projectData),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Lỗi khi cập nhật dự án');
+    }
+    const data = await response.json();
+    return data.data;
+  }
 }
 
 export default ProjectService;

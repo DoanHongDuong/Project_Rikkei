@@ -94,7 +94,7 @@ export default function AppRoutes() {
         <Route 
           path="/my-tasks" 
           element={
-            <ProtectedRoute allowedRoles={['MEMBER']}>
+            <ProtectedRoute allowedRoles={['PM', 'MEMBER']}>
               <MyTasksPage />
             </ProtectedRoute>
           } 

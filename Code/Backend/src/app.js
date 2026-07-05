@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const socketService = require('./services/socketService');
 const cors = require('cors');
 require('dotenv').config();
 const { connectDB } = require('./config/database');
@@ -13,6 +15,7 @@ const roadmapRoutes = require('./routes/roadmapRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const extensionRoutes = require('./routes/extensionRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Inline route cho /api/users (dùng chung cho ADMIN + PM)
 const { verifyToken } = require('./middleware/authMiddleware');
@@ -43,6 +46,7 @@ app.use('/api', roadmapRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', commentRoutes);
 app.use('/api/extensions', extensionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Route dùng chung: ADMIN + PM có thể lấy danh sách user để assign thành viên dự án
 app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, res) => {
@@ -59,6 +63,29 @@ app.get('/api/users', verifyToken, authorizeRoles('ADMIN', 'PM'), async (req, re
     }
 });
 
+// Route lấy danh sách user để assign (loại bỏ ADMIN)
+app.get('/api/available-users', verifyToken, authorizeRoles('ADMIN', 'PM', 'MEMBER'), async (req, res) => {
+    try {
+        const filters = { ...req.query, limit: 100, status: 'ACTIVE', exclude_role: 'ADMIN' };
+        if (req.user.role === 'PM') {
+            filters.department_id = req.user.department_id;
+        }
+        if (req.query.exclude_project_id) {
+            const ProjectMember = require('./models/ProjectMember');
+            const projectMembers = await ProjectMember.findAll({
+                where: { project_id: req.query.exclude_project_id, is_active: true },
+                attributes: ['user_id']
+            });
+            filters.exclude_user_ids = projectMembers.map(m => m.user_id);
+        }
+        const { users, pagination } = await userService.getUsers(filters);
+        res.status(200).json({ success: true, message: 'OK', data: { users, pagination } });
+    } catch (error) {
+        console.error('GET /api/available-users error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server.' });
+    }
+});
+
 // Route kiểm tra mặc định khi vào trang chủ server
 app.get('/', (req, res) => {
     res.json({ message: "Welcome to TMS Project Backend Server!" });
@@ -66,6 +93,9 @@ app.get('/', (req, res) => {
 
 // --- Khởi chạy Server (Chỉ giữ lại 1 block duy nhất ở cuối trang) ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server đang chạy mượt mà tại cổng: http://localhost:${PORT}`);
+const server = http.createServer(app);
+socketService.init(server);
+
+server.listen(PORT, () => {
+    console.log(`Server đang chạy mượt mành tại cổng: http://localhost:${PORT}`);
 });

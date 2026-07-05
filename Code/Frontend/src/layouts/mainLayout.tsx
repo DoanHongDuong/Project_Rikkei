@@ -13,6 +13,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AuthService from '../services/authService';
+import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
 
 const { Header, Sider, Content } = Layout;
 
@@ -43,7 +44,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   const allMenuItems = [
     { key: '/dashboard', icon: <AppstoreOutlined />, label: 'Dashboard', roles: ['ADMIN', 'PM', 'MEMBER'] },
-    { key: '/my-tasks', icon: <CheckSquareOutlined />, label: 'My Tasks', roles: ['MEMBER'] },
+    { key: '/my-tasks', icon: <CheckSquareOutlined />, label: 'My Tasks', roles: ['PM', 'MEMBER'] },
     { key: '/projects', icon: <ProjectOutlined />, label: 'Projects', roles: ['ADMIN', 'PM', 'MEMBER'] },
     { key: '/departments', icon: <TeamOutlined />, label: 'Departments', roles: ['ADMIN'] },
     { key: '/users', icon: <UserOutlined />, label: 'Users', roles: ['ADMIN'] },
@@ -139,6 +140,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
           {children}
         </Content>
       </Layout>
+
+      {/* Popup thông báo khi có task mới */}
+      <TaskNotificationPopup />
     </Layout>
   );
 }

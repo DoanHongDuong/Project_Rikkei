@@ -40,15 +40,12 @@ const Notification = sequelize.define('Notification', {
     read_at: {
         type: DataTypes.DATE,
         allowNull: true
-    },
-    created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'notifications',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: false
 });
 
 // Associations

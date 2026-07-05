@@ -97,19 +97,6 @@ class ExtensionService {
                 status: 'PENDING'
             }, { transaction });
 
-            // 7. Gửi thông báo hệ thống cho PM dự án nếu dự án có PM quản lý
-            if (task.project && task.project.manager_id) {
-                await Notification.create({
-                    user_id: task.project.manager_id,
-                    type: 'DEADLINE_EXTENSION_REQUESTED',
-                    title: 'Yêu cầu gia hạn deadline mới',
-                    content: `Thành viên đã gửi yêu cầu gia hạn deadline cho công việc "${task.title}".`,
-                    payload: {
-                        task_id: task.id,
-                        request_id: request.id
-                    }
-                }, { transaction });
-            }
 
             await transaction.commit();
             return request;
