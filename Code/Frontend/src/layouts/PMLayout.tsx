@@ -6,6 +6,7 @@ import AuthService from '../services/authService';
 import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
 import NotificationDropdown from '../components/Notification/NotificationDropdown';
 import { NotificationProvider } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 import '../pages/Dashboard/PMStyles.css';
 
 interface PMLayoutProps {
@@ -13,6 +14,7 @@ interface PMLayoutProps {
 }
 
 export default function PMLayout({ children }: PMLayoutProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [user, setUser] = useState(AuthService.getUser());
 
@@ -32,19 +34,13 @@ export default function PMLayout({ children }: PMLayoutProps) {
     navigate('/login', { replace: true });
   };
 
-  const handleUserMenuClick = ({ key }: { key: string }) => {
-    if (key === 'profile') {
-      navigate('/profile');
-    }
-  };
-
   const userMenu = {
     items: [
-      { key: 'profile', label: 'Profile' },
+      { key: 'profile', label: <a href="#profile" onClick={(e) => { e.preventDefault(); navigate('/profile'); }}>{t('nav.profile')}</a> },
+      { key: 'settings', label: <a href="#settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }}>{t('nav.settings')}</a> },
       { type: 'divider' } as const,
-      { key: 'logout', label: <a href="#logout" onClick={handleLogout}>Logout</a> },
-    ],
-    onClick: handleUserMenuClick
+      { key: 'logout', label: <a href="#logout" onClick={handleLogout}>{t('nav.logout')}</a> },
+    ]
   };
 
   return (
@@ -59,28 +55,28 @@ export default function PMLayout({ children }: PMLayoutProps) {
                 to="/dashboard" 
                 className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
               >
-                Dashboard
+                {t('nav.dashboard')}
               </NavLink>
               {(user?.role === 'MEMBER' || user?.role === 'PM') && (
                 <NavLink 
                   to="/my-tasks" 
                   className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
                 >
-                  Công việc
+                  {t('nav.tasks')}
                 </NavLink>
               )}
               <NavLink 
                 to="/projects" 
                 className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
               >
-                Dự án
+                {t('nav.projects')}
               </NavLink>
               {user?.role === 'PM' && (
                 <NavLink 
                   to="/users" 
                   className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
                 >
-                  Nhân sự
+                  {t('nav.users')}
                 </NavLink>
               )}
             </nav>

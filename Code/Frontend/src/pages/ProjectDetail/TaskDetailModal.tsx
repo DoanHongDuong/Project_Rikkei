@@ -51,6 +51,33 @@ export default function TaskDetailModal({ open, onCancel, taskId, onEditClick, o
     }
   }, [open, taskId]);
 
+  useEffect(() => {
+    if (!taskId) return;
+
+    const handleNotification = (e: any) => {
+      try {
+        const n = e.detail;
+        if (!n) return;
+        const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
+        
+        // Cập nhật lại chi tiết task nếu có thông báo liên quan đến task này (như comment, đổi status, gia hạn)
+        if (p && (String(p.taskId) === String(taskId) || String(p.task_id) === String(taskId))) {
+          loadTask();
+        }
+      } catch (error) {
+        console.error('Lỗi khi xử lý thông báo realtime trên TaskDetail:', error);
+      }
+    };
+
+    window.addEventListener('new_notification_received', handleNotification);
+    window.addEventListener('notification_updated_received', handleNotification);
+
+    return () => {
+      window.removeEventListener('new_notification_received', handleNotification);
+      window.removeEventListener('notification_updated_received', handleNotification);
+    };
+  }, [taskId]);
+
   const highlightComment = (commentId: string | number) => {
     setTimeout(() => {
       const el = document.getElementById(`comment-${commentId}`);

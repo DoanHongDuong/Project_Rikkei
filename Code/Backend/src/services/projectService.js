@@ -26,7 +26,7 @@ const PROJECT_MEMBER_ROLES = ['MEMBER', 'LEAD', 'REVIEWER'];
 
 class ProjectService {
     buildProjectWhere(filters, currentUser, allowedProjectIds = []) {
-        const where = {};
+        const where = { is_deleted: false };
 
         if (filters.search) {
             const keyword = `%${filters.search}%`;
@@ -260,7 +260,32 @@ class ProjectService {
             }, true);
         }
 
+        // Notify admins about new project
+        this.notifyAllAdmins(
+            currentUser.id,
+            'PROJECT_CREATED',
+            `Dự án mới: ${project.name}`,
+            `${currentUser.full_name} đã tạo dự án mới`,
+            { projectId: project.id, projectName: project.name, createdBy: currentUser.full_name }
+        );
+
         return this.getProjectById(project.id, currentUser);
+    }
+
+    // Helper: broadcast notification to all admins
+    async notifyAllAdmins(actorId, type, title, content, payload) {
+        try {
+            const admins = await User.findAll({
+                where: { role: 'ADMIN', status: 'ACTIVE' },
+                attributes: ['id']
+            });
+            for (const admin of admins) {
+                if (Number(admin.id) === Number(actorId)) continue;
+                notificationService.createNotification(admin.id, type, title, content, payload).catch(console.error);
+            }
+        } catch (error) {
+            console.error('notifyAllAdmins error:', error);
+        }
     }
 
     // Helper: broadcast notification to all active project members (except actor)
@@ -326,6 +351,33 @@ class ProjectService {
             { projectId: project.id, projectName: project.name, updatedBy: currentUser.full_name }
         );
 
+        // Ensure PM is notified if Admin updates the project and PM is somehow not an active member
+        if (currentUser.role === 'ADMIN' && project.manager_id && Number(project.manager_id) !== Number(currentUser.id)) {
+            const isMemberActive = await ProjectMember.findOne({
+                where: { project_id: project.id, user_id: project.manager_id, is_active: true }
+            });
+            if (!isMemberActive) {
+                notificationService.createNotification(
+                    project.manager_id,
+                    'PROJECT_UPDATED',
+                    `Dự án được cập nhật: ${project.name}`,
+                    `${currentUser.full_name} vừa cập nhật thông tin dự án`,
+                    { projectId: project.id, projectName: project.name, updatedBy: currentUser.full_name }
+                ).catch(console.error);
+            }
+        }
+
+        // Notify Admins if PM updates the project
+        if (currentUser.role !== 'ADMIN') {
+            this.notifyAllAdmins(
+                currentUser.id,
+                'PROJECT_UPDATED',
+                `Dự án được cập nhật: ${project.name}`,
+                `${currentUser.full_name} vừa cập nhật thông tin dự án`,
+                { projectId: project.id, projectName: project.name, updatedBy: currentUser.full_name }
+            );
+        }
+
         return this.getProjectById(project.id, currentUser);
     }
 
@@ -350,8 +402,54 @@ class ProjectService {
                 `${currentUser.full_name} đã đóng dự án này`,
                 { projectId: id, projectName: project.name, archivedBy: currentUser.full_name }
             );
+
+            if (currentUser.role !== 'ADMIN') {
+                this.notifyAllAdmins(
+                    currentUser.id,
+                    'PROJECT_ARCHIVED',
+                    `Dự án đã bị đóng: ${project.name}`,
+                    `${currentUser.full_name} đã đóng dự án này`,
+                    { projectId: id, projectName: project.name, archivedBy: currentUser.full_name }
+                );
+            }
         }
         return result;
+    }
+
+    async softDeleteProject(id, currentUser) {
+        const project = await Project.findByPk(id);
+        if (!project) {
+            throw this.createError('Không tìm thấy project.', 404);
+        }
+
+        this.ensureCanManageProject(project, currentUser);
+
+        await project.update({
+            is_deleted: true,
+            updated_by: currentUser.id
+        });
+
+        // Optionally, notify members
+        this.notifyAllProjectMembers(
+            id,
+            currentUser.id,
+            'PROJECT_DELETED',
+            `Dự án đã bị xóa: ${project.name}`,
+            `${currentUser.full_name} đã xóa dự án này`,
+            { projectId: id, projectName: project.name, deletedBy: currentUser.full_name }
+        );
+
+        if (currentUser.role !== 'ADMIN') {
+            this.notifyAllAdmins(
+                currentUser.id,
+                'PROJECT_DELETED',
+                `Dự án đã bị xóa: ${project.name}`,
+                `${currentUser.full_name} đã xóa dự án này`,
+                { projectId: id, projectName: project.name, deletedBy: currentUser.full_name }
+            );
+        }
+
+        return project;
     }
 
     async getProjectMembers(projectId, currentUser) {

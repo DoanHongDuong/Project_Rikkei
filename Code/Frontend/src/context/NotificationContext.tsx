@@ -60,10 +60,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         const handleNew = (n: Notification) => {
             setNotifications(prev => [n, ...prev]);
             setUnreadCount(prev => prev + 1);
+            window.dispatchEvent(new CustomEvent('new_notification_received', { detail: n }));
         };
 
         const handleUpdated = (updated: Notification) => {
             setNotifications(prev => prev.map(n => n.id === updated.id ? updated : n));
+            window.dispatchEvent(new CustomEvent('notification_updated_received', { detail: updated }));
         };
 
         const handleDeleted = (data: { id: number }) => {

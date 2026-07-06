@@ -10,9 +10,12 @@ import {
     DeleteOutlined,
     CheckOutlined,
     MoreOutlined,
+    SyncOutlined,
+    UserOutlined,
 } from '@ant-design/icons';
 import { Dropdown } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../../hooks/useNotifications';
 import { getNavigationPath, getTimeAgo } from '../../utils/notificationHelpers';
 import type { Notification, NotificationType } from '../../types/notification';
@@ -27,6 +30,8 @@ const getNotificationIcon = (type: NotificationType): ReactNode => {
         case 'TASK_ASSIGNED':
         case 'TASK_UPDATED':
             return <CheckSquareOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+        case 'TASK_STATUS_UPDATED':
+            return <SyncOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
         case 'TASK_COMMENT':
             return <CommentOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
         case 'COMMENT_REPLY':
@@ -34,6 +39,12 @@ const getNotificationIcon = (type: NotificationType): ReactNode => {
         case 'PROJECT_UPDATED':
         case 'PROJECT_ARCHIVED':
             return <ProjectOutlined style={{ ...iconStyle, color: '#faad14' }} />;
+        case 'PROJECT_CREATED':
+            return <ProjectOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+        case 'PROFILE_UPDATED':
+            return <UserOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
+        case 'DEPARTMENT_UPDATED':
+            return <TeamOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
         case 'MEMBER_ADDED':
         case 'MEMBER_REMOVED':
             return <TeamOutlined style={{ ...iconStyle, color: '#722ed1' }} />;
@@ -58,6 +69,7 @@ interface NotificationItemProps {
 }
 
 const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRead, onDelete, onNavigate }) => {
+    const { t, i18n } = useTranslation();
     const n = notification;
     const unread = !n.is_read;
     const path = getNavigationPath(n);
@@ -110,45 +122,57 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
 
             {/* Content */}
             <div style={{ flex: 1, minWidth: 0, paddingRight: 32 }}>
-                <Text
-                    strong={unread}
-                    style={{
-                        display: 'block',
-                        fontSize: 13,
-                        color: '#111',
-                        lineHeight: '1.4',
-                        marginBottom: 2,
-                        wordBreak: 'break-word',
-                    }}
-                >
-                    {n.type === 'TASK_ASSIGNED' ? (
-                        (() => {
-                            let pName = 'Không rõ';
-                            try {
-                                const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-                                if (p?.projectName) pName = p.projectName;
-                            } catch (e) { }
-                            return `Dự án: ${pName}`;
-                        })()
-                    ) : n.title}
-                </Text>
-                <Text
-                    style={{
-                        display: 'block',
-                        fontSize: 12,
-                        color: '#555',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        maxWidth: 210,
-                    }}
-                >
-                    {n.type === 'TASK_ASSIGNED'
-                        ? 'Bạn vừa được giao cho 1 công việc mới.'
-                        : (n.content.length > 60 ? `${n.content.substring(0, 60)}...` : n.content)}
-                </Text>
+                    {(() => {
+                        let pName = 'Không rõ';
+                        let actor = '';
+                        try {
+                            const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
+                            if (p?.projectName) pName = p.projectName;
+                            if (p?.deletedBy) actor = p.deletedBy;
+                            else if (p?.updatedBy) actor = p.updatedBy;
+                            else if (p?.archivedBy) actor = p.archivedBy;
+                            else if (p?.createdBy) actor = p.createdBy;
+                            else if (p?.actorName) actor = p.actorName;
+                        } catch (e) { }
+
+                        const typeKey = `notifications.types.${n.type}`;
+                        const messageKey = `notifications.messages.${n.type}`;
+                        const translatedType = t(typeKey);
+                        const translatedMessage = t(messageKey, { project: pName, actor });
+
+                        return (
+                            <>
+                                <Text
+                                    strong={unread}
+                                    style={{
+                                        display: 'block',
+                                        fontSize: 13,
+                                        color: '#111',
+                                        lineHeight: '1.4',
+                                        marginBottom: 2,
+                                        wordBreak: 'break-word',
+                                    }}
+                                >
+                                    {translatedType !== typeKey ? translatedType : n.title}
+                                </Text>
+                                <Text
+                                    style={{
+                                        display: 'block',
+                                        fontSize: 12,
+                                        color: '#555',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        maxWidth: 210,
+                                    }}
+                                >
+                                    {translatedMessage !== messageKey ? translatedMessage : (n.content.length > 60 ? `${n.content.substring(0, 60)}...` : n.content)}
+                                </Text>
+                            </>
+                        );
+                    })()}
                 <Text style={{ fontSize: 11, color: unread ? '#1890ff' : '#999', fontWeight: unread ? 600 : 400 }}>
-                    {getTimeAgo(n.created_at)}
+                    {getTimeAgo(n.created_at, t)}
                 </Text>
             </div>
 
@@ -160,7 +184,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
                             ...(unread ? [{
                                 key: 'read',
                                 icon: <CheckOutlined />,
-                                label: 'Đánh dấu đã đọc',
+                                label: t('notifications.mark_read'),
                                 onClick: (e: any) => {
                                     e.domEvent.stopPropagation();
                                     onRead(n.id);
@@ -170,7 +194,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
                                 key: 'delete',
                                 icon: <DeleteOutlined />,
                                 danger: true,
-                                label: 'Xóa thông báo',
+                                label: t('notifications.delete'),
                                 onClick: (e: any) => {
                                     e.domEvent.stopPropagation();
                                     onDelete(n.id);
@@ -201,6 +225,7 @@ interface DropdownContentProps {
 }
 
 const DropdownContent: React.FC<DropdownContentProps> = ({ onClose }) => {
+    const { t } = useTranslation();
     const { notifications, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
     const navigate = useNavigate();
     const displayed = notifications.slice(0, 10);
@@ -235,7 +260,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({ onClose }) => {
                 borderBottom: '1px solid #f0f0f0',
                 marginBottom: 4,
             }}>
-                <Text strong style={{ fontSize: 16 }}>Thông báo</Text>
+                <Text strong style={{ fontSize: 16 }}>{t('notifications.title')}</Text>
                 <Button
                     type="link"
                     size="small"
@@ -243,16 +268,16 @@ const DropdownContent: React.FC<DropdownContentProps> = ({ onClose }) => {
                     onClick={handleMarkAll}
                     style={{ padding: 0, fontSize: 12, color: '#1890ff' }}
                 >
-                    Đọc hết
+                    {t('notifications.mark_all_read')}
                 </Button>
             </div>
 
             {/* List */}
             <div style={{ maxHeight: 420, overflowY: 'auto', padding: '0 4px' }}>
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: 24, color: '#999' }}>Đang tải...</div>
+                    <div style={{ textAlign: 'center', padding: 24, color: '#999' }}>{t('notifications.loading')}</div>
                 ) : displayed.length === 0 ? (
-                    <Empty description="Không có thông báo" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: '24px 0' }} />
+                    <Empty description={t('notifications.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: '24px 0' }} />
                 ) : (
                     displayed.map(n => (
                         <div key={n.id} className="notif-item-wrap">
@@ -275,7 +300,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({ onClose }) => {
                     onClick={() => { navigate('/notifications'); onClose(); }}
                     style={{ height: 40, fontWeight: 500, color: '#1890ff', fontSize: 13 }}
                 >
-                    Xem tất cả thông báo
+                    {t('notifications.view_all')}
                 </Button>
             </div>
         </div>

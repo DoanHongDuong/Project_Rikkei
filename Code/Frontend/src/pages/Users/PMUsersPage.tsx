@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Typography, Table, Space, Avatar, Button, message } from 'antd';
 import { SearchOutlined, UserOutlined, InfoCircleFilled } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { ColumnsType } from 'antd/es/table';
 import AuthService from '../../services/authService';
 import DepartmentService from '../../services/departmentService';
@@ -19,6 +20,7 @@ interface UserData {
 }
 
 export default function PMUsersPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
@@ -103,7 +105,9 @@ export default function PMUsersPage() {
 
   return (
     <div>
-      <Title level={3} style={{ marginBottom: 20 }}>Danh sách nhân sự</Title>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0, color: '#1E3A5F' }}>{t('page.users.title')}</Title>
+      </div>
       
       <div className="pm-search-container" style={{ marginBottom: 30 }}>
         <input 

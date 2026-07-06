@@ -87,6 +87,29 @@ class CommentService {
             }
         }
 
+        // 5. Thông báo cho PM của dự án (nếu chưa được thông báo ở trên)
+        try {
+            const project = await taskService.findProjectOrFail(task.project_id);
+            if (project && project.manager_id && !notifiedUsers.has(Number(project.manager_id))) {
+                notifiedUsers.add(Number(project.manager_id));
+                notificationService.createNotification(
+                    project.manager_id,
+                    'TASK_COMMENT',
+                    `Bình luận mới trong: ${task.title}`,
+                    `${currentUser.full_name} đã bình luận: ${content.substring(0, 100)}`,
+                    {
+                        taskId: task.id,
+                        projectId: task.project_id,
+                        commenterName: currentUser.full_name,
+                        taskTitle: task.title,
+                        commentId: comment.id
+                    }
+                ).catch(console.error);
+            }
+        } catch (error) {
+            console.error('Lỗi khi gửi thông báo cho PM:', error);
+        }
+
         return await this.getById(comment.id);
     }
 

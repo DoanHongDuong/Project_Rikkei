@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Input, Table, Avatar, Space, Button, Modal, message, Spin, Tag } from 'antd';
 import { SearchOutlined, InfoCircleFilled, UserOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { ColumnsType } from 'antd/es/table';
 import UserService from '../../services/userService';
 import DepartmentService from '../../services/departmentService';
@@ -18,6 +19,7 @@ interface UserData {
 }
 
 export default function UserManagement() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserData[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -164,7 +166,7 @@ export default function UserManagement() {
     <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Title level={2} style={{ marginTop: 0, marginBottom: 0, fontWeight: 700 }}>
-          Quản lý Nhân sự
+          {t('page.users.title')}
         </Title>
         <Button
           type="primary"
@@ -172,7 +174,7 @@ export default function UserManagement() {
           style={{ backgroundColor: '#2563EB', borderRadius: 4 }}
           onClick={() => navigate('/users/create')}
         >
-          Thêm nhân sự
+          {t('page.users.create')}
         </Button>
       </div>
 

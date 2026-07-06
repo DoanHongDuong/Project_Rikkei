@@ -10,7 +10,11 @@ export type NotificationType =
     | 'COMMENT_REPLY'
     | 'DEADLINE_EXTENSION_REQUESTED'
     | 'DEADLINE_EXTENSION_APPROVED'
-    | 'DEADLINE_EXTENSION_REJECTED';
+    | 'DEADLINE_EXTENSION_REJECTED'
+    | 'TASK_STATUS_UPDATED'
+    | 'PROJECT_CREATED'
+    | 'PROFILE_UPDATED'
+    | 'DEPARTMENT_UPDATED';
 
 export interface NotificationPayload {
     // camelCase (legacy)
@@ -26,6 +30,7 @@ export interface NotificationPayload {
     removedBy?: string;
     archivedBy?: string;
     changedBy?: string;
+    createdBy?: string;
     roadmapItemTitle?: string;
     role?: string;
     priority?: string;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Card, Typography, message, Skeleton, Statistic, Progress, Badge, Empty } from 'antd';
 import { ProjectOutlined, CheckSquareOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/authService';
 import DashboardService from '../../services/dashboardService';
 import type { AuthUser } from '../../types/auth';
@@ -11,6 +12,7 @@ const { Title, Text } = Typography;
 const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export default function DashboardPage() {
   return (
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
       <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>Chào buổi sáng, {user.full_name}!</Title>
+        <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>{t('page.dashboard.title')}, {user.full_name}!</Title>
         <Text type="secondary">Đây là tổng quan tiến độ và công việc của bạn.</Text>
       </div>
 

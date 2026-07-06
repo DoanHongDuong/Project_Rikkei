@@ -49,13 +49,22 @@ export const getNavigationPath = (n: Notification): string | null => {
     return null;
 };
 
-export const getTimeAgo = (dateString: string): string => {
+export const getTimeAgo = (dateString: string, t?: any): string => {
     const date = new Date(dateString);
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (diff < 60) return 'Vừa xong';
-    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
+    
+    if (t) {
+        if (diff < 60) return t('notifications.time_ago.just_now');
+        if (diff < 3600) return t('notifications.time_ago.minutes', { count: Math.floor(diff / 60) });
+        if (diff < 86400) return t('notifications.time_ago.hours', { count: Math.floor(diff / 3600) });
+        if (diff < 604800) return t('notifications.time_ago.days', { count: Math.floor(diff / 86400) });
+    } else {
+        if (diff < 60) return 'Vừa xong';
+        if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+        if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
+    }
+    
+    return date.toLocaleDateString();
 };

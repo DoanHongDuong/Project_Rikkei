@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Typography, message, Skeleton } from 'antd';
 import { UserOutlined, ProjectOutlined, CheckCircleOutlined, CheckSquareOutlined } from '@ant-design/icons';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/authService';
 import DashboardService from '../../services/dashboardService';
 
@@ -10,6 +11,7 @@ const { Title, Text } = Typography;
 const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function AdminDashboardPage() {
   return (
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
       <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>Good morning, {user.full_name || 'Admin'}!</Title>
+        <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>{t('page.dashboard.title')}</Title>
         <Text type="secondary">Here is an overview of the system today.</Text>
       </div>
 
@@ -90,7 +92,7 @@ export default function AdminDashboardPage() {
         </Col>
       </Row>
 
-      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+      <Row gutter={[24, 24] as const} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card
             title="Project Status Distribution"

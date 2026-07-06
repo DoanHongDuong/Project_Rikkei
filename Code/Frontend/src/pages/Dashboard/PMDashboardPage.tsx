@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Row, Col, Card, Typography, message, Skeleton, Statistic, Table, Tag } from 'antd';
 import { ProjectOutlined, DashboardOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import DashboardService from '../../services/dashboardService';
 
 const { Title, Text } = Typography;
@@ -9,6 +10,7 @@ const { Title, Text } = Typography;
 const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function PMDashboardPage() {
+  const { t } = useTranslation();
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -85,7 +87,7 @@ export default function PMDashboardPage() {
   return (
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
       <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>Tổng quan Quản lý Dự án</Title>
+        <Title level={2} style={{ margin: 0, color: '#1E3A5F' }}>{t('page.dashboard.title')}</Title>
         <Text type="secondary">Hiển thị số liệu thống kê các dự án mà bạn đang quản lý.</Text>
       </div>
 

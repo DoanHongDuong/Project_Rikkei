@@ -15,6 +15,7 @@ import AuthService from '../services/authService';
 import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
 import NotificationDropdown from '../components/Notification/NotificationDropdown';
 import { NotificationProvider } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 
 const { Header, Sider, Content } = Layout;
 
@@ -23,6 +24,7 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState(AuthService.getUser());
@@ -44,30 +46,24 @@ export default function MainLayout({ children }: MainLayoutProps) {
     navigate('/login', { replace: true });
   };
 
-  const handleUserMenuClick = ({ key }: { key: string }) => {
-    if (key === 'profile') {
-      navigate('/profile');
-    }
-  };
-
   const userMenu = {
     items: [
-      { key: 'profile', label: 'Profile' },
+      { key: 'profile', label: <a href="#profile" onClick={(e) => { e.preventDefault(); navigate('/profile'); }}>{t('nav.profile')}</a> },
+      { key: 'settings', label: <a href="#settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }}>{t('nav.settings')}</a> },
       { type: 'divider' } as const,
-      { key: 'logout', label: <a href="#logout" onClick={handleLogout}>Logout</a> },
-    ],
-    onClick: handleUserMenuClick
+      { key: 'logout', label: <a href="#logout" onClick={handleLogout}>{t('nav.logout')}</a> },
+    ]
   };
 
   const allMenuItems = [
-    { key: '/dashboard', icon: <AppstoreOutlined />, label: 'Dashboard', roles: ['ADMIN', 'PM', 'MEMBER'] },
-    { key: '/my-tasks', icon: <CheckSquareOutlined />, label: 'My Tasks', roles: ['PM', 'MEMBER'] },
-    { key: '/projects', icon: <ProjectOutlined />, label: 'Projects', roles: ['ADMIN', 'PM', 'MEMBER'] },
-    { key: '/departments', icon: <TeamOutlined />, label: 'Departments', roles: ['ADMIN'] },
-    { key: '/users', icon: <UserOutlined />, label: 'Users', roles: ['ADMIN'] },
+    { key: '/dashboard', icon: <AppstoreOutlined />, label: t('nav.dashboard'), roles: ['ADMIN', 'PM', 'MEMBER'] },
+    { key: '/my-tasks', icon: <CheckSquareOutlined />, label: t('nav.tasks'), roles: ['PM', 'MEMBER'] },
+    { key: '/projects', icon: <ProjectOutlined />, label: t('nav.projects'), roles: ['ADMIN', 'PM', 'MEMBER'] },
+    { key: '/departments', icon: <TeamOutlined />, label: t('nav.departments'), roles: ['ADMIN'] },
+    { key: '/users', icon: <UserOutlined />, label: t('nav.users'), roles: ['ADMIN'] },
     { key: '/calendar', icon: <CalendarOutlined />, label: 'Calendar', roles: ['PM', 'MEMBER'] },
     { key: '/reports', icon: <BarChartOutlined />, label: 'Reports', roles: ['ADMIN', 'PM'] },
-    { key: '/settings', icon: <SettingOutlined />, label: 'Settings', roles: ['ADMIN'] },
+    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings'), roles: ['ADMIN', 'PM', 'MEMBER'] },
   ];
 
   const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
@@ -141,7 +137,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               {/* Notification dropdown */}
               <NotificationDropdown />
 
-              {/* Dropdown người dùng (Gốc của câu hỏi đầu tiên bạn hỏi tôi) */}
+              {/* Dropdown người dùng */}
               <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
                 <Space style={{ cursor: 'pointer' }}>
                   <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />

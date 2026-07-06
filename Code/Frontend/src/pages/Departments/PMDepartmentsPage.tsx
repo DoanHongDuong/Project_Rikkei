@@ -1,22 +1,27 @@
 import { Typography, Row, Col, Card } from 'antd';
-import { SearchOutlined, UserOutlined, CheckSquareOutlined, CloseSquareOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, CheckSquareOutlined, CloseSquareOutlined, InfoCircleFilled } from '@ant-design/icons';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 // import '../Dashboard/PMStyles.css';
 
 const { Title } = Typography;
 
 export default function PMDepartmentsPage() {
-  const departments = [
+  const { t } = useTranslation();
+  const [departments, setDepartments] = useState([
     { id: 1, name: 'Design', nameColor: '#3B82F6', active: 24, completed: 24, issues: 24, status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
     { id: 2, name: 'Developer', nameColor: '#10B981', active: 24, completed: 24, issues: 24, status: 'Quá tải', statusBg: '#FEE2E2', statusText: '#DC2626' },
     { id: 3, name: 'Marketing', nameColor: '#EF4444', active: 24, completed: 24, issues: 24, status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
     { id: 4, name: 'HR', nameColor: '#F59E0B', active: 24, completed: 24, issues: 24, status: 'Trung bình', statusBg: '#FEF3C7', statusText: '#D97706' },
     { id: 5, name: 'Sales', nameColor: '#D946EF', active: 24, completed: 24, issues: 24, status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
     { id: 6, name: 'QA', nameColor: '#06B6D4', active: 24, completed: 24, issues: 24, status: 'Ổn định', statusBg: '#E0F2FE', statusText: '#0284C7' },
-  ];
+  ]);
 
   return (
     <div>
-      <Title level={3} style={{ marginBottom: 20 }}>Danh sách phòng ban</Title>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0, color: '#1E3A5F' }}>{t('page.departments.title')}</Title>
+      </div>
 
       <div className="pm-search-container" style={{ marginBottom: 30 }}>
         <input
