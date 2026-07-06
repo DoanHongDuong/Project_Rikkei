@@ -24,6 +24,8 @@ import PMDepartmentsPage from '../pages/Departments/PMDepartmentsPage';
 import AuthService from '../services/authService';
 import NotificationsPage from '../pages/Notifications';
 
+import ProfilePage from '../pages/Profile/ProfilePage';
+
 import AdminDashboardPage from '../pages/Dashboard/AdminDashboardPage';
 
 const DashboardRoute = () => {
@@ -189,6 +191,16 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
               <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Trang thông tin cá nhân */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

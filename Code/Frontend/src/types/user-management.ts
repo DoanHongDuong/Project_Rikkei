@@ -51,3 +51,25 @@ export interface ApiResponse<T> {
   data: T;
   pagination?: UserPagination;
 }
+
+export interface UserProfile {
+  id: number;
+  full_name: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  department_id: number | null;
+  created_at?: string;
+  updated_at?: string;
+  last_login_at?: string | null;
+}
+
+export interface UpdateProfilePayload {
+  full_name: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+

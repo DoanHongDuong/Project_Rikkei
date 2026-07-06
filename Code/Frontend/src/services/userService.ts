@@ -132,6 +132,62 @@ class UserService {
       throw error;
     }
   }
+
+  static async getMyProfile() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Lỗi khi lấy thông tin cá nhân');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateMyProfile(data: { full_name: string }) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Lỗi khi cập nhật thông tin cá nhân');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async changePassword(data: any) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/profile/change-password`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Lỗi khi thay đổi mật khẩu');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default UserService;

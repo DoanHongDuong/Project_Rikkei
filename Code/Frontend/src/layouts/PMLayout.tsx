@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Dropdown, Space, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -14,7 +14,17 @@ interface PMLayoutProps {
 
 export default function PMLayout({ children }: PMLayoutProps) {
   const navigate = useNavigate();
-  const user = AuthService.getUser();
+  const [user, setUser] = useState(AuthService.getUser());
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      setUser(AuthService.getUser());
+    };
+    window.addEventListener('user-profile-updated', handleUserUpdate);
+    return () => {
+      window.removeEventListener('user-profile-updated', handleUserUpdate);
+    };
+  }, []);
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -22,13 +32,19 @@ export default function PMLayout({ children }: PMLayoutProps) {
     navigate('/login', { replace: true });
   };
 
+  const handleUserMenuClick = ({ key }: { key: string }) => {
+    if (key === 'profile') {
+      navigate('/profile');
+    }
+  };
+
   const userMenu = {
     items: [
       { key: 'profile', label: 'Profile' },
-      { key: 'settings', label: 'Settings' },
       { type: 'divider' } as const,
       { key: 'logout', label: <a href="#logout" onClick={handleLogout}>Logout</a> },
-    ]
+    ],
+    onClick: handleUserMenuClick
   };
 
   return (

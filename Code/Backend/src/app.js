@@ -21,6 +21,10 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const { verifyToken } = require('./middleware/authMiddleware');
 const { authorizeRoles } = require('./middleware/roleMiddleware');
 const userService = require('./services/userService');
+const bcrypt = require('bcryptjs');
+const User = require('./models/User');
+const { validate } = require('./middleware/validateMiddleware');
+const { changePasswordSchema } = require('./validators/authValidator');
 
 const app = express();
 
@@ -83,6 +87,62 @@ app.get('/api/available-users', verifyToken, authorizeRoles('ADMIN', 'PM', 'MEMB
     } catch (error) {
         console.error('GET /api/available-users error:', error);
         res.status(500).json({ success: false, message: 'Lỗi server.' });
+    }
+});
+
+// Route lấy thông tin profile của user đăng nhập
+app.get('/api/users/profile', verifyToken, async (req, res) => {
+    try {
+        const user = await userService.getUserById(req.user.id);
+        res.status(200).json({ success: true, message: 'OK', data: user });
+    } catch (error) {
+        console.error('GET /api/users/profile error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server.' });
+    }
+});
+
+// Route cập nhật thông tin profile của user đăng nhập
+app.put('/api/users/profile', verifyToken, async (req, res) => {
+    try {
+        const { full_name } = req.body;
+        if (!full_name || !full_name.trim()) {
+            return res.status(400).json({ success: false, message: 'Họ và tên không được bỏ trống.' });
+        }
+        const updatedUser = await userService.updateUser(req.user.id, { full_name });
+        res.status(200).json({ success: true, message: 'Cập nhật thành công.', data: updatedUser });
+    } catch (error) {
+        console.error('PUT /api/users/profile error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server.' });
+    }
+});
+
+// Route đổi mật khẩu của user đăng nhập
+app.put('/api/profile/change-password', verifyToken, validate({ body: changePasswordSchema }), async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findByPk(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Người dùng không tồn tại.' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Mật khẩu hiện tại không chính xác.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await user.update({
+            password_hash: hashedPassword,
+            password_changed_at: new Date()
+        });
+
+        return res.status(200).json({ success: true, message: 'Đổi mật khẩu thành công.' });
+    } catch (error) {
+        console.error('PUT /api/profile/change-password error:', error);
+        return res.status(500).json({ success: false, message: 'Lỗi server khi đổi mật khẩu.' });
     }
 });
 
