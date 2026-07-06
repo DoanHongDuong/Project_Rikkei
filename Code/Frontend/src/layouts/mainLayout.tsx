@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Breadcrumb, Space } from 'antd';
 import {
   AppstoreOutlined,
@@ -24,11 +24,21 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
-  const user = AuthService.getUser();
+  const [user, setUser] = useState(AuthService.getUser());
   const userRole = user?.role || 'MEMBER';
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      setUser(AuthService.getUser());
+    };
+    window.addEventListener('user-profile-updated', handleUserUpdate);
+    return () => {
+      window.removeEventListener('user-profile-updated', handleUserUpdate);
+    };
+  }, []);
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,8 +48,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   const userMenu = {
     items: [
-      { key: 'profile', label: t('nav.profile') },
-      { key: 'settings', label: t('nav.settings') },
+      { key: 'profile', label: <a href="#profile" onClick={(e) => { e.preventDefault(); navigate('/profile'); }}>{t('nav.profile')}</a> },
+      { key: 'settings', label: <a href="#settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }}>{t('nav.settings')}</a> },
       { type: 'divider' } as const,
       { key: 'logout', label: <a href="#logout" onClick={handleLogout}>{t('nav.logout')}</a> },
     ]
@@ -53,7 +63,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { key: '/users', icon: <UserOutlined />, label: t('nav.users'), roles: ['ADMIN'] },
     { key: '/calendar', icon: <CalendarOutlined />, label: 'Calendar', roles: ['PM', 'MEMBER'] },
     { key: '/reports', icon: <BarChartOutlined />, label: t('nav.reports'), roles: ['ADMIN', 'PM'] },
-    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings'), roles: ['ADMIN'] },
+    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings'), roles: ['ADMIN', 'PM', 'MEMBER'] },
   ];
 
   const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
@@ -127,7 +137,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               {/* Notification dropdown */}
               <NotificationDropdown />
 
-              {/* Dropdown người dùng (Gốc của câu hỏi đầu tiên bạn hỏi tôi) */}
+              {/* Dropdown người dùng */}
               <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
                 <Space style={{ cursor: 'pointer' }}>
                   <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />
@@ -148,4 +158,4 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </Layout>
     </NotificationProvider>
   );
-}
+}

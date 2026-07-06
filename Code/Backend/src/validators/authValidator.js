@@ -49,9 +49,18 @@ const resetPasswordSchema = Joi.object({
     password: passwordSchema
 });
 
+const changePasswordSchema = Joi.object({
+    currentPassword: Joi.string().required().messages({
+        'any.required': 'Mật khẩu hiện tại là bắt buộc.',
+        'string.empty': 'Mật khẩu hiện tại là bắt buộc.'
+    }),
+    newPassword: passwordSchema
+});
+
 module.exports = {
     loginSchema,
     forgotPasswordSchema,
     resetPasswordParamsSchema,
-    resetPasswordSchema
+    resetPasswordSchema,
+    changePasswordSchema
 };

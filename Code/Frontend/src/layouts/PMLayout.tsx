@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Dropdown, Space, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -16,7 +16,17 @@ interface PMLayoutProps {
 export default function PMLayout({ children }: PMLayoutProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = AuthService.getUser();
+  const [user, setUser] = useState(AuthService.getUser());
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      setUser(AuthService.getUser());
+    };
+    window.addEventListener('user-profile-updated', handleUserUpdate);
+    return () => {
+      window.removeEventListener('user-profile-updated', handleUserUpdate);
+    };
+  }, []);
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,7 +36,7 @@ export default function PMLayout({ children }: PMLayoutProps) {
 
   const userMenu = {
     items: [
-      { key: 'profile', label: t('nav.profile') },
+      { key: 'profile', label: <a href="#profile" onClick={(e) => { e.preventDefault(); navigate('/profile'); }}>{t('nav.profile')}</a> },
       { key: 'settings', label: <a href="#settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }}>{t('nav.settings')}</a> },
       { type: 'divider' } as const,
       { key: 'logout', label: <a href="#logout" onClick={handleLogout}>{t('nav.logout')}</a> },
