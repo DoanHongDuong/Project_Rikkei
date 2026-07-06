@@ -5,6 +5,7 @@
     "projects": "Projects",
     "users": "Users",
     "departments": "Departments",
+    "reports": "Reports",
     "settings": "Settings",
     "profile": "Profile",
     "logout": "Logout"
@@ -68,6 +69,72 @@
     "departments": {
       "title": "Departments",
       "create": "Create Department"
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "System-wide analytics and performance overview",
+      "kpi": {
+        "total_tasks": "Total Tasks",
+        "done_tasks": "Completed Tasks",
+        "overdue_tasks": "Overdue Tasks",
+        "completion_rate": "Completion Rate"
+      },
+      "chart": {
+        "task_by_status": "Tasks by Status",
+        "task_by_priority": "Tasks by Priority",
+        "task_by_project": "Tasks by Project (Top 10)",
+        "project_status_distribution": "Project Status Distribution",
+        "task_trend": "Task Trend (Last 7 Days)",
+        "task_trend_created": "Created",
+        "task_trend_completed": "Completed",
+        "count": "Count",
+        "no_data": "No data available"
+      },
+      "project_table": {
+        "title": "Project Report",
+        "name": "Project Name",
+        "status": "Status",
+        "manager": "Manager",
+        "total_tasks": "Total Tasks",
+        "done_tasks": "Done",
+        "progress": "Progress",
+        "deadline": "Deadline",
+        "no_deadline": "—",
+        "filter_all": "All Status",
+        "filter_active": "Active",
+        "filter_completed": "Completed",
+        "filter_on_hold": "On Hold"
+      },
+      "user_table": {
+        "title": "User Performance",
+        "name": "Full Name",
+        "department": "Department",
+        "assigned": "Assigned",
+        "done": "Done",
+        "overdue": "Overdue",
+        "rate": "Completion Rate",
+        "no_department": "—"
+      },
+      "department": {
+        "title": "Department Summary",
+        "users": "{{count}} users",
+        "active_tasks": "{{count}} active tasks",
+        "completion_rate": "{{rate}}% completed"
+      },
+      "timeline": {
+        "title": "Recent Activities",
+        "no_data": "No recent activities",
+        "action_create": "{{user}} created a new task '{{task}}' in project '{{project}}'",
+        "action_update": "{{user}} updated {{field}} to '{{value}}' on task '{{task}}' in project '{{project}}'",
+        "action_update_info": "{{user}} updated task information '{{task}}' in project '{{project}}'",
+        "action_update_status": "{{user}} updated status to {{value}} on task '{{task}}' in project '{{project}}'",
+        "action_delete": "{{user}} deleted task '{{task}}' in project '{{project}}'",
+        "action_comment_add": "{{user}} commented on task '{{task}}' in project '{{project}}'",
+        "action_comment_delete": "{{user}} deleted a comment on task '{{task}}' in project '{{project}}'",
+        "action_unknown": "{{user}} performed an action on task '{{task}}' in project '{{project}}'"
+      },
+      "loading": "Loading report data...",
+      "error": "Failed to load report data"
     },
     "settings": {
       "title": "Settings",

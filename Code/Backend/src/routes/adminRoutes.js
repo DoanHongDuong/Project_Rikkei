@@ -85,4 +85,12 @@ router.get(
     (req, res) => adminController.getDashboardMetrics(req, res)
 );
 
+// 8. [GET] Lấy dữ liệu báo cáo tổng hợp
+router.get(
+    '/reports',
+    verifyToken,
+    adminOnly,
+    (req, res) => adminController.getReportData(req, res)
+);
+
 module.exports = router;
