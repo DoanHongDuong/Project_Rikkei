@@ -64,6 +64,34 @@ export default function ProjectDetail() {
     loadData();
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const handleNotification = (e: any) => {
+      try {
+        const n = e.detail;
+        if (!n) return;
+        
+        if (n.type === 'PROJECT_UPDATED') {
+          const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
+          if (p && (String(p.projectId) === String(id) || String(p.project_id) === String(id))) {
+            loadData();
+          }
+        }
+      } catch (error) {
+        console.error('Lỗi khi xử lý thông báo realtime trên ProjectDetail:', error);
+      }
+    };
+
+    window.addEventListener('new_notification_received', handleNotification);
+    window.addEventListener('notification_updated_received', handleNotification);
+
+    return () => {
+      window.removeEventListener('new_notification_received', handleNotification);
+      window.removeEventListener('notification_updated_received', handleNotification);
+    };
+  }, [id]);
+
   // Refetch riêng project (nhẹ hơn loadData) để cập nhật lại % progress
   // ngay khi task thay đổi (đổi status, tạo mới...) mà không cần F5.
   const refreshProjectProgress = async () => {

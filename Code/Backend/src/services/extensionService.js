@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const Notification = require('../models/Notification');
 const TaskHistory = require('../models/TaskHistory');
+const socketService = require('./socketService');
 
 class ExtensionService {
     /**
@@ -98,8 +99,9 @@ class ExtensionService {
             }, { transaction });
 
             // 7. Gửi thông báo hệ thống cho PM dự án nếu dự án có PM quản lý
+            let createdNotification = null;
             if (task.project && task.project.manager_id) {
-                await Notification.create({
+                createdNotification = await Notification.create({
                     user_id: task.project.manager_id,
                     type: 'DEADLINE_EXTENSION_REQUESTED',
                     title: 'Yêu cầu gia hạn deadline mới',
@@ -113,6 +115,11 @@ class ExtensionService {
             }
 
             await transaction.commit();
+
+            if (createdNotification) {
+                socketService.emitToUser(task.project.manager_id, 'new_notification', createdNotification.get({ plain: true }));
+            }
+
             return request;
         } catch (error) {
             await transaction.rollback();
@@ -186,7 +193,7 @@ class ExtensionService {
             }, { transaction });
 
             // 6. Gửi thông báo hệ thống cho Member (người gửi yêu cầu)
-            await Notification.create({
+            const createdNotification = await Notification.create({
                 user_id: request.requester_id,
                 type: 'DEADLINE_EXTENSION_APPROVED',
                 title: 'Yêu cầu gia hạn deadline đã được phê duyệt',
@@ -199,6 +206,11 @@ class ExtensionService {
             }, { transaction });
 
             await transaction.commit();
+
+            if (createdNotification) {
+                socketService.emitToUser(request.requester_id, 'new_notification', createdNotification.get({ plain: true }));
+            }
+
             return request;
         } catch (error) {
             await transaction.rollback();
@@ -265,7 +277,7 @@ class ExtensionService {
             }, { transaction });
 
             // 5. Gửi thông báo hệ thống thông báo cho Member
-            await Notification.create({
+            const createdNotification = await Notification.create({
                 user_id: request.requester_id,
                 type: 'DEADLINE_EXTENSION_REJECTED',
                 title: 'Yêu cầu gia hạn deadline bị từ chối',
@@ -278,6 +290,11 @@ class ExtensionService {
             }, { transaction });
 
             await transaction.commit();
+
+            if (createdNotification) {
+                socketService.emitToUser(request.requester_id, 'new_notification', createdNotification.get({ plain: true }));
+            }
+
             return request;
         } catch (error) {
             await transaction.rollback();

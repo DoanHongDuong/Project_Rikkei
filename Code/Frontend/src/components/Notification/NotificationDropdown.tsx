@@ -10,6 +10,8 @@ import {
     DeleteOutlined,
     CheckOutlined,
     MoreOutlined,
+    SyncOutlined,
+    UserOutlined,
 } from '@ant-design/icons';
 import { Dropdown } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +29,8 @@ const getNotificationIcon = (type: NotificationType): ReactNode => {
         case 'TASK_ASSIGNED':
         case 'TASK_UPDATED':
             return <CheckSquareOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+        case 'TASK_STATUS_UPDATED':
+            return <SyncOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
         case 'TASK_COMMENT':
             return <CommentOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
         case 'COMMENT_REPLY':
@@ -34,6 +38,12 @@ const getNotificationIcon = (type: NotificationType): ReactNode => {
         case 'PROJECT_UPDATED':
         case 'PROJECT_ARCHIVED':
             return <ProjectOutlined style={{ ...iconStyle, color: '#faad14' }} />;
+        case 'PROJECT_CREATED':
+            return <ProjectOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
+        case 'PROFILE_UPDATED':
+            return <UserOutlined style={{ ...iconStyle, color: '#52c41a' }} />;
+        case 'DEPARTMENT_UPDATED':
+            return <TeamOutlined style={{ ...iconStyle, color: '#1890ff' }} />;
         case 'MEMBER_ADDED':
         case 'MEMBER_REMOVED':
             return <TeamOutlined style={{ ...iconStyle, color: '#722ed1' }} />;

@@ -198,6 +198,33 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
   useEffect(() => {
     loadTasks();
     loadMilestones();
+
+    const handleNotification = (e: any) => {
+      try {
+        const n = e.detail;
+        if (!n) return;
+        const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
+        
+        // Chỉ reload nếu thông báo thuộc về Project hiện tại và có liên quan đến task
+        const relevantTypes = ['TASK_STATUS_UPDATED', 'TASK_ASSIGNED', 'TASK_UPDATED', 'DEADLINE_EXTENSION_APPROVED'];
+        if (relevantTypes.includes(n.type)) {
+          if (p && (String(p.projectId) === String(projectId) || String(p.project_id) === String(projectId))) {
+            loadTasks();
+            onTasksChanged?.();
+          }
+        }
+      } catch (error) {
+        console.error('Lỗi khi xử lý thông báo realtime trên Kanban:', error);
+      }
+    };
+
+    window.addEventListener('new_notification_received', handleNotification);
+    window.addEventListener('notification_updated_received', handleNotification);
+
+    return () => {
+      window.removeEventListener('new_notification_received', handleNotification);
+      window.removeEventListener('notification_updated_received', handleNotification);
+    };
   }, [projectId]);
 
   const location = useLocation();

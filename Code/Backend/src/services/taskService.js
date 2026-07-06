@@ -230,6 +230,23 @@ class TaskService {
 
         notificationService.handleTaskUpdated(task, project).catch(console.error);
 
+        if (project.manager_id && Number(project.manager_id) !== Number(currentUser.id)) {
+            notificationService.createNotification(
+                project.manager_id,
+                'TASK_STATUS_UPDATED',
+                `Trạng thái công việc thay đổi: ${task.title}`,
+                `${currentUser.full_name} đã chuyển trạng thái từ ${oldStatus} sang ${nextStatus}.`,
+                {
+                    taskId: task.id,
+                    projectId: task.project_id,
+                    projectName: project.name,
+                    updatedBy: currentUser.full_name,
+                    oldStatus: oldStatus,
+                    newStatus: nextStatus
+                }
+            ).catch(console.error);
+        }
+
         return this.findTaskWithIncludes(task.id);
     }
 
