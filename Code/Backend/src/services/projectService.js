@@ -26,7 +26,7 @@ const PROJECT_MEMBER_ROLES = ['MEMBER', 'LEAD', 'REVIEWER'];
 
 class ProjectService {
     buildProjectWhere(filters, currentUser, allowedProjectIds = []) {
-        const where = {};
+        const where = { is_deleted: false };
 
         if (filters.search) {
             const keyword = `%${filters.search}%`;
@@ -414,6 +414,42 @@ class ProjectService {
             }
         }
         return result;
+    }
+
+    async softDeleteProject(id, currentUser) {
+        const project = await Project.findByPk(id);
+        if (!project) {
+            throw this.createError('Không tìm thấy project.', 404);
+        }
+
+        this.ensureCanManageProject(project, currentUser);
+
+        await project.update({
+            is_deleted: true,
+            updated_by: currentUser.id
+        });
+
+        // Optionally, notify members
+        this.notifyAllProjectMembers(
+            id,
+            currentUser.id,
+            'PROJECT_DELETED',
+            `Dự án đã bị xóa: ${project.name}`,
+            `${currentUser.full_name} đã xóa dự án này`,
+            { projectId: id, projectName: project.name, deletedBy: currentUser.full_name }
+        );
+
+        if (currentUser.role !== 'ADMIN') {
+            this.notifyAllAdmins(
+                currentUser.id,
+                'PROJECT_DELETED',
+                `Dự án đã bị xóa: ${project.name}`,
+                `${currentUser.full_name} đã xóa dự án này`,
+                { projectId: id, projectName: project.name, deletedBy: currentUser.full_name }
+            );
+        }
+
+        return project;
     }
 
     async getProjectMembers(projectId, currentUser) {

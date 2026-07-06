@@ -114,6 +114,21 @@ class ProjectController {
         }
     }
 
+    async deleteProject(req, res) {
+        try {
+            const project = await projectService.softDeleteProject(req.params.id, req.user);
+
+            return this.sendSuccess(
+                res,
+                200,
+                'Xóa dự án thành công!',
+                project
+            );
+        } catch (error) {
+            return this.sendError(res, error);
+        }
+    }
+
     async getProjectMembers(req, res) {
         try {
             const members = await projectService.getProjectMembers(req.params.id, req.user);

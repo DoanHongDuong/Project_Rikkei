@@ -54,13 +54,13 @@ router.patch(
     (req, res) => projectController.updateProjectStatus(req, res)
 );
 
-// Không xóa cứng project: DELETE chỉ chuyển status sang ARCHIVED.
+// Không xóa cứng project: DELETE chỉ chuyển status sang is_deleted.
 router.delete(
     '/:id',
     verifyToken,
     adminOrPm,
     validate({ params: idParamsSchema }),
-    (req, res) => projectController.archiveProject(req, res)
+    (req, res) => projectController.deleteProject(req, res)
 );
 
 router.get(

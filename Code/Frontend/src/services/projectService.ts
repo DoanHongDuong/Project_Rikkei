@@ -110,6 +110,19 @@ class ProjectService {
     const data = await response.json();
     return data.data;
   }
+
+  static async deleteProject(id: number | string) {
+    const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Lỗi khi xóa dự án');
+    }
+    const data = await response.json();
+    return data.data;
+  }
 }
 
 export default ProjectService;

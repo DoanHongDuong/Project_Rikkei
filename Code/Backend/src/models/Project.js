@@ -21,6 +21,11 @@ const Project = sequelize.define('Project', {
         allowNull: false,
         defaultValue: 'ACTIVE'
     },
+    is_deleted: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
     start_date: {
         type: DataTypes.DATEONLY,
         allowNull: false
