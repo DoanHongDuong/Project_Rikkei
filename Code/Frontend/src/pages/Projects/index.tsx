@@ -34,7 +34,7 @@ export default function ProjectsPage() {
     try {
       await ProjectService.deleteProject(id);
       message.success('Xóa dự án thành công');
-      fetchProjects();
+      await fetchProjects();
     } catch (error: any) {
       message.error(error.message || 'Lỗi khi xóa dự án');
     }

@@ -12,6 +12,7 @@ import {
     DeleteOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../../hooks/useNotifications';
 import NotificationService from '../../services/notificationService';
 import { getNavigationPath, getTimeAgo } from '../../utils/notificationHelpers';
@@ -48,33 +49,34 @@ const getIcon = (type: NotificationType) => {
     }
 };
 
-const getTypeLabel = (type: NotificationType): { text: string; color: string } => {
-    const map: Record<string, { text: string; color: string }> = {
-        TASK_ASSIGNED: { text: 'Giao việc', color: 'blue' },
-        TASK_COMMENT: { text: 'Bình luận', color: 'green' },
-        COMMENT_REPLY: { text: 'Phản hồi', color: 'geekblue' },
-        TASK_UPDATED: { text: 'Cập nhật', color: 'gold' },
-        PROJECT_UPDATED: { text: 'Dự án', color: 'orange' },
-        PROJECT_ARCHIVED: { text: 'Đóng dự án', color: 'volcano' },
-        MEMBER_ADDED: { text: 'Thành viên', color: 'purple' },
-        MEMBER_REMOVED: { text: 'Rời dự án', color: 'magenta' },
-        ROADMAP_ITEM_UPDATED: { text: 'Roadmap', color: 'cyan' },
-        DEADLINE_EXTENSION_REQUESTED: { text: 'Xin gia hạn', color: 'orange' },
-        DEADLINE_EXTENSION_APPROVED: { text: 'Duyệt gia hạn', color: 'lime' },
-        DEADLINE_EXTENSION_REJECTED: { text: 'Từ chối gia hạn', color: 'red' },
+const getTypeLabel = (type: NotificationType, t: any): { text: string; color: string } => {
+    const label = t(`notifications.labels.${type}`, { defaultValue: type });
+    const colors: Record<string, string> = {
+        TASK_ASSIGNED: 'blue',
+        TASK_COMMENT: 'green',
+        COMMENT_REPLY: 'geekblue',
+        TASK_UPDATED: 'gold',
+        PROJECT_UPDATED: 'orange',
+        PROJECT_ARCHIVED: 'volcano',
+        MEMBER_ADDED: 'purple',
+        MEMBER_REMOVED: 'magenta',
+        ROADMAP_ITEM_UPDATED: 'cyan',
+        DEADLINE_EXTENSION_REQUESTED: 'orange',
+        DEADLINE_EXTENSION_APPROVED: 'lime',
+        DEADLINE_EXTENSION_REJECTED: 'red',
     };
-    return map[type] || { text: type, color: 'default' };
+    return { text: label, color: colors[type] || 'default' };
 };
 
-const getDateGroup = (dateString: string): string => {
+const getDateGroup = (dateString: string, t: any): string => {
     const date = new Date(dateString);
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today.getTime() - 86400000);
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    if (d.getTime() === today.getTime()) return 'Hôm nay';
-    if (d.getTime() === yesterday.getTime()) return 'Hôm qua';
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    if (d.getTime() === today.getTime()) return t('notifications.today');
+    if (d.getTime() === yesterday.getTime()) return t('notifications.yesterday');
+    return date.toLocaleDateString();
 };
 
 // ─── Notification Row ──────────────────────────────────────────────────────────
@@ -87,7 +89,8 @@ interface NotifRowProps {
 }
 
 const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) => {
-    const label = getTypeLabel(n.type);
+    const { t } = useTranslation();
+    const label = getTypeLabel(n.type, t);
     const unread = !n.is_read;
     const path = getNavigationPath(n);
     const isClickable = !!path;
@@ -138,26 +141,51 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
             <div style={{ flex: 1, paddingRight: 40 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                     <Text strong={unread} style={{ fontSize: 14, color: '#111' }}>
-                        {n.type === 'TASK_ASSIGNED' ? (
-                            (() => {
-                                let pName = 'Không rõ';
-                                try {
-                                    const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
-                                    if (p?.projectName) pName = p.projectName;
-                                } catch (e) { }
-                                return `Dự án: ${pName}`;
-                            })()
-                        ) : n.title}
+                        {(() => {
+                            let pName = 'Không rõ';
+                            let actor = '';
+                            try {
+                                const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
+                                if (p?.projectName) pName = p.projectName;
+                                if (p?.deletedBy) actor = p.deletedBy;
+                                else if (p?.updatedBy) actor = p.updatedBy;
+                                else if (p?.archivedBy) actor = p.archivedBy;
+                                else if (p?.createdBy) actor = p.createdBy;
+                                else if (p?.actorName) actor = p.actorName;
+                            } catch (e) { }
+
+                            const typeKey = `notifications.types.${n.type}`;
+                            const translatedType = t(typeKey);
+
+                            return translatedType !== typeKey ? translatedType : n.title;
+                        })()}
                     </Text>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 12 }}>
                         <Tag color={label.color} style={{ margin: 0, fontSize: 11 }}>{label.text}</Tag>
                     </div>
                 </div>
                 <Text style={{ fontSize: 13, color: '#555', display: 'block', marginBottom: 4 }}>
-                    {n.type === 'TASK_ASSIGNED' ? 'Bạn vừa được giao cho 1 công việc mới.' : n.content}
+                        {(() => {
+                            let pName = 'Không rõ';
+                            let actor = '';
+                            try {
+                                const p = typeof n.payload === 'string' ? JSON.parse(n.payload) : n.payload;
+                                if (p?.projectName) pName = p.projectName;
+                                if (p?.deletedBy) actor = p.deletedBy;
+                                else if (p?.updatedBy) actor = p.updatedBy;
+                                else if (p?.archivedBy) actor = p.archivedBy;
+                                else if (p?.createdBy) actor = p.createdBy;
+                                else if (p?.actorName) actor = p.actorName;
+                            } catch (e) { }
+
+                            const messageKey = `notifications.messages.${n.type}`;
+                            const translatedMessage = t(messageKey, { project: pName, actor });
+
+                            return translatedMessage !== messageKey ? translatedMessage : (n.content.length > 60 ? `${n.content.substring(0, 60)}...` : n.content);
+                        })()}
                 </Text>
                 <Text style={{ fontSize: 12, color: unread ? '#1890ff' : '#999', fontWeight: unread ? 600 : 400 }}>
-                    {getTimeAgo(n.created_at)}
+                    {getTimeAgo(n.created_at, t)}
                 </Text>
             </div>
 
@@ -169,7 +197,7 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
                             ...(unread ? [{
                                 key: 'read',
                                 icon: <CheckOutlined />,
-                                label: 'Đánh dấu đã đọc',
+                                label: t('notifications.mark_read'),
                                 onClick: (e: any) => {
                                     e.domEvent.stopPropagation();
                                     onRead(n.id);
@@ -179,7 +207,7 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
                                 key: 'delete',
                                 icon: <DeleteOutlined />,
                                 danger: true,
-                                label: 'Xóa thông báo',
+                                label: t('notifications.delete'),
                                 onClick: (e: any) => {
                                     e.domEvent.stopPropagation();
                                     onDelete(n.id);
@@ -205,6 +233,7 @@ const NotifRow: React.FC<NotifRowProps> = ({ n, onRead, onDelete, onNavigate }) 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 const NotificationsPage: React.FC = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { markAsRead, markAllAsRead, deleteNotification } = useNotifications();
     const [allNotifs, setAllNotifs] = useState<Notification[]>([]);
@@ -257,7 +286,7 @@ const NotificationsPage: React.FC = () => {
     // Group by date
     const grouped: Record<string, Notification[]> = {};
     for (const n of displayed) {
-        const group = getDateGroup(n.created_at);
+        const group = getDateGroup(n.created_at, t);
         if (!grouped[group]) grouped[group] = [];
         grouped[group].push(n);
     }
@@ -268,13 +297,13 @@ const NotificationsPage: React.FC = () => {
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '8px 0 40px' }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <Title level={3} style={{ margin: 0 }}>Thông báo</Title>
+                <Title level={3} style={{ margin: 0 }}>{t('notifications.title')}</Title>
                 <Button
                     icon={<CheckOutlined />}
                     onClick={handleMarkAll}
                     style={{ borderRadius: 8 }}
                 >
-                    Đánh dấu tất cả đã đọc
+                    {t('notifications.mark_all_read')}
                 </Button>
             </div>
 
@@ -284,8 +313,8 @@ const NotificationsPage: React.FC = () => {
                 onChange={(key) => setActiveTab(key as 'all' | 'unread')}
                 style={{ marginBottom: 16 }}
                 items={[
-                    { key: 'all', label: 'Tất cả' },
-                    { key: 'unread', label: `Chưa đọc (${allNotifs.filter(n => !n.is_read).length})` },
+                    { key: 'all', label: t('notifications.all') },
+                    { key: 'unread', label: `${t('notifications.unread')} (${allNotifs.filter(n => !n.is_read).length})` },
                 ]}
             />
 
@@ -293,7 +322,7 @@ const NotificationsPage: React.FC = () => {
             {loading ? (
                 <div style={{ textAlign: 'center', padding: 48 }}><Spin size="large" /></div>
             ) : Object.keys(grouped).length === 0 ? (
-                <Empty description="Không có thông báo" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ paddingTop: 48 }} />
+                <Empty description={t('notifications.empty')} image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ paddingTop: 48 }} />
             ) : (
                 <>
                     {Object.entries(grouped).map(([group, items]) => (
@@ -323,7 +352,7 @@ const NotificationsPage: React.FC = () => {
                                 onClick={handleLoadMore}
                                 style={{ borderRadius: 8, minWidth: 200 }}
                             >
-                                Xem thêm thông báo
+                                {t('notifications.view_all')}
                             </Button>
                         </div>
                     )}

@@ -33,5 +33,51 @@
       "english": "Tiếng Anh (English)",
       "vietnamese": "Tiếng Việt"
     }
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "mark_all_read": "Đọc hết",
+    "mark_read": "Đánh dấu đã đọc",
+    "delete": "Xóa thông báo",
+    "view_all": "Xem tất cả",
+    "empty": "Không có thông báo",
+    "loading": "Đang tải...",
+    "all": "Tất cả",
+    "unread": "Chưa đọc",
+    "today": "HÔM NAY",
+    "yesterday": "HÔM QUA",
+    "time_ago": {
+      "just_now": "Vừa xong",
+      "minutes": "{{count}} phút trước",
+      "hours": "{{count}} giờ trước",
+      "days": "{{count}} ngày trước"
+    },
+    "types": {
+      "PROJECT_DELETED": "Dự án đã bị xóa",
+      "PROJECT_CREATED": "Dự án mới",
+      "PROJECT_UPDATED": "Dự án được cập nhật",
+      "PROJECT_ARCHIVED": "Dự án đã bị đóng",
+      "TASK_ASSIGNED": "Công việc mới"
+    },
+    "labels": {
+      "TASK_ASSIGNED": "Giao việc",
+      "TASK_COMMENT": "Bình luận",
+      "COMMENT_REPLY": "Phản hồi",
+      "TASK_UPDATED": "Cập nhật",
+      "PROJECT_UPDATED": "Dự án",
+      "PROJECT_ARCHIVED": "Đóng dự án",
+      "MEMBER_ADDED": "Thành viên",
+      "MEMBER_REMOVED": "Rời dự án",
+      "ROADMAP_ITEM_UPDATED": "Roadmap",
+      "DEADLINE_EXTENSION_REQUESTED": "Xin gia hạn",
+      "DEADLINE_EXTENSION_APPROVED": "Duyệt gia hạn",
+      "DEADLINE_EXTENSION_REJECTED": "Từ chối gia hạn"
+    },
+    "messages": {
+      "PROJECT_DELETED": "{{actor}} đã xóa dự án: {{project}}",
+      "PROJECT_CREATED": "{{actor}} đã tạo dự án mới: {{project}}",
+      "PROJECT_UPDATED": "{{actor}} đã cập nhật dự án: {{project}}",
+      "PROJECT_ARCHIVED": "{{actor}} đã đóng dự án: {{project}}"
+    }
   }
 }

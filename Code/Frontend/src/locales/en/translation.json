@@ -33,5 +33,51 @@
       "english": "English",
       "vietnamese": "Vietnamese"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "mark_read": "Mark as read",
+    "delete": "Delete notification",
+    "view_all": "View all",
+    "empty": "No notifications",
+    "loading": "Loading...",
+    "all": "All",
+    "unread": "Unread",
+    "today": "TODAY",
+    "yesterday": "YESTERDAY",
+    "time_ago": {
+      "just_now": "Just now",
+      "minutes": "{{count}} minutes ago",
+      "hours": "{{count}} hours ago",
+      "days": "{{count}} days ago"
+    },
+    "types": {
+      "PROJECT_DELETED": "Project deleted",
+      "PROJECT_CREATED": "New project",
+      "PROJECT_UPDATED": "Project updated",
+      "PROJECT_ARCHIVED": "Project archived",
+      "TASK_ASSIGNED": "Task assigned"
+    },
+    "labels": {
+      "TASK_ASSIGNED": "Assigned",
+      "TASK_COMMENT": "Comment",
+      "COMMENT_REPLY": "Reply",
+      "TASK_UPDATED": "Update",
+      "PROJECT_UPDATED": "Project",
+      "PROJECT_ARCHIVED": "Archived",
+      "MEMBER_ADDED": "Member",
+      "MEMBER_REMOVED": "Left",
+      "ROADMAP_ITEM_UPDATED": "Roadmap",
+      "DEADLINE_EXTENSION_REQUESTED": "Extension",
+      "DEADLINE_EXTENSION_APPROVED": "Approved",
+      "DEADLINE_EXTENSION_REJECTED": "Rejected"
+    },
+    "messages": {
+      "PROJECT_DELETED": "{{actor}} deleted the project: {{project}}",
+      "PROJECT_CREATED": "{{actor}} created a new project: {{project}}",
+      "PROJECT_UPDATED": "{{actor}} updated the project: {{project}}",
+      "PROJECT_ARCHIVED": "{{actor}} archived the project: {{project}}"
+    }
   }
 }

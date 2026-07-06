@@ -14,6 +14,7 @@ class ProjectService {
     const response = await fetch(`${API_BASE_URL}/api/projects?${query}`, {
       method: 'GET',
       headers: this.getHeaders(),
+      cache: 'no-cache'
     });
     if (!response.ok) {
       const error = await response.json();
