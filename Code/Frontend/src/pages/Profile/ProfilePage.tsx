@@ -13,6 +13,7 @@ import {
   LockOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import UserService from '../../services/userService';
 import DepartmentService from '../../services/departmentService';
 import AuthService from '../../services/authService';
@@ -20,6 +21,7 @@ import AuthService from '../../services/authService';
 const { Title, Text } = Typography;
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [userData, setUserData] = useState<any>(null);
   const [departmentName, setDepartmentName] = useState<string>('');
@@ -50,7 +52,7 @@ export default function ProfilePage() {
         }
       }
     } catch (error: any) {
-      message.error(error.message || 'Lỗi khi tải thông tin cá nhân');
+      message.error(error.message || t('page.profile.load_error'));
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!fullNameInput.trim()) {
-      message.error('Họ và tên không được bỏ trống.');
+      message.error(t('page.profile.full_name_required'));
       return;
     }
 
@@ -70,7 +72,7 @@ export default function ProfilePage() {
     try {
       const response = await UserService.updateMyProfile({ full_name: fullNameInput.trim() });
       if (response.success) {
-        message.success('Cập nhật thông tin cá nhân thành công!');
+        message.success(t('page.profile.update_success'));
         setUserData(response.data);
         
         const currentUser = AuthService.getUser();
@@ -83,7 +85,7 @@ export default function ProfilePage() {
         window.dispatchEvent(new Event('user-profile-updated'));
       }
     } catch (error: any) {
-      message.error(error.message || 'Lỗi khi cập nhật thông tin');
+      message.error(error.message || t('page.profile.update_error'));
     } finally {
       setSubmitting(false);
     }
@@ -100,7 +102,7 @@ export default function ProfilePage() {
     const { currentPassword, newPassword, confirmPassword } = values;
 
     if (newPassword !== confirmPassword) {
-      message.error('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+      message.error(t('page.profile.password_mismatch'));
       return;
     }
 
@@ -112,17 +114,16 @@ export default function ProfilePage() {
       });
 
       if (response.success) {
-        message.success('Đổi mật khẩu thành công. Hệ thống sẽ tự động đăng xuất sau 2 giây...');
+        message.success(t('page.profile.change_password_success'));
         passwordForm.resetFields();
         
-        // Đăng xuất sau 2 giây để đảm bảo bảo mật
         setTimeout(() => {
           AuthService.logout();
           navigate('/login', { replace: true });
         }, 2000);
       }
     } catch (error: any) {
-      message.error(error.message || 'Mật khẩu hiện tại không chính xác.');
+      message.error(error.message || t('page.profile.change_password_error'));
     } finally {
       setPasswordSubmitting(false);
     }
@@ -135,7 +136,7 @@ export default function ProfilePage() {
   if (!userData) {
     return (
       <div style={{ backgroundColor: '#fff', padding: '24px 32px', borderRadius: 8, textAlign: 'center', color: '#888' }}>
-        Không tìm thấy thông tin cá nhân.
+        {t('page.profile.not_found')}
       </div>
     );
   }
@@ -145,12 +146,12 @@ export default function ProfilePage() {
     <div>
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12}>
-          <Card type="inner" title="Thông tin cơ bản" style={{ height: '100%', borderRadius: 8 }}>
+          <Card type="inner" title={t('page.profile.basic_info')} style={{ height: '100%', borderRadius: 8 }}>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <div>
                 <Space style={{ marginBottom: 4 }}>
                   <UserOutlined style={{ color: '#8c8c8c' }} />
-                  <Text type="secondary">Họ và tên</Text>
+                  <Text type="secondary">{t('page.profile.full_name')}</Text>
                 </Space>
                 <div>
                   <Text strong>{userData.full_name}</Text>
@@ -160,7 +161,7 @@ export default function ProfilePage() {
               <div>
                 <Space style={{ marginBottom: 4 }}>
                   <MailOutlined style={{ color: '#8c8c8c' }} />
-                  <Text type="secondary">Email</Text>
+                  <Text type="secondary">{t('page.profile.email')}</Text>
                 </Space>
                 <div><Text strong>{userData.email}</Text></div>
               </div>
@@ -168,21 +169,21 @@ export default function ProfilePage() {
               <div>
                 <Space style={{ marginBottom: 4 }}>
                   <BankOutlined style={{ color: '#8c8c8c' }} />
-                  <Text type="secondary">Phòng ban</Text>
+                  <Text type="secondary">{t('page.profile.department')}</Text>
                 </Space>
-                <div><Text strong>{departmentName || 'Chưa phân bổ'}</Text></div>
+                <div><Text strong>{departmentName || t('page.profile.not_assigned')}</Text></div>
               </div>
             </Space>
           </Card>
         </Col>
 
         <Col xs={24} sm={12}>
-          <Card type="inner" title="Tài khoản & Quyền hạn" style={{ height: '100%', borderRadius: 8 }}>
+          <Card type="inner" title={t('page.profile.account_role')} style={{ height: '100%', borderRadius: 8 }}>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <div>
                 <Space style={{ marginBottom: 4 }}>
                   <SafetyCertificateOutlined style={{ color: '#8c8c8c' }} />
-                  <Text type="secondary">Vai trò</Text>
+                  <Text type="secondary">{t('page.profile.role')}</Text>
                 </Space>
                 <div>
                   <Tag color="blue" style={{ fontSize: '13px', padding: '2px 10px', fontWeight: 600 }}>
@@ -194,7 +195,7 @@ export default function ProfilePage() {
               <div>
                 <Space style={{ marginBottom: 4 }}>
                   <SafetyCertificateOutlined style={{ color: '#8c8c8c' }} />
-                  <Text type="secondary">Trạng thái tài khoản</Text>
+                  <Text type="secondary">{t('page.profile.status')}</Text>
                 </Space>
                 <div>
                   <Tag color={userData.status === 'ACTIVE' ? 'green' : 'red'} style={{ fontSize: '13px', padding: '2px 10px', fontWeight: 600 }}>
@@ -206,7 +207,7 @@ export default function ProfilePage() {
               <div>
                 <Space style={{ marginBottom: 4 }}>
                   <CalendarOutlined style={{ color: '#8c8c8c' }} />
-                  <Text type="secondary">Ngày tham gia</Text>
+                  <Text type="secondary">{t('page.profile.created_at')}</Text>
                 </Space>
                 <div><Text strong>{new Date(userData.created_at).toLocaleDateString('vi-VN')}</Text></div>
               </div>
@@ -215,7 +216,7 @@ export default function ProfilePage() {
                 <div>
                   <Space style={{ marginBottom: 4 }}>
                     <ClockCircleOutlined style={{ color: '#8c8c8c' }} />
-                    <Text type="secondary">Đăng nhập gần nhất</Text>
+                    <Text type="secondary">{t('page.profile.last_login')}</Text>
                   </Space>
                   <div><Text strong>{new Date(userData.last_login_at).toLocaleString('vi-VN')}</Text></div>
                 </div>
@@ -237,30 +238,30 @@ export default function ProfilePage() {
         requiredMark={false}
       >
         <Form.Item
-          label="Mật khẩu hiện tại"
+          label={t('page.profile.current_password')}
           name="currentPassword"
-          rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại.' }]}
+          rules={[{ required: true, message: t('page.profile.current_password_required') }]}
         >
-          <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="Nhập mật khẩu hiện tại" style={{ borderRadius: 6, height: 40 }} />
+          <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder={t('page.profile.current_password')} style={{ borderRadius: 6, height: 40 }} />
         </Form.Item>
 
         <Form.Item
-          label="Mật khẩu mới"
+          label={t('page.profile.new_password')}
           name="newPassword"
           rules={[
-            { required: true, message: 'Vui lòng nhập mật khẩu mới.' },
-            { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự.' }
+            { required: true, message: t('page.profile.new_password_required') },
+            { min: 6, message: t('page.profile.new_password_min') }
           ]}
         >
-          <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="Nhập mật khẩu mới" style={{ borderRadius: 6, height: 40 }} />
+          <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder={t('page.profile.new_password')} style={{ borderRadius: 6, height: 40 }} />
         </Form.Item>
 
         <Form.Item
-          label="Xác nhận mật khẩu mới"
+          label={t('page.profile.confirm_password')}
           name="confirmPassword"
-          rules={[{ required: true, message: 'Vui lòng xác nhận mật khẩu mới.' }]}
+          rules={[{ required: true, message: t('page.profile.confirm_password_required') }]}
         >
-          <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="Xác nhận mật khẩu mới" style={{ borderRadius: 6, height: 40 }} />
+          <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder={t('page.profile.confirm_password')} style={{ borderRadius: 6, height: 40 }} />
         </Form.Item>
 
         <Form.Item style={{ marginTop: 24, textAlign: 'center' }}>
@@ -270,7 +271,7 @@ export default function ProfilePage() {
             loading={passwordSubmitting}
             style={{ borderRadius: 6, height: 40, width: '100%', fontWeight: 600 }}
           >
-            Đổi mật khẩu
+            {t('page.profile.change_password_btn')}
           </Button>
         </Form.Item>
       </Form>
@@ -280,12 +281,12 @@ export default function ProfilePage() {
   const tabItems = [
     {
       key: 'info',
-      label: 'Thông tin cá nhân',
+      label: t('page.profile.tab_info'),
       children: profileTabContent,
     },
     {
       key: 'password',
-      label: 'Đổi mật khẩu',
+      label: t('page.profile.tab_password'),
       children: changePasswordTabContent,
     }
   ];
@@ -331,7 +332,7 @@ export default function ProfilePage() {
                   loading={submitting}
                   style={{ borderRadius: 6 }}
                 >
-                  Save Changes
+                  {t('page.profile.save_changes')}
                 </Button>
                 <Button
                   icon={<CloseOutlined />}
@@ -339,7 +340,7 @@ export default function ProfilePage() {
                   disabled={submitting}
                   style={{ borderRadius: 6 }}
                 >
-                  Cancel
+                  {t('page.profile.cancel')}
                 </Button>
               </Space>
             ) : (
@@ -349,7 +350,7 @@ export default function ProfilePage() {
                 onClick={() => setIsEditing(true)}
                 style={{ borderRadius: 6 }}
               >
-                Edit Profile
+                {t('page.profile.edit_profile')}
               </Button>
             )}
           </div>
