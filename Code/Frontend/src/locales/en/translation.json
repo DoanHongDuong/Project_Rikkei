@@ -11,7 +11,49 @@
   },
   "page": {
     "dashboard": {
-      "title": "Dashboard"
+      "title": "Dashboard",
+      "desc_pm": "Displaying statistics for the projects you manage.",
+      "desc_admin": "Displaying system-wide overall statistics.",
+      "total_projects": "Total Projects",
+      "active_projects": "Active",
+      "completed_projects": "Completed",
+      "at_risk_projects": "At Risk / Overdue",
+      "project_status": "Project Status",
+      "top_progress": "Task Progress by Project (Top 5)",
+      "managed_projects": "Managed Projects",
+      "system_projects": "Latest Projects",
+      "no_project_data": "No project data",
+      "no_task_data": "No task data",
+      "total_task": "Total Tasks",
+      "completed_task": "Completed Tasks",
+      "table": {
+        "name": "Project Name",
+        "status": "Status",
+        "deadline": "Deadline",
+        "warning": "Warning",
+        "progress": "Progress",
+        "no_deadline": "N/A",
+        "at_risk": "At Risk / Overdue",
+        "normal": "Normal"
+      },
+      "status": {
+        "ACTIVE": "Active",
+        "COMPLETED": "Completed",
+        "ON_HOLD": "On Hold"
+      },
+      "total_users": "Total Users",
+      "total_tasks_admin": "Total Tasks",
+      "task_status": "Task Status Distribution",
+      "tasks": "Tasks",
+      "desc_member": "Here is an overview of your progress and tasks.",
+      "joined_projects": "Joined Projects",
+      "assigned_tasks": "Assigned Tasks",
+      "overdue_tasks": "Overdue Tasks",
+      "task_priority": "Tasks by Priority",
+      "amount": "Amount",
+      "participating_projects": "Participating Projects",
+      "no_participating_projects": "You haven't participated in any project",
+      "task_progress_overview": "Task Progress (Overview)"
     },
     "projects": {
       "title": "Projects",

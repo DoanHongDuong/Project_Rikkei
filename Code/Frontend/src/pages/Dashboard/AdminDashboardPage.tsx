@@ -38,6 +38,7 @@ export default function AdminDashboardPage() {
 
   if (!user || loading) {
     return <div style={{ padding: 24 }}><Skeleton active paragraph={{ rows: 10 }} /></div>;
+
   }
 
   const { totalUsers, totalProjects, totalTasks, activeProjects, projectStatusDistribution, taskStatusDistribution } = metrics;
@@ -46,14 +47,14 @@ export default function AdminDashboardPage() {
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
       <div style={{ marginBottom: 24 }}>
         <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>{t('page.dashboard.title')}</Title>
-        <Text type="secondary">Here is an overview of the system today.</Text>
+        <Text type="secondary">{t('page.dashboard.desc_admin')}</Text>
       </div>
 
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Total Users</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.total_users')}</span>}
               value={totalUsers}
               prefix={<UserOutlined style={{ color: '#2563EB' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -63,7 +64,7 @@ export default function AdminDashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Total Projects</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.total_projects')}</span>}
               value={totalProjects}
               prefix={<ProjectOutlined style={{ color: '#8b5cf6' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -73,7 +74,7 @@ export default function AdminDashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Total Tasks</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.total_tasks_admin')}</span>}
               value={totalTasks}
               prefix={<CheckSquareOutlined style={{ color: '#F59E0B' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -83,7 +84,7 @@ export default function AdminDashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Active Projects</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.active_projects')}</span>}
               value={activeProjects}
               prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -95,7 +96,7 @@ export default function AdminDashboardPage() {
       <Row gutter={[24, 24] as const} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card
-            title="Project Status Distribution"
+            title={t('page.dashboard.project_status')}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
@@ -121,13 +122,13 @@ export default function AdminDashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>No project data available</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_project_data')}</div>
             )}
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card
-            title="Task Status Distribution"
+            title={t('page.dashboard.task_status')}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
@@ -142,7 +143,7 @@ export default function AdminDashboardPage() {
                   <YAxis />
                   <RechartsTooltip />
                   <Legend />
-                  <Bar dataKey="count" fill="#3B82F6" name="Tasks" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" fill="#3B82F6" name={t('page.dashboard.tasks')} radius={[4, 4, 0, 0]}>
                     {taskStatusDistribution.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -150,7 +151,7 @@ export default function AdminDashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>No task data available</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_task_data')}</div>
             )}
           </Card>
         </Col>

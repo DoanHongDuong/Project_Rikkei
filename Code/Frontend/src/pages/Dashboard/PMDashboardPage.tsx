@@ -47,13 +47,13 @@ export default function PMDashboardPage() {
 
   const tableColumns = [
     {
-      title: 'Tên dự án',
+      title: t('page.dashboard.table.name'),
       dataIndex: 'name',
       key: 'name',
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
-      title: 'Trạng thái',
+      title: t('page.dashboard.table.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => {
@@ -61,23 +61,23 @@ export default function PMDashboardPage() {
         if (status === 'ACTIVE') color = 'processing';
         else if (status === 'COMPLETED') color = 'success';
         else if (status === 'ON_HOLD') color = 'warning';
-        return <Tag color={color}>{status}</Tag>;
+        return <Tag color={color}>{t(`page.dashboard.status.${status}`)}</Tag>;
       },
     },
     {
-      title: 'Deadline',
+      title: t('page.dashboard.table.deadline'),
       dataIndex: 'end_date',
       key: 'end_date',
-      render: (text: string) => text ? new Date(text).toLocaleDateString() : 'Không có',
+      render: (text: string) => text ? new Date(text).toLocaleDateString() : t('page.dashboard.table.no_deadline'),
     },
     {
-      title: 'Cảnh báo',
+      title: t('page.dashboard.table.warning'),
       dataIndex: 'isAtRisk',
       key: 'isAtRisk',
-      render: (isAtRisk: boolean) => isAtRisk ? <Tag color="error">Rủi ro / Trễ hạn</Tag> : <Text type="secondary">Bình thường</Text>,
+      render: (isAtRisk: boolean) => isAtRisk ? <Tag color="error">{t('page.dashboard.table.at_risk')}</Tag> : <Text type="secondary">{t('page.dashboard.table.normal')}</Text>,
     },
     {
-      title: 'Tiến độ',
+      title: t('page.dashboard.table.progress'),
       dataIndex: 'progress',
       key: 'progress',
       render: (progress: number) => `${progress}%`,
@@ -88,14 +88,14 @@ export default function PMDashboardPage() {
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
       <div style={{ marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0, color: '#1E3A5F' }}>{t('page.dashboard.title')}</Title>
-        <Text type="secondary">Hiển thị số liệu thống kê các dự án mà bạn đang quản lý.</Text>
+        <Text type="secondary">{t('page.dashboard.desc_pm')}</Text>
       </div>
 
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Tổng số Dự án</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.total_projects')}</span>}
               value={totalProjects || 0}
               prefix={<ProjectOutlined style={{ color: '#8b5cf6' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -105,7 +105,7 @@ export default function PMDashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Đang chạy (Active)</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.active_projects')}</span>}
               value={activeProjects || 0}
               prefix={<DashboardOutlined style={{ color: '#3B82F6' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -115,7 +115,7 @@ export default function PMDashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Đã hoàn thành</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.completed_projects')}</span>}
               value={completedProjects || 0}
               prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -125,7 +125,7 @@ export default function PMDashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Rủi ro / Trễ hạn</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.at_risk_projects')}</span>}
               value={atRiskProjects || 0}
               prefix={<WarningOutlined style={{ color: '#EF4444' }} />}
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -137,7 +137,7 @@ export default function PMDashboardPage() {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={10}>
           <Card
-            title="Trạng thái Dự án"
+            title={t('page.dashboard.project_status')}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
@@ -163,13 +163,13 @@ export default function PMDashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>Không có dữ liệu dự án</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_project_data')}</div>
             )}
           </Card>
         </Col>
         <Col xs={24} lg={14}>
           <Card
-            title="Tiến độ Công việc theo Dự án (Top 5)"
+            title={t('page.dashboard.top_progress')}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
@@ -184,12 +184,12 @@ export default function PMDashboardPage() {
                   <YAxis />
                   <RechartsTooltip />
                   <Legend />
-                  <Bar dataKey="total" fill="#3B82F6" name="Tổng Task" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="completed" fill="#10B981" name="Task hoàn thành" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="total" fill="#3B82F6" name={t('page.dashboard.total_task')} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="completed" fill="#10B981" name={t('page.dashboard.completed_task')} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>Không có dữ liệu công việc</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_task_data')}</div>
             )}
           </Card>
         </Col>
@@ -198,7 +198,7 @@ export default function PMDashboardPage() {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card
-            title="Danh sách Dự án Quản lý"
+            title={t('page.dashboard.managed_projects')}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
           >

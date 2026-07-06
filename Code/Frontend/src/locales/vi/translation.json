@@ -11,7 +11,49 @@
   },
   "page": {
     "dashboard": {
-      "title": "Bảng điều khiển"
+      "title": "Bảng điều khiển",
+      "desc_pm": "Hiển thị số liệu thống kê các dự án mà bạn đang quản lý.",
+      "desc_admin": "Hiển thị số liệu thống kê tổng quan của toàn hệ thống.",
+      "total_projects": "Tổng số Dự án",
+      "active_projects": "Đang chạy (Active)",
+      "completed_projects": "Đã hoàn thành",
+      "at_risk_projects": "Rủi ro / Trễ hạn",
+      "project_status": "Trạng thái Dự án",
+      "top_progress": "Tiến độ Công việc theo Dự án (Top 5)",
+      "managed_projects": "Danh sách Dự án Quản lý",
+      "system_projects": "Danh sách Dự án Mới nhất",
+      "no_project_data": "Không có dữ liệu dự án",
+      "no_task_data": "Không có dữ liệu công việc",
+      "total_task": "Tổng Task",
+      "completed_task": "Task hoàn thành",
+      "table": {
+        "name": "Tên dự án",
+        "status": "Trạng thái",
+        "deadline": "Deadline",
+        "warning": "Cảnh báo",
+        "progress": "Tiến độ",
+        "no_deadline": "Không có",
+        "at_risk": "Rủi ro / Trễ hạn",
+        "normal": "Bình thường"
+      },
+      "status": {
+        "ACTIVE": "Đang chạy",
+        "COMPLETED": "Hoàn thành",
+        "ON_HOLD": "Tạm dừng"
+      },
+      "total_users": "Tổng số Người dùng",
+      "total_tasks_admin": "Tổng số Công việc",
+      "task_status": "Trạng thái Công việc",
+      "tasks": "Công việc",
+      "desc_member": "Đây là tổng quan tiến độ và công việc của bạn.",
+      "joined_projects": "Dự án tham gia",
+      "assigned_tasks": "Công việc được giao",
+      "overdue_tasks": "Đang trễ hạn",
+      "task_priority": "Công việc theo Mức độ Ưu tiên",
+      "amount": "Số lượng",
+      "participating_projects": "Dự án đang tham gia",
+      "no_participating_projects": "Bạn chưa tham gia dự án nào",
+      "task_progress_overview": "Tiến độ công việc (Tổng quan)"
     },
     "projects": {
       "title": "Danh sách dự án",

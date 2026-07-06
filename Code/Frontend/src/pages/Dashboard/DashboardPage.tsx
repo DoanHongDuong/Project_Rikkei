@@ -52,14 +52,14 @@ export default function DashboardPage() {
     <div style={{ backgroundColor: '#F9FAFB', padding: 24, borderRadius: 8 }}>
       <div style={{ marginBottom: 24 }}>
         <Title level={3} style={{ marginTop: 0, fontWeight: 700 }}>{t('page.dashboard.title')}, {user.full_name}!</Title>
-        <Text type="secondary">Đây là tổng quan tiến độ và công việc của bạn.</Text>
+        <Text type="secondary">{t('page.dashboard.desc_member')}</Text>
       </div>
 
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic 
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Dự án tham gia</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.joined_projects')}</span>}
               value={totalProjects || 0} 
               prefix={<ProjectOutlined style={{ color: '#8b5cf6' }} />} 
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -69,7 +69,7 @@ export default function DashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic 
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Công việc được giao</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.assigned_tasks')}</span>}
               value={totalTasks || 0} 
               prefix={<CheckSquareOutlined style={{ color: '#3B82F6' }} />} 
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -79,7 +79,7 @@ export default function DashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic 
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Đã hoàn thành</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.completed_projects')}</span>}
               value={completedTasks || 0} 
               prefix={<CheckCircleOutlined style={{ color: '#10B981' }} />} 
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -89,7 +89,7 @@ export default function DashboardPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <Statistic 
-              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>Đang trễ hạn</span>}
+              title={<span style={{ fontWeight: 500, color: '#6B7280' }}>{t('page.dashboard.overdue_tasks')}</span>}
               value={overdueTasks || 0} 
               prefix={<WarningOutlined style={{ color: '#EF4444' }} />} 
               valueStyle={{ fontWeight: 700, fontSize: '28px', color: '#111827' }}
@@ -101,7 +101,7 @@ export default function DashboardPage() {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card 
-            title="Trạng thái Công việc" 
+            title={t('page.dashboard.task_status')}
             bordered={false} 
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
@@ -127,13 +127,13 @@ export default function DashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>Không có dữ liệu công việc</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_task_data')}</div>
             )}
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card 
-            title="Công việc theo Mức độ Ưu tiên" 
+            title={t('page.dashboard.task_priority')}
             bordered={false} 
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                   <YAxis />
                   <RechartsTooltip />
                   <Legend />
-                  <Bar dataKey="count" fill="#F59E0B" name="Số lượng" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" fill="#F59E0B" name={t('page.dashboard.amount')} radius={[4, 4, 0, 0]}>
                     {taskPriorityDistribution.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
                     ))}
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>Không có dữ liệu công việc</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_task_data')}</div>
             )}
           </Card>
         </Col>
@@ -165,12 +165,12 @@ export default function DashboardPage() {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card 
-            title="Dự án đang tham gia" 
+            title={t('page.dashboard.participating_projects')}
             bordered={false} 
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
           >
             {!activeProjects || activeProjects.length === 0 ? (
-              <Empty description="Bạn chưa tham gia dự án nào" />
+              <Empty description={t('page.dashboard.no_participating_projects')} />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {activeProjects.map((project: any) => (
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div style={{ width: '30%', minWidth: '150px' }}>
-                      <Text style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px', display: 'block' }}>Tiến độ công việc (Tổng quan)</Text>
+                      <Text style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px', display: 'block' }}>{t('page.dashboard.task_progress_overview')}</Text>
                       <Progress percent={project.progress} size="small" strokeColor={project.progress === 100 ? '#10B981' : '#3B82F6'} />
                     </div>
                   </div>
