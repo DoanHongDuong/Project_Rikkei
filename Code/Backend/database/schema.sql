@@ -216,3 +216,4 @@ CREATE TABLE IF NOT EXISTS `task_history` (
     CONSTRAINT `fk_history_task` FOREIGN KEY (`task_id`) REFERENCES `tasks`(`id`) ON DELETE CASCADE,
     CONSTRAINT `fk_history_user` FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE projects ADD COLUMN is_deleted BOOLEAN DEFAULT 0;

@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "Công việc",
+    "projects": "Dự án",
+    "users": "Nhân sự",
+    "departments": "Phòng ban",
+    "settings": "Cài đặt",
+    "profile": "Hồ sơ",
+    "logout": "Đăng xuất"
+  },
+  "page": {
+    "dashboard": {
+      "title": "Bảng điều khiển"
+    },
+    "projects": {
+      "title": "Danh sách dự án",
+      "create": "Tạo dự án mới",
+      "no_project": "Bạn chưa tham gia dự án nào.",
+      "no_project_pm": "Chưa có dự án nào. Bấm 'Tạo dự án mới' để bắt đầu!"
+    },
+    "users": {
+      "title": "Quản lý nhân sự",
+      "create": "Thêm nhân sự"
+    },
+    "departments": {
+      "title": "Danh sách phòng ban",
+      "create": "Tạo phòng ban"
+    },
+    "settings": {
+      "title": "Cài đặt hệ thống",
+      "language": "Ngôn ngữ",
+      "english": "Tiếng Anh (English)",
+      "vietnamese": "Tiếng Việt"
+    }
+  }
+}

@@ -3,8 +3,6 @@ import { Typography, Input, Row, Col, Card, Space, Tag, Button, Tooltip, Modal, 
 import { 
   SearchOutlined, 
   TeamOutlined, 
-  CheckSquareOutlined, 
-  ContainerOutlined,
   PlusOutlined,
   EyeOutlined,
   EditOutlined,
@@ -12,6 +10,7 @@ import {
   ExclamationCircleOutlined,
   UserOutlined
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import DepartmentService from '../../services/departmentService';
 
 const { Title, Text } = Typography;
@@ -26,6 +25,7 @@ interface Department {
 }
 
 export default function DepartmentsPage() {
+  const { t } = useTranslation();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -149,13 +149,13 @@ export default function DepartmentsPage() {
   };
 
   return (
-    <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px', borderRadius: 8 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={2} style={{ margin: 0, fontWeight: 700 }}>
-          Danh sách phòng ban
+    <div style={{ backgroundColor: '#fff', minHeight: '100%', padding: '24px 32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <Title level={2} style={{ marginTop: 0, marginBottom: 0, fontWeight: 700 }}>
+          {t('page.departments.title')}
         </Title>
-        <Button type="primary" icon={<PlusOutlined />} size="large" onClick={handleCreate}>
-          Tạo phòng ban
+        <Button type="primary" icon={<PlusOutlined />} style={{ backgroundColor: '#2563EB', borderRadius: 4 }} onClick={handleCreate}>
+          {t('page.departments.create')}
         </Button>
       </div>
       

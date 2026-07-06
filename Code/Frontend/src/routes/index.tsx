@@ -25,6 +25,7 @@ import AuthService from '../services/authService';
 import NotificationsPage from '../pages/Notifications';
 
 import AdminDashboardPage from '../pages/Dashboard/AdminDashboardPage';
+import SettingsPage from '../pages/Settings/SettingsPage';
 
 const DashboardRoute = () => {
   const user = AuthService.getUser();
@@ -179,6 +180,15 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'PM']}>
               <EditUser />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/settings" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
+              <SettingsPage />
             </ProtectedRoute>
           } 
         />

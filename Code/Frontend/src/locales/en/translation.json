@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "My Tasks",
+    "projects": "Projects",
+    "users": "Users",
+    "departments": "Departments",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "page": {
+    "dashboard": {
+      "title": "Dashboard"
+    },
+    "projects": {
+      "title": "Projects",
+      "create": "Create Project",
+      "no_project": "You haven't joined any project.",
+      "no_project_pm": "No projects yet. Click 'Create Project' to start!"
+    },
+    "users": {
+      "title": "Users Management",
+      "create": "Add User"
+    },
+    "departments": {
+      "title": "Departments",
+      "create": "Create Department"
+    },
+    "settings": {
+      "title": "Settings",
+      "language": "Language",
+      "english": "English",
+      "vietnamese": "Vietnamese"
+    }
+  }
+}

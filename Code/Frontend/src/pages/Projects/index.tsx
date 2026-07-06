@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Card, Row, Col, Progress, Avatar, Typography, message, Skeleton, Popconfirm } from 'antd';
 import { UserOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import AuthService from '../../services/authService';
 import ProjectService from '../../services/projectService';
 
 const { Title, Text } = Typography;
 
 export default function ProjectsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,14 +43,14 @@ export default function ProjectsPage() {
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={3} style={{ margin: 0 }}>Projects</Title>
+        <Title level={3} style={{ margin: 0 }}>{t('page.projects.title')}</Title>
       </div>
 
       {loading ? (
         <Skeleton active paragraph={{ rows: 8 }} />
       ) : projects.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 40, color: '#6b7280' }}>
-          Bạn chưa tham gia dự án nào.
+          <Text>{t('page.projects.no_project')}</Text>
         </div>
       ) : (
         <Row gutter={[24, 24]}>
