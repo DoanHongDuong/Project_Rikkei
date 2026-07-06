@@ -1,5 +1,6 @@
 const userService = require('../services/userService');
 const dashboardService = require('../services/dashboardService');
+const reportService = require('../services/reportService');
 
 class AdminController {
     // [GET] Lấy dữ liệu dashboard admin
@@ -13,6 +14,22 @@ class AdminController {
                 metrics
             );
         } catch (error) {
+            return this.sendError(res, 500, error.message);
+        }
+    }
+
+    // [GET] Lấy dữ liệu báo cáo tổng hợp cho Admin
+    async getReportData(req, res) {
+        try {
+            const data = await reportService.getAdminReport();
+            return this.sendSuccess(
+                res,
+                200,
+                'Lấy dữ liệu report thành công!',
+                data
+            );
+        } catch (error) {
+            console.error('getReportData error:', error);
             return this.sendError(res, 500, error.message);
         }
     }

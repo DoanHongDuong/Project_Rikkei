@@ -26,6 +26,7 @@ import NotificationsPage from '../pages/Notifications';
 
 import AdminDashboardPage from '../pages/Dashboard/AdminDashboardPage';
 import SettingsPage from '../pages/Settings/SettingsPage';
+import ReportPage from '../pages/Reports/ReportPage';
 
 const DashboardRoute = () => {
   const user = AuthService.getUser();
@@ -193,12 +194,22 @@ export default function AppRoutes() {
           } 
         />
 
-        {/* Trang thông báo */}
+        {/* Tạng thông báo */}
         <Route
           path="/notifications"
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'PM', 'MEMBER']}>
               <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Trang báo cáo — chỉ Admin */}
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ReportPage />
             </ProtectedRoute>
           }
         />

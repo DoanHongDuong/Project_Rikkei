@@ -11,11 +11,11 @@ import {
   CheckSquareOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import AuthService from '../services/authService';
 import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
 import NotificationDropdown from '../components/Notification/NotificationDropdown';
 import { NotificationProvider } from '../context/NotificationContext';
-import { useTranslation } from 'react-i18next';
 
 const { Header, Sider, Content } = Layout;
 
@@ -24,9 +24,9 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const user = AuthService.getUser();
   const userRole = user?.role || 'MEMBER';
 
@@ -39,7 +39,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const userMenu = {
     items: [
       { key: 'profile', label: t('nav.profile') },
-      { key: 'settings', label: <a href="#settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }}>{t('nav.settings')}</a> },
+      { key: 'settings', label: t('nav.settings') },
       { type: 'divider' } as const,
       { key: 'logout', label: <a href="#logout" onClick={handleLogout}>{t('nav.logout')}</a> },
     ]
@@ -52,8 +52,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { key: '/departments', icon: <TeamOutlined />, label: t('nav.departments'), roles: ['ADMIN'] },
     { key: '/users', icon: <UserOutlined />, label: t('nav.users'), roles: ['ADMIN'] },
     { key: '/calendar', icon: <CalendarOutlined />, label: 'Calendar', roles: ['PM', 'MEMBER'] },
-    { key: '/reports', icon: <BarChartOutlined />, label: 'Reports', roles: ['ADMIN', 'PM'] },
-    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings'), roles: ['ADMIN', 'PM', 'MEMBER'] },
+    { key: '/reports', icon: <BarChartOutlined />, label: t('nav.reports'), roles: ['ADMIN', 'PM'] },
+    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings'), roles: ['ADMIN'] },
   ];
 
   const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));

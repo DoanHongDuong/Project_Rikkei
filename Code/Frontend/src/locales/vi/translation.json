@@ -5,6 +5,7 @@
     "projects": "Dự án",
     "users": "Nhân sự",
     "departments": "Phòng ban",
+    "reports": "Báo cáo",
     "settings": "Cài đặt",
     "profile": "Hồ sơ",
     "logout": "Đăng xuất"
@@ -26,6 +27,73 @@
     "departments": {
       "title": "Danh sách phòng ban",
       "create": "Tạo phòng ban"
+    },
+    "reports": {
+      "title": "Báo cáo",
+      "subtitle": "Phân tích tổng quan hệ thống",
+      "kpi": {
+        "total_tasks": "Tổng công việc",
+        "done_tasks": "Đã hoàn thành",
+        "overdue_tasks": "Quá hạn",
+        "completion_rate": "Tỉ lệ hoàn thành"
+      },
+      "chart": {
+        "task_by_status": "Số lượng công việc theo Trạng thái",
+        "task_by_priority": "Phân bổ công việc theo Độ ưu tiên",
+        "task_by_project": "Công việc theo Dự án (Top 10)",
+        "project_status_distribution": "Phân bổ Trạng thái Dự án",
+        "task_trend": "Xu hướng Công việc (7 ngày qua)",
+        "task_trend_created": "Tạo mới",
+        "task_trend_completed": "Hoàn thành",
+        "count": "Số lượng",
+        "no_data": "Chưa có dữ liệu"
+      },
+      "project_table": {
+        "title": "Báo cáo dự án",
+        "name": "Tên dự án",
+        "status": "Trạng thái",
+        "manager": "Quản lý",
+        "total_tasks": "Tổng task",
+        "done_tasks": "Đã xong",
+        "progress": "Tiến độ",
+        "deadline": "Hạn chót",
+        "no_deadline": "—",
+        "filter_all": "Tất cả",
+        "filter_active": "Đang hoạt động",
+        "filter_completed": "Hoàn thành",
+        "filter_on_hold": "Tạm dừng"
+      },
+      "user_table": {
+        "title": "Hiệu suất nhân sự",
+        "name": "Họ và tên",
+        "department": "Phòng ban",
+        "assigned": "Được giao",
+        "done": "Đã xong",
+        "overdue": "Quá hạn",
+        "rate": "Tỉ lệ hoàn thành",
+        "no_department": "—"
+      },
+      "department": {
+        "title": "Tóm tắt phòng ban",
+        "users": "{{count}} nhân sự",
+        "active_tasks": "{{count}} task đang làm",
+        "completion_rate": "Hoàn thành {{rate}}%"
+      },
+      "timeline": {
+        "title": "Hoạt động gần đây",
+        "no_data": "Không có hoạt động nào gần đây",
+        "action_create": "{{user}} đã tạo công việc mới '{{task}}' trong dự án '{{project}}'",
+        "action_update": "{{user}} đã cập nhật {{field}} thành '{{value}}' ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_update_info": "{{user}} đã cập nhật thông tin công việc '{{task}}' trong dự án '{{project}}'",
+        "action_update_status": "{{user}} đã cập nhật trạng thái thành {{value}} ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_delete": "{{user}} đã xóa công việc '{{task}}' trong dự án '{{project}}'",
+        "action_delete": "{{user}} đã xóa công việc '{{task}}' trong dự án '{{project}}'",
+        "action_comment_add": "{{user}} vừa bình luận ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_comment_delete": "{{user}} vừa xóa bình luận ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_unknown": "{{user}} đã thực hiện một thao tác trên công việc '{{task}}' trong dự án '{{project}}'"
+      },
+      "loading": "Đang tải dữ liệu báo cáo...",
+      "error": "Không thể tải dữ liệu báo cáo"
     },
     "settings": {
       "title": "Cài đặt hệ thống",
