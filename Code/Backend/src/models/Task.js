@@ -101,7 +101,12 @@ const Task = sequelize.define('Task', {
     tableName: 'tasks',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    defaultScope: {
+        where: {
+            is_deleted: false
+        }
+    }
 });
 
 Task.belongsTo(Project, { foreignKey: 'project_id', as: 'project' });

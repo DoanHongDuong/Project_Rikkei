@@ -79,7 +79,7 @@ export default function PMProjectsPage() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Title level={4}>{project.name}</Title>
-                    {user?.role === 'PM' && (
+                    {(user?.role === 'ADMIN' || (user?.role === 'PM' && project.manager?.department_id === user?.department_id)) && (
                       <Popconfirm
                         title="Xóa dự án"
                         description="Bạn có chắc chắn muốn xóa dự án này?"

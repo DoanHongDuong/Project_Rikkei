@@ -4,6 +4,43 @@ const socketService = require('./socketService');
 const Task = require('../models/Task');
 
 class NotificationService {
+
+    async broadcastAdminUpdate() {
+        try {
+            const User = require('../models/User');
+            const admins = await User.findAll({ where: { role: 'ADMIN', status: 'ACTIVE' } });
+            admins.forEach(admin => {
+                socketService.emitToUser(admin.id, 'admin_report_updated', {});
+            });
+        } catch (error) {
+            console.error('Lỗi khi broadcast admin update:', error);
+        }
+    }
+
+    async broadcastProjectUpdate(projectId) {
+        try {
+            const ProjectMember = require('../models/ProjectMember');
+            const Project = require('../models/Project');
+
+            const memberships = await ProjectMember.findAll({
+                where: { project_id: projectId, is_active: true }
+            });
+            const userIds = new Set(memberships.map(m => Number(m.user_id)));
+            
+            const project = await Project.findByPk(projectId);
+            if (project && project.manager_id) {
+                userIds.add(Number(project.manager_id));
+            }
+
+            userIds.forEach(userId => {
+                socketService.emitToUser(userId, 'project_board_updated', { projectId });
+            });
+            this.broadcastAdminUpdate().catch(console.error);
+        } catch (error) {
+            console.error('Lỗi khi broadcast project update:', error);
+        }
+    }
+
     async createNotification(userId, type, title, content, payload = null) {
         try {
             const notification = await Notification.create({

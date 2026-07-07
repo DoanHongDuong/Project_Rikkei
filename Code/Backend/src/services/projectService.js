@@ -269,6 +269,8 @@ class ProjectService {
             { projectId: project.id, projectName: project.name, createdBy: currentUser.full_name }
         );
 
+        notificationService.broadcastAdminUpdate().catch(console.error);
+
         return this.getProjectById(project.id, currentUser);
     }
 
@@ -283,6 +285,7 @@ class ProjectService {
                 if (Number(admin.id) === Number(actorId)) continue;
                 notificationService.createNotification(admin.id, type, title, content, payload).catch(console.error);
             }
+            notificationService.broadcastAdminUpdate().catch(console.error);
         } catch (error) {
             console.error('notifyAllAdmins error:', error);
         }
@@ -311,7 +314,7 @@ class ProjectService {
             throw this.createError('Không tìm thấy project.', 404);
         }
 
-        this.ensureCanManageProject(project, currentUser);
+        await this.ensureCanManageProject(project, currentUser);
 
         const safeUpdateData = this.pickSafeProjectData(updateData);
 
@@ -378,6 +381,8 @@ class ProjectService {
             );
         }
 
+        notificationService.broadcastAdminUpdate().catch(console.error);
+
         return this.getProjectById(project.id, currentUser);
     }
 
@@ -413,6 +418,9 @@ class ProjectService {
                 );
             }
         }
+        
+        notificationService.broadcastAdminUpdate().catch(console.error);
+        
         return result;
     }
 
@@ -422,7 +430,7 @@ class ProjectService {
             throw this.createError('Không tìm thấy project.', 404);
         }
 
-        this.ensureCanManageProject(project, currentUser);
+        await this.ensureCanManageProject(project, currentUser);
 
         await project.update({
             is_deleted: true,
@@ -448,6 +456,8 @@ class ProjectService {
                 { projectId: id, projectName: project.name, deletedBy: currentUser.full_name }
             );
         }
+
+        notificationService.broadcastAdminUpdate().catch(console.error);
 
         return project;
     }
@@ -489,7 +499,7 @@ class ProjectService {
             throw this.createError('Không tìm thấy project.', 404);
         }
 
-        this.ensureCanManageProject(project, currentUser);
+        await this.ensureCanManageProject(project, currentUser);
 
         const user = await User.findByPk(memberData.user_id);
 
@@ -547,7 +557,7 @@ class ProjectService {
             throw this.createError('Không tìm thấy project.', 404);
         }
 
-        this.ensureCanManageProject(project, currentUser);
+        await this.ensureCanManageProject(project, currentUser);
 
         if (Number(project.manager_id) === Number(userId)) {
             throw this.createError('Không thể xóa manager khỏi project. Hãy chuyển manager trước.', 400);
@@ -638,13 +648,27 @@ class ProjectService {
         return safeData;
     }
 
-    ensureCanManageProject(project, currentUser) {
+    async ensureCanManageProject(project, currentUser) {
         if (currentUser.role === 'ADMIN') {
             return;
         }
 
-        if (currentUser.role === 'PM' && Number(project.manager_id) === Number(currentUser.id)) {
-            return;
+        if (currentUser.role === 'PM') {
+            if (Number(project.manager_id) === Number(currentUser.id)) {
+                return;
+            }
+
+            const membership = await ProjectMember.findOne({
+                where: {
+                    project_id: project.id,
+                    user_id: currentUser.id,
+                    is_active: true
+                }
+            });
+
+            if (membership) {
+                return;
+            }
         }
 
         throw this.createError('Bạn không có quyền quản lý project này.', 403);

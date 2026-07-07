@@ -176,10 +176,16 @@ export default function ProjectDetail() {
     {
       title: 'Hành động',
       key: 'action',
-      render: (_: any, record: any) => record.is_active && (
+      render: (_: any, record: any) => {
+        const userId = record.user_id || record.user?.id;
+        const isMainPM = Number(userId) === Number(project?.manager_id);
+        const isSelf = Number(userId) === Number(user?.id);
+        const canDelete = !isMember && !isMainPM && !isSelf;
+
+        return record.is_active && (
         <Space size="middle">
-          <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${record.user_id || record.user?.id}`)} />
-          {!isMember && (
+          <Button type="text" icon={<InfoCircleOutlined />} title="Thông tin" onClick={() => navigate(`/projects/${id}/members/${userId}`)} />
+          {canDelete && (
             <Button
               type="text"
               danger
@@ -212,7 +218,8 @@ export default function ProjectDetail() {
             />
           )}
         </Space>
-      ),
+        );
+      },
     },
   ];
 

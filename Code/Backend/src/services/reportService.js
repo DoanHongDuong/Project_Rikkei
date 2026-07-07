@@ -265,12 +265,12 @@ class ReportService {
                     attributes: ['id', 'full_name', 'role']
                 },
                 {
-                    model: Task,
+                    model: Task.unscoped(),
                     as: 'task',
                     attributes: ['id', 'title'],
                     include: [
                         {
-                            model: Project,
+                            model: Project.unscoped(),
                             as: 'project',
                             attributes: ['id', 'name']
                         }
@@ -283,8 +283,8 @@ class ReportService {
         const assigneeIds = new Set();
         history.forEach(h => {
             if (h.action_type === 'ASSIGNEE_CHANGED') {
-                if (h.new_value) assigneeIds.add(Number(h.new_value));
-                if (h.old_value) assigneeIds.add(Number(h.old_value));
+                if (h.new_value && /^\d+$/.test(String(h.new_value))) assigneeIds.add(Number(h.new_value));
+                if (h.old_value && /^\d+$/.test(String(h.old_value))) assigneeIds.add(Number(h.old_value));
             }
         });
 
@@ -303,8 +303,8 @@ class ReportService {
             let oldValue = h.old_value;
 
             if (h.action_type === 'ASSIGNEE_CHANGED') {
-                if (h.new_value) newValue = userMap.get(Number(h.new_value)) || h.new_value;
-                if (h.old_value) oldValue = userMap.get(Number(h.old_value)) || h.old_value;
+                if (h.new_value && /^\d+$/.test(String(h.new_value))) newValue = userMap.get(Number(h.new_value)) || h.new_value;
+                if (h.old_value && /^\d+$/.test(String(h.old_value))) oldValue = userMap.get(Number(h.old_value)) || h.old_value;
             }
 
             return {

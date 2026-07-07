@@ -79,10 +79,20 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             });
         };
 
+        const handleBoardUpdated = (data: { projectId: number | string }) => {
+            window.dispatchEvent(new CustomEvent('project_board_updated_received', { detail: data }));
+        };
+
+        const handleAdminReportUpdated = () => {
+            window.dispatchEvent(new CustomEvent('admin_report_updated_received'));
+        };
+
         const timer = setTimeout(() => {
             socketService.on('new_notification', handleNew as (...args: unknown[]) => void);
             socketService.on('notification_updated', handleUpdated as (...args: unknown[]) => void);
             socketService.on('notification_deleted', handleDeleted as (...args: unknown[]) => void);
+            socketService.on('project_board_updated', handleBoardUpdated as (...args: unknown[]) => void);
+            socketService.on('admin_report_updated', handleAdminReportUpdated as (...args: unknown[]) => void);
         }, 500);
 
         return () => {
@@ -90,6 +100,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             socketService.off('new_notification', handleNew as (...args: unknown[]) => void);
             socketService.off('notification_updated', handleUpdated as (...args: unknown[]) => void);
             socketService.off('notification_deleted', handleDeleted as (...args: unknown[]) => void);
+            socketService.off('project_board_updated', handleBoardUpdated as (...args: unknown[]) => void);
+            socketService.off('admin_report_updated', handleAdminReportUpdated as (...args: unknown[]) => void);
         };
     }, []);
 

@@ -218,12 +218,22 @@ export default function KanbanBoard({ projectId, projectMembers, onTasksChanged,
       }
     };
 
+    const handleProjectBoardUpdated = (e: any) => {
+        const data = e.detail;
+        if (data && String(data.projectId) === String(projectId)) {
+            loadTasks();
+            onTasksChanged?.();
+        }
+    };
+
     window.addEventListener('new_notification_received', handleNotification);
     window.addEventListener('notification_updated_received', handleNotification);
+    window.addEventListener('project_board_updated_received', handleProjectBoardUpdated);
 
     return () => {
       window.removeEventListener('new_notification_received', handleNotification);
       window.removeEventListener('notification_updated_received', handleNotification);
+      window.removeEventListener('project_board_updated_received', handleProjectBoardUpdated);
     };
   }, [projectId]);
 

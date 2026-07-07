@@ -109,9 +109,9 @@ export default function ReportPage() {
   const [projectStatusFilter, setProjectStatusFilter] = useState<string>('ALL');
 
   useEffect(() => {
-    const fetchReport = async () => {
+    const fetchReport = async (isBackground = false) => {
       try {
-        setLoading(true);
+        if (!isBackground) setLoading(true);
         const res = await ReportService.getAdminReport();
         if (res.success && res.data) {
           setData(res.data);
@@ -120,10 +120,20 @@ export default function ReportPage() {
         const msg = err instanceof Error ? err.message : t('page.reports.error');
         message.error(msg);
       } finally {
-        setLoading(false);
+        if (!isBackground) setLoading(false);
       }
     };
+    
     fetchReport();
+
+    const handleAdminReportUpdated = () => {
+        fetchReport(true);
+    };
+
+    window.addEventListener('admin_report_updated_received', handleAdminReportUpdated as EventListener);
+    return () => {
+        window.removeEventListener('admin_report_updated_received', handleAdminReportUpdated as EventListener);
+    };
   }, [t]);
 
   if (loading) {

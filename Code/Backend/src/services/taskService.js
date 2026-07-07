@@ -129,6 +129,8 @@ class TaskService {
             );
         }
 
+        notificationService.broadcastProjectUpdate(task.project_id).catch(console.error);
+
         return this.findTaskWithIncludes(task.id);
     }
 
@@ -185,6 +187,8 @@ class TaskService {
                 }
             ).catch(console.error);
         }
+
+        notificationService.broadcastProjectUpdate(task.project_id).catch(console.error);
 
         return this.findTaskWithIncludes(task.id);
 
@@ -247,6 +251,8 @@ class TaskService {
             ).catch(console.error);
         }
 
+        notificationService.broadcastProjectUpdate(task.project_id).catch(console.error);
+
         return this.findTaskWithIncludes(task.id);
     }
 
@@ -256,24 +262,33 @@ class TaskService {
 
         await this.ensureCanManageTask(task, project, currentUser);
 
+        let newAssignee = null;
         if (assigneeId) {
+            newAssignee = await User.findByPk(assigneeId);
             await this.ensureCanAssignUser(project.id, assigneeId);
         }
 
         const oldAssigneeId = task.assignee_id;
+        let oldAssignee = null;
+        if (oldAssigneeId) {
+            oldAssignee = await User.findByPk(oldAssigneeId);
+        }
 
         await task.update({
             assignee_id: assigneeId || null,
             updated_by: currentUser.id
         });
 
+        const oldName = oldAssignee ? (oldAssignee.full_name || oldAssignee.email) : (oldAssigneeId ? String(oldAssigneeId) : null);
+        const newName = newAssignee ? (newAssignee.full_name || newAssignee.email) : (assigneeId ? String(assigneeId) : null);
+
         await this.createHistory(
             task.id,
             currentUser.id,
             'ASSIGNEE_CHANGED',
             'assignee_id',
-            oldAssigneeId ? String(oldAssigneeId) : null,
-            assigneeId ? String(assigneeId) : null,
+            oldName,
+            newName,
             'Gán người thực hiện task'
         );
 
@@ -311,6 +326,8 @@ class TaskService {
             ).catch(console.error);
         }
 
+        notificationService.broadcastProjectUpdate(task.project_id).catch(console.error);
+
         return this.findTaskWithIncludes(task.id);
     }
 
@@ -329,6 +346,7 @@ class TaskService {
 
         await this.createHistory(task.id, currentUser.id, 'TASK_DELETED', 'is_deleted', 'false', 'true', 'Soft delete task');
 
+        notificationService.broadcastProjectUpdate(task.project_id).catch(console.error);
 
         return this.findTaskWithIncludes(task.id);
     }
@@ -366,31 +384,25 @@ class TaskService {
             return where;
         }
 
-        if (currentUser.role === 'PM') {
-            const managedProjectIds = await this.getManagedProjectIds(currentUser.id);
-
-            if (where.project_id && !managedProjectIds.map(Number).includes(Number(where.project_id))) {
-                where.project_id = { [Op.in]: [] };
-                return where;
-            }
-
-            where.project_id = where.project_id || { [Op.in]: managedProjectIds };
-
-            return where;
-        }
-
         const memberships = await ProjectMember.findAll({
             where: { user_id: currentUser.id, is_active: true },
             attributes: ['project_id']
         });
         const memberProjectIds = memberships.map(m => m.project_id);
 
-        if (where.project_id && !memberProjectIds.map(Number).includes(Number(where.project_id))) {
+        let allowedProjectIds = memberProjectIds;
+
+        if (currentUser.role === 'PM') {
+            const managedProjectIds = await this.getManagedProjectIds(currentUser.id);
+            allowedProjectIds = [...new Set([...managedProjectIds, ...memberProjectIds])];
+        }
+
+        if (where.project_id && !allowedProjectIds.map(Number).includes(Number(where.project_id))) {
             where.project_id = { [Op.in]: [] };
             return where;
         }
 
-        where.project_id = where.project_id || { [Op.in]: memberProjectIds };
+        where.project_id = where.project_id || { [Op.in]: allowedProjectIds };
         return where;
     }
 
@@ -514,11 +526,25 @@ class TaskService {
             return;
         }
 
-        if (currentUser.role === 'PM' && Number(project.manager_id) === Number(currentUser.id)) {
-            return;
+        if (currentUser.role === 'PM') {
+            if (Number(project.manager_id) === Number(currentUser.id)) {
+                return;
+            }
+
+            const membership = await ProjectMember.findOne({
+                where: {
+                    project_id: project.id,
+                    user_id: currentUser.id,
+                    is_active: true
+                }
+            });
+
+            if (membership) {
+                return;
+            }
         }
 
-        if (currentUser.role === 'MEMBER' && Number(task.assignee_id) === Number(currentUser.id)) {
+        if (Number(task.assignee_id) === Number(currentUser.id)) {
             return;
         }
 
@@ -530,8 +556,22 @@ class TaskService {
             return;
         }
 
-        if (currentUser.role === 'PM' && Number(project.manager_id) === Number(currentUser.id)) {
-            return;
+        if (currentUser.role === 'PM') {
+            if (Number(project.manager_id) === Number(currentUser.id)) {
+                return;
+            }
+
+            const membership = await ProjectMember.findOne({
+                where: {
+                    project_id: project.id,
+                    user_id: currentUser.id,
+                    is_active: true
+                }
+            });
+
+            if (membership) {
+                return;
+            }
         }
 
         throw this.createError('Bạn không có quyền quản lý task trong project này.', 403);

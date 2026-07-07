@@ -45,7 +45,12 @@ const Comment = sequelize.define('Comment', {
     tableName: 'task_comments',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    defaultScope: {
+        where: {
+            is_deleted: false
+        }
+    }
 });
 
 Task.hasMany(Comment, { foreignKey: 'task_id', as: 'comments' });

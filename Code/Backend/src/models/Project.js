@@ -62,7 +62,12 @@ const Project = sequelize.define('Project', {
     tableName: 'projects',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    defaultScope: {
+        where: {
+            is_deleted: false
+        }
+    }
 });
 
 Project.belongsTo(User, { foreignKey: 'manager_id', as: 'manager' });
