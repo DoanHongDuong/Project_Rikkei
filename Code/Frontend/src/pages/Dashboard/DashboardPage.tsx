@@ -105,30 +105,48 @@ export default function DashboardPage() {
             bordered={false} 
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
-            {taskStatusDistribution && taskStatusDistribution.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={taskStatusDistribution}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="count"
-                    nameKey="status"
-                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                  >
-                    {taskStatusDistribution.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_task_data')}</div>
-            )}
+            {(() => {
+              let chartData = taskStatusDistribution || [];
+              if (chartData.length > 0) {
+                const todoIdx = chartData.findIndex((d: any) => d.status === 'TODO');
+                const doneIdx = chartData.findIndex((d: any) => d.status === 'DONE');
+                if (todoIdx !== -1 && doneIdx !== -1) {
+                  chartData = [...chartData];
+                  const temp = chartData[todoIdx];
+                  chartData[todoIdx] = chartData[doneIdx];
+                  chartData[doneIdx] = temp;
+                }
+              }
+
+              return chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="count"
+                      nameKey="status"
+                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                    >
+                      {chartData.map((entry: any, index: number) => {
+                        let color = COLORS[index % COLORS.length];
+                        if (entry.status === 'TODO') color = '#8B5CF6';
+                        else if (entry.status === 'IN_PROGRESS') color = '#3B82F6';
+                        else if (entry.status === 'DONE') color = '#10B981';
+                        return <Cell key={`cell-${index}`} fill={color} />;
+                      })}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_task_data')}</div>
+              );
+            })()}
           </Card>
         </Col>
         <Col xs={24} lg={12}>

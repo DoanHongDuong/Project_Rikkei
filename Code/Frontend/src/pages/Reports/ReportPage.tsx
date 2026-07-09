@@ -425,12 +425,12 @@ export default function ReportPage() {
           >
             {taskPriorityChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
+                <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
                   <Pie
                     data={taskPriorityChartData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
+                    outerRadius={80}
                     dataKey="count"
                     nameKey="priority"
                     label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
@@ -492,13 +492,13 @@ export default function ReportPage() {
           >
             {projectStatusChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
+                <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
                   <Pie
                     data={projectStatusChartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={70}
-                    outerRadius={100}
+                    innerRadius={55}
+                    outerRadius={80}
                     dataKey="count"
                     nameKey="status"
                     label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}

@@ -48,32 +48,40 @@ export default function PMLayout({ children }: PMLayoutProps) {
       <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
         <header className="pm-layout-header">
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '24px', color: '#2563EB', marginRight: '60px', letterSpacing: '2px' }}>TMS</div>
-            
+            <div style={{ 
+              fontWeight: 'bold', 
+              fontSize: '32px', 
+              color: '#2563EB',
+              marginRight: '60px', 
+              letterSpacing: '2px',
+              fontFamily: '"Dancing Script", "Brush Script MT", cursive',
+              padding: '0 10px'
+            }}>TMS</div>
+
             <nav className="pm-nav">
-              <NavLink 
-                to="/dashboard" 
+              <NavLink
+                to="/dashboard"
                 className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
               >
                 {t('nav.dashboard')}
               </NavLink>
               {(user?.role === 'MEMBER' || user?.role === 'PM') && (
-                <NavLink 
-                  to="/my-tasks" 
+                <NavLink
+                  to="/my-tasks"
                   className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
                 >
                   {t('nav.tasks')}
                 </NavLink>
               )}
-              <NavLink 
-                to="/projects" 
+              <NavLink
+                to="/projects"
                 className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
               >
                 {t('nav.projects')}
               </NavLink>
               {user?.role === 'PM' && (
-                <NavLink 
-                  to="/users" 
+                <NavLink
+                  to="/users"
                   className={({ isActive }) => `pm-nav-link ${isActive ? 'active' : ''}`}
                 >
                   {t('nav.users')}
@@ -84,7 +92,7 @@ export default function PMLayout({ children }: PMLayoutProps) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <NotificationDropdown />
-            
+
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
               <Space style={{ cursor: 'pointer' }}>
                 <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />

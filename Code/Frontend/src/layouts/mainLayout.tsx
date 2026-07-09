@@ -98,7 +98,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         >
           {/* Khối bọc Logo hệ thống */}
           <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #162D4A' }}>
-            <h2 style={{ margin: 0, color: '#fff', fontWeight: 700 }}>TMS</h2>
+            <h2 style={{ 
+              margin: 0, 
+              color: '#fff', 
+              fontWeight: 700,
+              fontSize: '32px',
+              fontFamily: '"Dancing Script", "Brush Script MT", cursive',
+              letterSpacing: '2px',
+            }}>TMS</h2>
           </div>
 
           {/* Cây Menu Ant Design định tuyến (Đã dọn dẹp phần HTML lỗi đè ở đây) */}

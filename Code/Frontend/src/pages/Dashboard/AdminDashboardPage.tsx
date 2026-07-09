@@ -100,30 +100,48 @@ export default function AdminDashboardPage() {
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.05)', minHeight: 400 }}
           >
-            {projectStatusDistribution && projectStatusDistribution.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={projectStatusDistribution}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="count"
-                    nameKey="status"
-                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                  >
-                    {projectStatusDistribution.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_project_data')}</div>
-            )}
+            {(() => {
+              let chartData = projectStatusDistribution || [];
+              if (chartData.length > 0) {
+                const activeIdx = chartData.findIndex((d: any) => d.status === 'ACTIVE');
+                const completedIdx = chartData.findIndex((d: any) => d.status === 'COMPLETED');
+                if (activeIdx !== -1 && completedIdx !== -1) {
+                  chartData = [...chartData];
+                  const temp = chartData[activeIdx];
+                  chartData[activeIdx] = chartData[completedIdx];
+                  chartData[completedIdx] = temp;
+                }
+              }
+
+              return chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="count"
+                      nameKey="status"
+                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                    >
+                      {chartData.map((entry: any, index: number) => {
+                        let color = COLORS[index % COLORS.length];
+                        if (entry.status === 'ACTIVE') color = '#3B82F6';
+                        else if (entry.status === 'COMPLETED') color = '#10B981';
+                        else if (entry.status === 'ON_HOLD') color = '#F59E0B';
+                        return <Cell key={`cell-${index}`} fill={color} />;
+                      })}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#9ca3af' }}>{t('page.dashboard.no_project_data')}</div>
+              );
+            })()}
           </Card>
         </Col>
         <Col xs={24} lg={12}>
