@@ -1,0 +1,227 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "Công việc",
+    "projects": "Dự án",
+    "users": "Nhân sự",
+    "departments": "Phòng ban",
+    "reports": "Báo cáo",
+    "settings": "Cài đặt",
+    "profile": "Hồ sơ",
+    "logout": "Đăng xuất"
+  },
+  "page": {
+    "dashboard": {
+      "title": "Bảng điều khiển",
+      "desc_pm": "Hiển thị số liệu thống kê các dự án mà bạn đang quản lý.",
+      "desc_admin": "Hiển thị số liệu thống kê tổng quan của toàn hệ thống.",
+      "total_projects": "Tổng số Dự án",
+      "active_projects": "Đang chạy (Active)",
+      "completed_projects": "Đã hoàn thành",
+      "at_risk_projects": "Rủi ro / Trễ hạn",
+      "project_status": "Trạng thái Dự án",
+      "top_progress": "Tiến độ Công việc theo Dự án (Top 5)",
+      "managed_projects": "Danh sách Dự án Quản lý",
+      "system_projects": "Danh sách Dự án Mới nhất",
+      "no_project_data": "Không có dữ liệu dự án",
+      "no_task_data": "Không có dữ liệu công việc",
+      "total_task": "Tổng Task",
+      "completed_task": "Task hoàn thành",
+      "table": {
+        "name": "Tên dự án",
+        "status": "Trạng thái",
+        "deadline": "Deadline",
+        "warning": "Cảnh báo",
+        "progress": "Tiến độ",
+        "no_deadline": "Không có",
+        "at_risk": "Rủi ro / Trễ hạn",
+        "normal": "Bình thường"
+      },
+      "status": {
+        "ACTIVE": "Đang chạy",
+        "COMPLETED": "Hoàn thành",
+        "ON_HOLD": "Tạm dừng"
+      },
+      "total_users": "Tổng số Người dùng",
+      "total_tasks_admin": "Tổng số Công việc",
+      "task_status": "Trạng thái Công việc",
+      "tasks": "Công việc",
+      "desc_member": "Đây là tổng quan tiến độ và công việc của bạn.",
+      "joined_projects": "Dự án tham gia",
+      "assigned_tasks": "Công việc được giao",
+      "overdue_tasks": "Đang trễ hạn",
+      "task_priority": "Công việc theo Mức độ Ưu tiên",
+      "amount": "Số lượng",
+      "participating_projects": "Dự án đang tham gia",
+      "no_participating_projects": "Bạn chưa tham gia dự án nào",
+      "task_progress_overview": "Tiến độ công việc (Tổng quan)"
+    },
+    "projects": {
+      "title": "Danh sách dự án",
+      "create": "Tạo dự án mới",
+      "no_project": "Bạn chưa tham gia dự án nào.",
+      "no_project_pm": "Chưa có dự án nào. Bấm 'Tạo dự án mới' để bắt đầu!"
+    },
+    "users": {
+      "title": "Quản lý nhân sự",
+      "create": "Thêm nhân sự"
+    },
+    "departments": {
+      "title": "Danh sách phòng ban",
+      "create": "Tạo phòng ban"
+    },
+    "reports": {
+      "title": "Báo cáo",
+      "subtitle": "Phân tích tổng quan hệ thống",
+      "kpi": {
+        "total_tasks": "Tổng công việc",
+        "done_tasks": "Đã hoàn thành",
+        "overdue_tasks": "Quá hạn",
+        "completion_rate": "Tỉ lệ hoàn thành"
+      },
+      "chart": {
+        "task_by_status": "Số lượng công việc theo Trạng thái",
+        "task_by_priority": "Phân bổ công việc theo Độ ưu tiên",
+        "task_by_project": "Công việc theo Dự án (Top 10)",
+        "project_status_distribution": "Phân bổ Trạng thái Dự án",
+        "task_trend": "Xu hướng Công việc (7 ngày qua)",
+        "task_trend_created": "Tạo mới",
+        "task_trend_completed": "Hoàn thành",
+        "count": "Số lượng",
+        "no_data": "Chưa có dữ liệu"
+      },
+      "project_table": {
+        "title": "Báo cáo dự án",
+        "name": "Tên dự án",
+        "status": "Trạng thái",
+        "manager": "Quản lý",
+        "total_tasks": "Tổng task",
+        "done_tasks": "Đã xong",
+        "progress": "Tiến độ",
+        "deadline": "Hạn chót",
+        "no_deadline": "—",
+        "filter_all": "Tất cả",
+        "filter_active": "Đang hoạt động",
+        "filter_completed": "Hoàn thành",
+        "filter_on_hold": "Tạm dừng"
+      },
+      "user_table": {
+        "title": "Hiệu suất nhân sự",
+        "name": "Họ và tên",
+        "department": "Phòng ban",
+        "assigned": "Được giao",
+        "done": "Đã xong",
+        "overdue": "Quá hạn",
+        "rate": "Tỉ lệ hoàn thành",
+        "no_department": "—"
+      },
+      "department": {
+        "title": "Tóm tắt phòng ban",
+        "users": "{{count}} nhân sự",
+        "active_tasks": "{{count}} task đang làm",
+        "completion_rate": "Hoàn thành {{rate}}%"
+      },
+      "timeline": {
+        "title": "Hoạt động gần đây",
+        "no_data": "Không có hoạt động nào gần đây",
+        "action_create": "{{user}} đã tạo công việc mới '{{task}}' trong dự án '{{project}}'",
+        "action_update": "{{user}} đã cập nhật {{field}} thành '{{value}}' ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_update_info": "{{user}} đã cập nhật thông tin công việc '{{task}}' trong dự án '{{project}}'",
+        "action_update_status": "{{user}} đã cập nhật trạng thái thành {{value}} ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_delete": "{{user}} đã xóa công việc '{{task}}' trong dự án '{{project}}'",
+        "action_delete": "{{user}} đã xóa công việc '{{task}}' trong dự án '{{project}}'",
+        "action_comment_add": "{{user}} vừa bình luận ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_comment_delete": "{{user}} vừa xóa bình luận ở công việc '{{task}}' trong dự án '{{project}}'",
+        "action_unknown": "{{user}} đã thực hiện một thao tác trên công việc '{{task}}' trong dự án '{{project}}'"
+      },
+      "loading": "Đang tải dữ liệu báo cáo...",
+      "error": "Không thể tải dữ liệu báo cáo"
+    },
+    "settings": {
+      "title": "Cài đặt hệ thống",
+      "language": "Ngôn ngữ",
+      "english": "Tiếng Anh (English)",
+      "vietnamese": "Tiếng Việt"
+    },
+    "profile": {
+      "title": "Thông tin cá nhân",
+      "tab_info": "Thông tin cá nhân",
+      "tab_password": "Đổi mật khẩu",
+      "basic_info": "Thông tin cơ bản",
+      "account_role": "Tài khoản & Quyền hạn",
+      "full_name": "Họ và tên",
+      "email": "Email",
+      "department": "Phòng ban",
+      "role": "Vai trò",
+      "status": "Trạng thái tài khoản",
+      "created_at": "Ngày tham gia",
+      "last_login": "Đăng nhập gần nhất",
+      "not_assigned": "Chưa phân bổ",
+      "edit_profile": "Chỉnh sửa thông tin",
+      "save_changes": "Lưu thay đổi",
+      "cancel": "Hủy",
+      "full_name_required": "Họ và tên không được bỏ trống.",
+      "update_success": "Cập nhật thông tin cá nhân thành công!",
+      "update_error": "Lỗi khi cập nhật thông tin",
+      "load_error": "Lỗi khi tải thông tin cá nhân",
+      "not_found": "Không tìm thấy thông tin cá nhân.",
+      "current_password": "Mật khẩu hiện tại",
+      "new_password": "Mật khẩu mới",
+      "confirm_password": "Xác nhận mật khẩu mới",
+      "current_password_required": "Vui lòng nhập mật khẩu hiện tại.",
+      "new_password_required": "Vui lòng nhập mật khẩu mới.",
+      "new_password_min": "Mật khẩu phải có ít nhất 6 ký tự.",
+      "confirm_password_required": "Vui lòng xác nhận mật khẩu mới.",
+      "password_mismatch": "Mật khẩu mới và xác nhận mật khẩu không khớp.",
+      "change_password_success": "Đổi mật khẩu thành công. Hệ thống sẽ tự động đăng xuất sau 2 giây...",
+      "change_password_error": "Mật khẩu hiện tại không chính xác.",
+      "change_password_btn": "Đổi mật khẩu"
+    }
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "mark_all_read": "Đọc hết",
+    "mark_read": "Đánh dấu đã đọc",
+    "delete": "Xóa thông báo",
+    "view_all": "Xem tất cả",
+    "empty": "Không có thông báo",
+    "loading": "Đang tải...",
+    "all": "Tất cả",
+    "unread": "Chưa đọc",
+    "today": "HÔM NAY",
+    "yesterday": "HÔM QUA",
+    "time_ago": {
+      "just_now": "Vừa xong",
+      "minutes": "{{count}} phút trước",
+      "hours": "{{count}} giờ trước",
+      "days": "{{count}} ngày trước"
+    },
+    "types": {
+      "PROJECT_DELETED": "Dự án đã bị xóa",
+      "PROJECT_CREATED": "Dự án mới",
+      "PROJECT_UPDATED": "Dự án được cập nhật",
+      "PROJECT_ARCHIVED": "Dự án đã bị đóng",
+      "TASK_ASSIGNED": "Công việc mới"
+    },
+    "labels": {
+      "TASK_ASSIGNED": "Giao việc",
+      "TASK_COMMENT": "Bình luận",
+      "COMMENT_REPLY": "Phản hồi",
+      "TASK_UPDATED": "Cập nhật",
+      "PROJECT_UPDATED": "Dự án",
+      "PROJECT_ARCHIVED": "Đóng dự án",
+      "MEMBER_ADDED": "Thành viên",
+      "MEMBER_REMOVED": "Rời dự án",
+      "ROADMAP_ITEM_UPDATED": "Roadmap",
+      "DEADLINE_EXTENSION_REQUESTED": "Xin gia hạn",
+      "DEADLINE_EXTENSION_APPROVED": "Duyệt gia hạn",
+      "DEADLINE_EXTENSION_REJECTED": "Từ chối gia hạn"
+    },
+    "messages": {
+      "PROJECT_DELETED": "{{actor}} đã xóa dự án: {{project}}",
+      "PROJECT_CREATED": "{{actor}} đã tạo dự án mới: {{project}}",
+      "PROJECT_UPDATED": "{{actor}} đã cập nhật dự án: {{project}}",
+      "PROJECT_ARCHIVED": "{{actor}} đã đóng dự án: {{project}}"
+    }
+  }
+}

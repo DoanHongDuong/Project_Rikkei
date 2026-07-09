@@ -1,0 +1,161 @@
+import { useState, useEffect, type ReactNode } from 'react';
+import { Layout, Menu, Avatar, Dropdown, Breadcrumb, Space } from 'antd';
+import {
+  AppstoreOutlined,
+  ProjectOutlined,
+  TeamOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  BarChartOutlined,
+  SettingOutlined,
+  CheckSquareOutlined
+} from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import AuthService from '../services/authService';
+import TaskNotificationPopup from '../components/Notification/TaskNotificationPopup';
+import NotificationDropdown from '../components/Notification/NotificationDropdown';
+import { NotificationProvider } from '../context/NotificationContext';
+
+const { Header, Sider, Content } = Layout;
+
+interface MainLayoutProps {
+  children: ReactNode;
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [user, setUser] = useState(AuthService.getUser());
+  const userRole = user?.role || 'MEMBER';
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      setUser(AuthService.getUser());
+    };
+    window.addEventListener('user-profile-updated', handleUserUpdate);
+    return () => {
+      window.removeEventListener('user-profile-updated', handleUserUpdate);
+    };
+  }, []);
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    AuthService.logout();
+    navigate('/login', { replace: true });
+  };
+
+  const userMenu = {
+    items: [
+      { key: 'profile', label: <a href="#profile" onClick={(e) => { e.preventDefault(); navigate('/profile'); }}>{t('nav.profile')}</a> },
+      { key: 'settings', label: <a href="#settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }}>{t('nav.settings')}</a> },
+      { type: 'divider' } as const,
+      { key: 'logout', label: <a href="#logout" onClick={handleLogout}>{t('nav.logout')}</a> },
+    ]
+  };
+
+  const allMenuItems = [
+    { key: '/dashboard', icon: <AppstoreOutlined />, label: t('nav.dashboard'), roles: ['ADMIN', 'PM', 'MEMBER'] },
+    { key: '/my-tasks', icon: <CheckSquareOutlined />, label: t('nav.tasks'), roles: ['PM', 'MEMBER'] },
+    { key: '/projects', icon: <ProjectOutlined />, label: t('nav.projects'), roles: ['ADMIN', 'PM', 'MEMBER'] },
+    { key: '/departments', icon: <TeamOutlined />, label: t('nav.departments'), roles: ['ADMIN'] },
+    { key: '/users', icon: <UserOutlined />, label: t('nav.users'), roles: ['ADMIN'] },
+    { key: '/calendar', icon: <CalendarOutlined />, label: 'Calendar', roles: ['PM', 'MEMBER'] },
+    { key: '/reports', icon: <BarChartOutlined />, label: t('nav.reports'), roles: ['ADMIN', 'PM'] },
+    { key: '/settings', icon: <SettingOutlined />, label: t('nav.settings'), roles: ['ADMIN', 'PM', 'MEMBER'] },
+  ];
+
+  const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    navigate(key);
+  };
+
+  // Logic sinh Breadcrumb dựa trên URL hiện tại
+  const pathSnippets = location.pathname.split('/').filter(i => i);
+  const breadcrumbItems = pathSnippets.map((_, index) => {
+    return {
+      title: <span style={{ textTransform: 'capitalize' }}>{pathSnippets[index]}</span>,
+    };
+  });
+
+  return (
+    <NotificationProvider>
+      <Layout style={{ minHeight: '100vh' }} hasSider>
+        {/* --- Thanh Sidebar Menu Trái --- */}
+        <Sider
+          width={240}
+          style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            backgroundColor: '#1E3A5F'
+          }}
+        >
+          {/* Khối bọc Logo hệ thống */}
+          <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #162D4A' }}>
+            <h2 style={{ margin: 0, color: '#fff', fontWeight: 700 }}>TMS</h2>
+          </div>
+
+          {/* Cây Menu Ant Design định tuyến (Đã dọn dẹp phần HTML lỗi đè ở đây) */}
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={menuItems}
+            onClick={handleMenuClick}
+            style={{ backgroundColor: '#1E3A5F', borderRight: 0, paddingTop: 16 }}
+          />
+        </Sider>
+
+        {/* --- Khu vực hiển thị Nội dung Phải --- */}
+        <Layout style={{ marginLeft: 240 }}>
+          {/* Header Topbar */}
+          <Header
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 1,
+              width: '100%',
+              backgroundColor: '#FFFFFF',
+              padding: '0 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: '1px solid #f0f0f0'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <Breadcrumb items={breadcrumbItems} style={{ marginRight: 32 }} />
+            </div>
+
+            <Space size="large" align="center">
+              {/* Notification dropdown */}
+              <NotificationDropdown />
+
+              {/* Dropdown người dùng */}
+              <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
+                <Space style={{ cursor: 'pointer' }}>
+                  <Avatar style={{ backgroundColor: '#2563EB' }} icon={<UserOutlined />} />
+                  <span style={{ fontWeight: 500 }}>{user?.full_name || 'User'} ({userRole})</span>
+                </Space>
+              </Dropdown>
+            </Space>
+          </Header>
+
+          {/* Vùng Render View Router Con */}
+          <Content style={{ margin: '24px 24px', overflow: 'initial' }}>
+            {children}
+          </Content>
+        </Layout>
+
+        {/* Popup thông báo khi có task mới */}
+        <TaskNotificationPopup />
+      </Layout>
+    </NotificationProvider>
+  );
+}

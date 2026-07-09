@@ -1,0 +1,226 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "My Tasks",
+    "projects": "Projects",
+    "users": "Users",
+    "departments": "Departments",
+    "reports": "Reports",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "page": {
+    "dashboard": {
+      "title": "Dashboard",
+      "desc_pm": "Displaying statistics for the projects you manage.",
+      "desc_admin": "Displaying system-wide overall statistics.",
+      "total_projects": "Total Projects",
+      "active_projects": "Active",
+      "completed_projects": "Completed",
+      "at_risk_projects": "At Risk / Overdue",
+      "project_status": "Project Status",
+      "top_progress": "Task Progress by Project (Top 5)",
+      "managed_projects": "Managed Projects",
+      "system_projects": "Latest Projects",
+      "no_project_data": "No project data",
+      "no_task_data": "No task data",
+      "total_task": "Total Tasks",
+      "completed_task": "Completed Tasks",
+      "table": {
+        "name": "Project Name",
+        "status": "Status",
+        "deadline": "Deadline",
+        "warning": "Warning",
+        "progress": "Progress",
+        "no_deadline": "N/A",
+        "at_risk": "At Risk / Overdue",
+        "normal": "Normal"
+      },
+      "status": {
+        "ACTIVE": "Active",
+        "COMPLETED": "Completed",
+        "ON_HOLD": "On Hold"
+      },
+      "total_users": "Total Users",
+      "total_tasks_admin": "Total Tasks",
+      "task_status": "Task Status Distribution",
+      "tasks": "Tasks",
+      "desc_member": "Here is an overview of your progress and tasks.",
+      "joined_projects": "Joined Projects",
+      "assigned_tasks": "Assigned Tasks",
+      "overdue_tasks": "Overdue Tasks",
+      "task_priority": "Tasks by Priority",
+      "amount": "Amount",
+      "participating_projects": "Participating Projects",
+      "no_participating_projects": "You haven't participated in any project",
+      "task_progress_overview": "Task Progress (Overview)"
+    },
+    "projects": {
+      "title": "Projects",
+      "create": "Create Project",
+      "no_project": "You haven't joined any project.",
+      "no_project_pm": "No projects yet. Click 'Create Project' to start!"
+    },
+    "users": {
+      "title": "Users Management",
+      "create": "Add User"
+    },
+    "departments": {
+      "title": "Departments",
+      "create": "Create Department"
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "System-wide analytics and performance overview",
+      "kpi": {
+        "total_tasks": "Total Tasks",
+        "done_tasks": "Completed Tasks",
+        "overdue_tasks": "Overdue Tasks",
+        "completion_rate": "Completion Rate"
+      },
+      "chart": {
+        "task_by_status": "Tasks by Status",
+        "task_by_priority": "Tasks by Priority",
+        "task_by_project": "Tasks by Project (Top 10)",
+        "project_status_distribution": "Project Status Distribution",
+        "task_trend": "Task Trend (Last 7 Days)",
+        "task_trend_created": "Created",
+        "task_trend_completed": "Completed",
+        "count": "Count",
+        "no_data": "No data available"
+      },
+      "project_table": {
+        "title": "Project Report",
+        "name": "Project Name",
+        "status": "Status",
+        "manager": "Manager",
+        "total_tasks": "Total Tasks",
+        "done_tasks": "Done",
+        "progress": "Progress",
+        "deadline": "Deadline",
+        "no_deadline": "—",
+        "filter_all": "All Status",
+        "filter_active": "Active",
+        "filter_completed": "Completed",
+        "filter_on_hold": "On Hold"
+      },
+      "user_table": {
+        "title": "User Performance",
+        "name": "Full Name",
+        "department": "Department",
+        "assigned": "Assigned",
+        "done": "Done",
+        "overdue": "Overdue",
+        "rate": "Completion Rate",
+        "no_department": "—"
+      },
+      "department": {
+        "title": "Department Summary",
+        "users": "{{count}} users",
+        "active_tasks": "{{count}} active tasks",
+        "completion_rate": "{{rate}}% completed"
+      },
+      "timeline": {
+        "title": "Recent Activities",
+        "no_data": "No recent activities",
+        "action_create": "{{user}} created a new task '{{task}}' in project '{{project}}'",
+        "action_update": "{{user}} updated {{field}} to '{{value}}' on task '{{task}}' in project '{{project}}'",
+        "action_update_info": "{{user}} updated task information '{{task}}' in project '{{project}}'",
+        "action_update_status": "{{user}} updated status to {{value}} on task '{{task}}' in project '{{project}}'",
+        "action_delete": "{{user}} deleted task '{{task}}' in project '{{project}}'",
+        "action_comment_add": "{{user}} commented on task '{{task}}' in project '{{project}}'",
+        "action_comment_delete": "{{user}} deleted a comment on task '{{task}}' in project '{{project}}'",
+        "action_unknown": "{{user}} performed an action on task '{{task}}' in project '{{project}}'"
+      },
+      "loading": "Loading report data...",
+      "error": "Failed to load report data"
+    },
+    "settings": {
+      "title": "Settings",
+      "language": "Language",
+      "english": "English",
+      "vietnamese": "Vietnamese"
+    },
+    "profile": {
+      "title": "User Profile",
+      "tab_info": "Personal Info",
+      "tab_password": "Change Password",
+      "basic_info": "Basic Information",
+      "account_role": "Account & Role",
+      "full_name": "Full Name",
+      "email": "Email",
+      "department": "Department",
+      "role": "Role",
+      "status": "Account Status",
+      "created_at": "Joined Date",
+      "last_login": "Last Login",
+      "not_assigned": "Not Assigned",
+      "edit_profile": "Edit Profile",
+      "save_changes": "Save Changes",
+      "cancel": "Cancel",
+      "full_name_required": "Full name cannot be empty.",
+      "update_success": "Profile updated successfully!",
+      "update_error": "Error updating profile",
+      "load_error": "Error loading profile details",
+      "not_found": "Profile not found.",
+      "current_password": "Current Password",
+      "new_password": "New Password",
+      "confirm_password": "Confirm New Password",
+      "current_password_required": "Please enter your current password.",
+      "new_password_required": "Please enter your new password.",
+      "new_password_min": "Password must be at least 6 characters long.",
+      "confirm_password_required": "Please confirm your new password.",
+      "password_mismatch": "New password and confirmation do not match.",
+      "change_password_success": "Password changed successfully. Logging out in 2 seconds...",
+      "change_password_error": "Incorrect current password.",
+      "change_password_btn": "Change Password"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "mark_read": "Mark as read",
+    "delete": "Delete notification",
+    "view_all": "View all",
+    "empty": "No notifications",
+    "loading": "Loading...",
+    "all": "All",
+    "unread": "Unread",
+    "today": "TODAY",
+    "yesterday": "YESTERDAY",
+    "time_ago": {
+      "just_now": "Just now",
+      "minutes": "{{count}} minutes ago",
+      "hours": "{{count}} hours ago",
+      "days": "{{count}} days ago"
+    },
+    "types": {
+      "PROJECT_DELETED": "Project deleted",
+      "PROJECT_CREATED": "New project",
+      "PROJECT_UPDATED": "Project updated",
+      "PROJECT_ARCHIVED": "Project archived",
+      "TASK_ASSIGNED": "Task assigned"
+    },
+    "labels": {
+      "TASK_ASSIGNED": "Assigned",
+      "TASK_COMMENT": "Comment",
+      "COMMENT_REPLY": "Reply",
+      "TASK_UPDATED": "Update",
+      "PROJECT_UPDATED": "Project",
+      "PROJECT_ARCHIVED": "Archived",
+      "MEMBER_ADDED": "Member",
+      "MEMBER_REMOVED": "Left",
+      "ROADMAP_ITEM_UPDATED": "Roadmap",
+      "DEADLINE_EXTENSION_REQUESTED": "Extension",
+      "DEADLINE_EXTENSION_APPROVED": "Approved",
+      "DEADLINE_EXTENSION_REJECTED": "Rejected"
+    },
+    "messages": {
+      "PROJECT_DELETED": "{{actor}} deleted the project: {{project}}",
+      "PROJECT_CREATED": "{{actor}} created a new project: {{project}}",
+      "PROJECT_UPDATED": "{{actor}} updated the project: {{project}}",
+      "PROJECT_ARCHIVED": "{{actor}} archived the project: {{project}}"
+    }
+  }
+}

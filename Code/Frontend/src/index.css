@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #F8FAFC;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix tất cả Modal có chiều cao tối đa và scroll nội dung thay vì scroll cả trang */
+.ant-modal-body {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Dịch tất cả Modal lên sát mép trên màn hình */
+.ant-modal {
+  top: 20px !important;
+  padding-bottom: 20px !important;
+}
+
+/* Ép popup chi tiết công việc dài ra tối đa để hiển thị đầy đủ ô bình luận */
+.task-detail-modal .ant-modal-content {
+  min-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+.task-detail-modal .ant-modal-body {
+  flex: 1;
+  max-height: calc(100vh - 120px);
+  padding-bottom: 0px !important;
+}

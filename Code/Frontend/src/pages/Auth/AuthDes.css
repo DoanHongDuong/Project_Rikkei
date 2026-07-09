@@ -1,0 +1,461 @@
+@import url('https://fonts.googleapis.com/css2?family=Asap:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+  --font-family-asap: 'Asap', sans-serif;
+  --primary-color: #6366f1;
+  /* Tím Indigo sáng (Neon) cho Dark Mode */
+  --primary-hover: #4f46e5;
+  --bg-dark: #0f172a;
+  /* Nền tối sâu (Slate 900) */
+  --card-dark: #1e293b;
+  /* Nền ô form nhẹ hơn (Slate 800) */
+  --text-white: #f8fafc;
+  /* Chữ trắng sáng */
+  --text-muted: #94a3b8;
+  /* Chữ xám mờ phụ */
+  --border-color: #334155;
+  /* Viền tối tinh tế */
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-dark);
+}
+
+.auth-des-page {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  font-family: var(--font-family-asap);
+  background: radial-gradient(circle at top, #1e1b4b 0%, var(--bg-dark) 70%);
+  /* Hiệu ứng hắt sáng tím nhẹ ở đỉnh */
+  color: var(--text-white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-white {
+  color: var(--text-white);
+}
+
+.index-1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Khung Form Login Dark Mode */
+.login-form-14 {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px;
+  width: min(100%, 460px);
+  background: var(--card-dark);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-top: auto;
+  margin-bottom: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Viền mỏng tạo khối */
+}
+
+.logo-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.logo {
+  max-width: 160px;
+  height: auto;
+  object-fit: contain;
+  filter: brightness(2) drop-shadow(0px 0px 15px rgba(56, 189, 248, 0.7));
+  /* Đổ bóng cho logo gốc */
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.form-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 6px;
+}
+
+.form-header p {
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.email-16,
+.password-19 {
+  width: 100%;
+}
+
+.text-17,
+.text-20 {
+  display: block;
+  text-align: left;
+  font-family: var(--font-family-asap);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-white);
+  margin-bottom: 8px;
+}
+
+.password-label-row {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.password-label-row .text-20 {
+  margin-bottom: 0;
+}
+
+/* Ô nhập liệu Dark Mode */
+.emailbox-18,
+.passwordbox-21 {
+  width: 100%;
+  background-color: #0f172a;
+  /* Nền input tối hẳn sâu xuống */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+}
+
+.emailbox-18 {
+  font-family: var(--font-family-asap);
+  font-size: 16px;
+  color: var(--text-white);
+  outline: none;
+}
+
+.passwordbox-21 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.passwordbox-21 .password-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-family-asap);
+  font-size: 16px;
+  color: var(--text-white);
+  outline: none;
+}
+
+/* Hiệu ứng Focus ánh sáng Neon */
+.emailbox-18:focus,
+.passwordbox-21:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+.emailbox-18::placeholder,
+.password-input::placeholder {
+  color: #475569;
+  font-size: 15px;
+}
+
+/* Nút ẩn/hiện mật khẩu */
+.password-toggle {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  filter: invert(1);
+  /* Đảo màu icon mắt đen sang trắng nếu là ảnh đen cũ */
+}
+
+.password-toggle img {
+  width: 22px;
+  height: 22px;
+}
+
+.password-toggle:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.password-toggle:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* Link Quên mật khẩu */
+.text-23 {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  /* Căn giữa nội dung văn bản */
+  margin-top: 12px;
+  /* Tạo khoảng cách thông thoáng với đáy của ô nhập liệu */
+  width: 100%;
+}
+
+.forgot-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: inline-block;
+}
+
+.forgot-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Nút Đăng nhập phát sáng */
+.loginbtn-24 {
+  background: var(--primary-color);
+  border-radius: var(--radius-md);
+  border: none;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 10px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+.loginbtn-24 .text-25 {
+  text-align: center;
+  font-family: var(--font-family-asap);
+  font-weight: 600;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.loginbtn-24:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+}
+
+.loginbtn-24:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.loginbtn-24:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* CHUYỂN THÀNH FOOTER CHUẨN ĐÁY TRANG */
+.footer-contact {
+  width: 100%;
+  max-width: 1200px;
+  /* Độ rộng tối đa của footer */
+  border-top: 1px solid var(--border-color);
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: auto;
+  /* Đẩy cố định xuống đáy */
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+}
+
+.ctinfo-4 {
+  display: flex;
+  flex-direction: row;
+  /* Chuyển thành hàng ngang cho giống layout footer hiện đại */
+  align-items: center;
+  gap: 24px;
+}
+
+.text-5 {
+  font-family: var(--font-family-asap);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.phonenemail-6 {
+  display: flex;
+  flex-direction: row;
+  /* Hàng ngang */
+  align-items: center;
+  gap: 20px;
+}
+
+.phone-7,
+.email-10 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-9,
+.text-12 {
+  font-family: var(--font-family-asap);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-white);
+}
+
+.vector-8,
+.vector-11 {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+  filter: brightness(0) invert(1);
+  /* Biến icon vector màu tối thành màu trắng */
+}
+
+.manual-link {
+  font-family: var(--font-family-asap);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.manual-link:hover {
+  color: var(--primary-hover);
+}
+
+/* Thông Báo Lỗi / Thành Công thiết kế lại cho Dark Mode */
+.status-message {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* --- GIỮ NGUYÊN CÁC TRANG CŨ LIÊN QUAN ĐẾN RESET VỚI MÀU TỐI --- */
+.reset-page {
+  justify-content: space-between;
+}
+
+.reset-wrap {
+  width: min(92vw, 860px);
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 24px;
+}
+
+.reset-title {
+  font-weight: 700;
+  font-size: 50px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+  color: var(--text-white);
+}
+
+.reset-field {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.reset-label {
+  text-align: left;
+  font-family: var(--font-family-asap);
+  color: var(--text-white);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+.reset-field .passwordbox-21 {
+  min-height: 52px;
+  padding: 8px 14px;
+}
+
+.reset-confirm-btn {
+  width: 110px;
+  padding: 6px 12px;
+  margin-top: 4px;
+  border: none;
+}
+
+.reset-confirm-btn .text-25 {
+  font-size: 20px;
+}
+
+/* --- RESPONSIVE CHO SMARTPHONE --- */
+@media (max-width: 768px) {
+  .index-1 {
+    padding: 20px 0 0 0;
+    /* Bỏ padding hông trên điện thoại */
+  }
+
+  .login-form-14 {
+    width: min(92vw, 100%);
+    padding: 30px 20px;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    /* Trên mobile nhỏ gọn loại bỏ viền hộp */
+  }
+
+  .footer-contact {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: 24px 16px;
+  }
+
+  .ctinfo-4 {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .phonenemail-6 {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

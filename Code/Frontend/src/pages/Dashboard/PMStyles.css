@@ -1,0 +1,189 @@
+/* ============================================================
+   PM Layout & Navigation
+   ============================================================ */
+.pm-layout-header {
+  background: #fff;
+  height: 64px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E5E7EB;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.pm-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.pm-nav-link {
+  padding: 6px 16px;
+  border-radius: 6px;
+  color: #6B7280;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.pm-nav-link:hover {
+  background-color: #F3F4F6;
+  color: #111827;
+}
+
+.pm-nav-link.active {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  font-weight: 600;
+}
+
+.pm-bell-icon {
+  font-size: 18px;
+  color: #6B7280;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.pm-bell-icon:hover {
+  color: #2563EB;
+}
+
+.pm-dashboard-container {
+  padding: 28px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   Section Titles
+   ============================================================ */
+.pm-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px 0;
+}
+
+/* ============================================================
+   Search Bar
+   ============================================================ */
+.pm-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pm-search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 40px 10px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+.pm-search-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pm-search-icon {
+  position: absolute;
+  right: 12px;
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Form Styles (Create Project, etc.)
+   ============================================================ */
+.pm-back-link {
+  color: #6B7280;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.pm-back-link:hover {
+  color: #2563EB;
+}
+
+.pm-form-group {
+  margin-bottom: 20px;
+}
+
+.pm-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.pm-form-input,
+.pm-form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+.pm-form-input:focus,
+.pm-form-textarea:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pm-form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.pm-submit-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.pm-submit-btn {
+  padding: 10px 28px;
+  background: #2563EB;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pm-submit-btn:hover {
+  background: #1D4ED8;
+}
+
+.pm-submit-btn:disabled {
+  background: #93C5FD;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Header with Button (Projects page)
+   ============================================================ */
+.pm-header-with-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

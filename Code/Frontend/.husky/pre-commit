@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "=== Hệ thống đang kiểm tra tự động trước khi Commit ==="
+npm run lint && npm run build
