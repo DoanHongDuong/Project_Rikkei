@@ -1,34 +1,10 @@
-const Department = require("../models/Department");
-const User = require("../models/User");
-const Project = require("../models/Project");
-
-const { Op } = require("sequelize");
+const departmentService = require('../services/departmentService');
 
 // 1. Lấy danh sách toàn bộ phòng ban
 exports.getAllDepartments = async (req, res, next) => {
     try {
         const search = req.query.search || '';
-        let whereCondition = {};
-        
-        if (search) {
-            whereCondition = {
-                name: { [Op.like]: `%${search}%` }
-            };
-        }
-
-        const departments = await Department.findAll({
-            where: whereCondition,
-            order: [["created_at", "DESC"]], // Phòng mới tạo xếp lên đầu
-        });
-
-        // Đếm số lượng user cho từng phòng ban
-        const data = await Promise.all(departments.map(async (dept) => {
-            const usersCount = await User.count({ where: { department_id: dept.id } });
-            return {
-                ...dept.toJSON(),
-                users: usersCount
-            };
-        }));
+        const data = await departmentService.getAllDepartments(search);
 
         return res.status(200).json({
             success: true,
@@ -44,27 +20,21 @@ exports.createDepartment = async (req, res, next) => {
     try {
         const { name, description } = req.body;
 
-        if (!name || name.trim() === "") {
-            return res.status(400).json({ success: false, message: "Tên phòng ban không được để trống!" });
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ success: false, message: 'Tên phòng ban không được để trống!' });
         }
 
-        // Kiểm tra trùng tên trùng (Unique)
-        const existingDept = await Department.findOne({ where: { name: name.trim() } });
-        if (existingDept) {
-            return res.status(400).json({ success: false, message: "Tên phòng ban này đã tồn tại!" });
-        }
-
-        const newDept = await Department.create({
-            name: name.trim(),
-            description: description ? description.trim() : null,
-        });
+        const newDept = await departmentService.createDepartment({ name, description });
 
         return res.status(201).json({
             success: true,
-            message: "Tạo phòng ban thành công!",
+            message: 'Tạo phòng ban thành công!',
             data: newDept,
         });
     } catch (error) {
+        if (error.message === 'Tên phòng ban này đã tồn tại!') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         next(error);
     }
 };
@@ -75,32 +45,20 @@ exports.updateDepartment = async (req, res, next) => {
         const { id } = req.params;
         const { name, description } = req.body;
 
-        const department = await Department.findByPk(id);
-        if (!department) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy phòng ban cần sửa!" });
-        }
-
-        // Nếu đổi tên, kiểm tra xem tên mới có trùng với phòng ban khác không
-        if (name && name.trim() !== department.name) {
-            const existingDept = await Department.findOne({ where: { name: name.trim() } });
-            if (existingDept) {
-                return res.status(400).json({ success: false, message: "Tên phòng ban này đã tồn tại trên hệ thống!" });
-            }
-            department.name = name.trim();
-        }
-
-        if (description !== undefined) {
-            department.description = description ? description.trim() : null;
-        }
-
-        await department.save();
+        const department = await departmentService.updateDepartment(id, { name, description });
 
         return res.status(200).json({
             success: true,
-            message: "Cập nhật thông tin thành công!",
+            message: 'Cập nhật thông tin thành công!',
             data: department,
         });
     } catch (error) {
+        if (error.message === 'Không tìm thấy phòng ban cần sửa!') {
+            return res.status(404).json({ success: false, message: error.message });
+        }
+        if (error.message === 'Tên phòng ban này đã tồn tại trên hệ thống!') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         next(error);
     }
 };
@@ -110,38 +68,19 @@ exports.deleteDepartment = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        const department = await Department.findByPk(id);
-        if (!department) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy phòng ban cần xóa!" });
-        }
-
-        // Kiểm tra xem phòng ban có dự án nào đang chạy không
-        const activeProjectsCount = await Project.count({
-            include: [{
-                model: User,
-                as: 'manager',
-                where: { department_id: id }
-            }],
-            where: {
-                status: ['ACTIVE', 'ON_HOLD']
-            }
-        });
-
-        if (activeProjectsCount > 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Không thể xóa phòng ban đang có dự án đang chạy (ACTIVE/ON_HOLD)!" 
-            });
-        }
-
-        // Thực hiện xóa cứng/xóa mềm tùy cấu hình hệ thống của bạn (ở đây dùng destroy chuẩn)
-        await department.destroy();
+        await departmentService.deleteDepartment(id);
 
         return res.status(200).json({
             success: true,
-            message: "Xóa phòng ban thành công!",
+            message: 'Xóa phòng ban thành công!',
         });
     } catch (error) {
+        if (error.message === 'Không tìm thấy phòng ban cần xóa!') {
+            return res.status(404).json({ success: false, message: error.message });
+        }
+        if (error.message === 'Không thể xóa phòng ban đang có dự án đang chạy (ACTIVE/ON_HOLD)!') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         next(error);
     }
 };
@@ -151,24 +90,18 @@ exports.getMembersByDepartment = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        const department = await Department.findByPk(id);
-        if (!department) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy phòng ban!" });
-        }
-
-        const members = await User.findAll({
-            where: { department_id: id },
-            attributes: { exclude: ['password_hash'] },
-            order: [['full_name', 'ASC']]
-        });
+        const result = await departmentService.getMembersByDepartment(id);
 
         return res.status(200).json({
             success: true,
-            department: department.name,
-            count: members.length,
-            data: members,
+            department: result.departmentName,
+            count: result.members.length,
+            data: result.members,
         });
     } catch (error) {
+        if (error.message === 'Không tìm thấy phòng ban!') {
+            return res.status(404).json({ success: false, message: error.message });
+        }
         next(error);
     }
 };

@@ -180,6 +180,39 @@ class UserService {
         return await user.destroy(); // Thực hiện soft delete qua cấu hình Paranoid của Sequelize
     }
 
+    // Lấy danh sách ID user đang thuộc một project (để loại trừ khi assign)
+    async getExcludedProjectUserIds(projectId) {
+        const ProjectMember = require('../models/ProjectMember');
+        const projectMembers = await ProjectMember.findAll({
+            where: { project_id: projectId, is_active: true },
+            attributes: ['user_id']
+        });
+        return projectMembers.map(m => m.user_id);
+    }
+
+    // Thay đổi mật khẩu người dùng
+    async changePassword(userId, currentPassword, newPassword) {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new Error('Người dùng không tồn tại.');
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isMatch) {
+            throw new Error('Mật khẩu hiện tại không chính xác.');
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await user.update({
+            password_hash: hashedPassword,
+            password_changed_at: new Date()
+        });
+
+        return user;
+    }
+
     // Hàm lọc dữ liệu đầu vào chống chèn trường cấm
     pickSafeUpdateData(updateData) {
         const allowedFields = ['full_name', 'email', 'role', 'status', 'department_id'];
